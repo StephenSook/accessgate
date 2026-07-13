@@ -1,0 +1,63 @@
+AccessGate
+Copyright (c) 2026 [Team Name]
+
+AccessGate is licensed under the MIT License. See LICENSE for the full text.
+
+This project incorporates, redistributes, or was trained on the following
+third-party materials. Each is used under its own license, noted below.
+
+------------------------------------------------------------------------
+Training corpora
+------------------------------------------------------------------------
+
+LibriSpeech ASR corpus
+  License: Creative Commons Attribution 4.0 (CC BY 4.0)
+  Citation: V. Panayotov, G. Chen, D. Povey, S. Khudanpur, "LibriSpeech: an
+  ASR corpus based on public domain audio books," ICASSP 2015,
+  DOI 10.1109/ICASSP.2015.7178964. https://www.openslr.org/12
+
+Mozilla Common Voice
+  License: CC0 1.0 (public domain dedication)
+
+AMI Meeting Corpus
+  License: Creative Commons Attribution 4.0 (CC BY 4.0)
+
+VoxPopuli
+  License: CC0 (transcribed data)
+
+------------------------------------------------------------------------
+Demo assets
+------------------------------------------------------------------------
+
+Night of the Living Dead (1968)
+  Status: United States public domain (published without a valid copyright
+  notice; U.S. copyright registration cancelled). National Film Registry.
+  Source: https://archive.org/details/night-of-the-living-dead_1968
+
+Big Buck Bunny
+  License: Creative Commons Attribution 3.0 (CC BY 3.0)
+  Attribution: (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org
+  Note: the isolated musical score is separately licensed CC BY-NC-ND 3.0 and
+  is not reused in this project.
+
+------------------------------------------------------------------------
+IBM Granite models
+------------------------------------------------------------------------
+
+IBM Granite Speech 4.1, Granite Vision, Granite Guardian, Granite 4.x, and
+Granite Embedding r2
+  License: Apache 2.0
+
+------------------------------------------------------------------------
+Key open-source dependencies
+------------------------------------------------------------------------
+
+faster-whisper (MIT), jiwer (Apache 2.0), Silero VAD (MIT),
+sentence-transformers (Apache 2.0), Docling (MIT), Video.js (Apache 2.0),
+wavesurfer.js (BSD-3-Clause), IBM Carbon Design System / @carbon/react
+(Apache 2.0).
+
+Standards text (WCAG 2.2 by W3C, FCC 47 CFR 79.1, DCMP Captioning and
+Description Keys, Netflix Timed Text Style Guide) is referenced for
+conformance checking and cited to its source; no standard is redistributed
+in full.

@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+*.env
+
+# Model weights / large binary data
+*.gguf
+*.bin
+*.pt
+*.pth
+data/training/*.pkl
+standards/index/*.faiss
+standards/index/*.pkl
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS
+.DS_Store
+
+# Bob sessions (large session files — keep screenshots only)
+bob_sessions/*.json
+
+# Gitkeep exceptions
+!security/.gitkeep
+!bob_sessions/.gitkeep
+!standards/parsed/.gitkeep
+!standards/index/.gitkeep

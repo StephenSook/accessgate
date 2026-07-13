@@ -1,0 +1,175 @@
+# AccessGate Rule Registry
+# The conformance engine loads this file. Each rule has an id, source citation,
+# check type, required inputs, pass/fail logic, and SARIF level.
+# check_type: automated | automated_with_band | human_judgment_flag
+# sarif_level: error | warning | note
+# Citations here are placeholders for the RAG-retrieved verbatim text; the engine
+# fills the exact quote from the Docling-parsed standard at runtime.
+
+rules:
+
+  # ---- FCC 47 CFR 79.1(j)(2) ----
+  - id: FCC-ACC-01
+    source: "47 CFR 79.1(j)(2)(i) accuracy"
+    check_type: automated_with_band
+    inputs: [caption_file, reference_transcript]
+    logic: "Fail if the banded NER score is below 98 percent and the confidence band excludes 98 percent; never auto-fail on ASR evidence alone."
+    sarif_level: warning
+
+  - id: FCC-SYN-01
+    source: "47 CFR 79.1(j)(2)(ii) synchronicity"
+    check_type: automated
+    inputs: [caption_file, vad_regions]
+    logic: "Fail if a caption cue does not overlap a detected speech region within the tolerance (default 500 ms)."
+    sarif_level: warning
+
+  - id: FCC-CMP-01
+    source: "47 CFR 79.1(j)(2)(iii) completeness"
+    check_type: automated
+    inputs: [caption_file, vad_regions]
+    logic: "Fail if speech regions from the start to the end of the segment are not covered by caption cues."
+    sarif_level: error
+
+  - id: FCC-PLC-01
+    source: "47 CFR 79.1(j)(2)(iv) placement"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Fail if caption cues overlap each other or run off-frame based on VTT cue settings."
+    sarif_level: warning
+
+  # ---- WCAG 2.2 ----
+  - id: WCAG-122-01
+    source: "WCAG 2.2 SC 1.2.2 Captions (Prerecorded), Level A"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Fail if captions are absent for the prerecorded audio content."
+    sarif_level: error
+
+  - id: WCAG-125-01
+    source: "WCAG 2.2 SC 1.2.5 Audio Description (Prerecorded), Level AA"
+    check_type: automated
+    inputs: [ad_file]
+    logic: "Fail if an audio-description track is absent for the prerecorded video content."
+    sarif_level: error
+
+  - id: WCAG-125-02
+    source: "WCAG 2.2 SC 1.2.5 sufficiency"
+    check_type: human_judgment_flag
+    inputs: [ad_file]
+    logic: "Flag audio-description adequacy for human review; semantic sufficiency is not machine-verifiable."
+    sarif_level: note
+
+  # ---- DCMP Captioning Key ----
+  - id: DCMP-CAP-01
+    source: "DCMP Captioning Key line length"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Fail if any caption line exceeds 32 characters."
+    sarif_level: warning
+
+  - id: DCMP-CAP-02
+    source: "DCMP Captioning Key line count"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Fail if a caption has more than 2 lines."
+    sarif_level: warning
+
+  - id: DCMP-CAP-03
+    source: "DCMP Captioning Key reading-speed tiers and 225 wpm cap"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Fail if a caption exceeds the profile reading-speed tier or the 225 wpm adult cap."
+    sarif_level: warning
+
+  - id: DCMP-CAP-04
+    source: "DCMP Captioning Key 2-second minimum display"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Fail if a caption is displayed for less than 2 seconds."
+    sarif_level: warning
+
+  - id: DCMP-CAP-05
+    source: "DCMP Captioning Key bracketed sound-effect source"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Flag a sound-effect caption that lacks a bracketed source."
+    sarif_level: note
+
+  - id: DCMP-CAP-06
+    source: "DCMP Captioning Key present-tense sounds"
+    check_type: automated_with_band
+    inputs: [caption_file]
+    logic: "Flag past-tense sound descriptors; sound captions should be present tense."
+    sarif_level: note
+
+  # ---- DCMP Description Key ----
+  - id: DCMP-DESC-01
+    source: "DCMP Description Key present tense, active voice"
+    check_type: automated_with_band
+    inputs: [ad_file]
+    logic: "Flag audio-description lines that are past tense or passive voice."
+    sarif_level: note
+
+  - id: DCMP-DESC-02
+    source: "DCMP Description Key third person"
+    check_type: automated
+    inputs: [ad_file]
+    logic: "Flag first-person or second-person audio-description lines."
+    sarif_level: note
+
+  - id: DCMP-DESC-03
+    source: "DCMP Description Key avoid premature jargon"
+    check_type: automated
+    inputs: [ad_file]
+    logic: "Flag technical or jargon terms used before the program introduces them."
+    sarif_level: note
+
+  - id: DCMP-DESC-04
+    source: "DCMP Description Key conform description rate to the program"
+    check_type: automated
+    inputs: [ad_file, vad_regions]
+    logic: "Fail if a description word count exceeds the gap-fit words-per-minute for the measured dialogue-free gap."
+    sarif_level: warning
+
+  - id: DCMP-DESC-05
+    source: "DCMP Description Key do not describe over essential audio"
+    check_type: automated
+    inputs: [ad_file, vad_regions]
+    logic: "Fail if an audio-description line overlaps a detected speech region."
+    sarif_level: error
+
+  - id: DCMP-DESC-06
+    source: "DCMP Description Key complete sentences"
+    check_type: automated_with_band
+    inputs: [ad_file]
+    logic: "Flag sentence fragments outside tight-timing cases."
+    sarif_level: note
+
+  - id: DCMP-DESC-07
+    source: "DCMP Description Key objectivity"
+    check_type: human_judgment_flag
+    inputs: [ad_file]
+    logic: "Flag subjective or interpretive description language for human review."
+    sarif_level: note
+
+  # ---- Netflix English profile ----
+  - id: NFLX-CPS-01
+    source: "Netflix TTSG reading speed 20 cps adult / 17 cps children"
+    check_type: automated
+    inputs: [caption_file, profile]
+    logic: "Fail if a caption exceeds the profile characters-per-second ceiling."
+    sarif_level: warning
+
+  - id: NFLX-LEN-01
+    source: "Netflix TTSG 42 characters per line, 2 lines"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Fail if a line exceeds 42 characters or a caption exceeds 2 lines."
+    sarif_level: warning
+
+  - id: NFLX-DUR-01
+    source: "Netflix TTSG minimum five-sixths second to 7 seconds"
+    check_type: automated
+    inputs: [caption_file]
+    logic: "Fail if a caption duration is below five-sixths of a second or above 7 seconds."
+    sarif_level: warning
