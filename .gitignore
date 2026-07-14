@@ -63,3 +63,6 @@ data/demo/source/
 .playwright-mcp/
 accessgate-*.png
 accessgate-*.jpeg
+
+# SkillsBuild certificate — personal (name); upload to BeMyApp form, not the public repo
+submission/*.pdf
