@@ -50,6 +50,9 @@ def draft_from_keyframes(
 
     duration = round(gap_end - gap_start, 1)
     max_words = max(4, int(duration / 60 * 150))  # 150 wpm AD cap
+    # Vision models tend to over-describe; target a few words under the hard cap
+    # so the draft reliably fits the gap and passes DCMP-DESC-04.
+    word_target = max(6, max_words - 4)
     result = {
         "model_id": MODEL_ID,
         "source": "watsonx-hosted Llama 3.2 Vision",
@@ -64,11 +67,11 @@ def draft_from_keyframes(
     content = [{
         "type": "text",
         "text": (
-            f"You are writing audio description for a blind film viewer. Describe what "
-            f"happens in this {duration:.0f}-second dialogue-free moment in ONE sentence: "
-            f"present tense, active voice, third person, objective, no more than {max_words} "
-            f"words. Do not mention 'image', 'photo', 'frame', 'scene', or 'black-and-white'. "
-            f"Describe the action and setting directly. Return only the description."
+            f"You are writing audio description for a blind film viewer. In ONE short "
+            f"sentence of NO MORE THAN {word_target} words, describe what happens in this "
+            f"{duration:.0f}-second dialogue-free moment: present tense, active voice, third "
+            f"person, objective. Do not mention 'image', 'photo', 'frame', 'scene', or "
+            f"'black-and-white'. Be concise. Return only the description."
         ),
     }]
     # Llama 3.2 Vision accepts at most one image per prompt; use the middle
@@ -86,8 +89,8 @@ def draft_from_keyframes(
         "model_id": MODEL_ID,
         "project_id": project_id,
         "messages": [{"role": "user", "content": content}],
-        "max_tokens": 80,
-        "temperature": 0.2,
+        "max_tokens": 60,
+        "temperature": 0,
     }
     try:
         token = _iam_token(api_key)
