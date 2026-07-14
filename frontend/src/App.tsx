@@ -6,6 +6,9 @@ import { RuleResultsTable } from './components/RuleResultsTable'
 import { GatedFixPanel } from './components/GatedFixPanel'
 import { AxeScoreBadge } from './components/AxeScoreBadge'
 import { LiveMonitor } from './components/LiveMonitor'
+import { JudgesPage } from './components/JudgesPage'
+import { VideoPlayer } from './components/VideoPlayer'
+import { WaveformDisplay } from './components/WaveformDisplay'
 import './index.css'
 
 export default function App() {
@@ -15,6 +18,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [selectedGap, setSelectedGap] = useState<{ start: number; end: number } | null>(null)
   const [activeTimecode, setActiveTimecode] = useState<number>(0)
+  const [showJudges, setShowJudges] = useState(false)
 
   async function handleDemo() {
     setError(null)
@@ -83,10 +87,32 @@ export default function App() {
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <AxeScoreBadge />
             <LiveMonitor />
+            <button
+              type="button"
+              onClick={() => setShowJudges(v => !v)}
+              aria-pressed={showJudges}
+              style={{
+                background: showJudges ? 'rgba(241,194,27,0.15)' : 'none',
+                color: showJudges ? 'var(--ag-amber)' : 'var(--ag-text-muted)',
+                border: `1px solid ${showJudges ? 'rgba(241,194,27,0.5)' : 'var(--ag-border)'}`,
+                padding: '6px 14px',
+                fontSize: 11,
+                fontFamily: 'var(--font-mono)',
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              JUDGES
+            </button>
           </div>
         </header>
 
         <div className="ag-divider" style={{ marginBottom: 32 }} />
+
+        {/* Judges transparency panel */}
+        {showJudges && <JudgesPage />}
 
         {/* Upload form */}
         <section aria-label="Upload files for conformance check" style={{ marginBottom: 40 }}>
@@ -162,6 +188,23 @@ export default function App() {
               onTimecodeClick={setActiveTimecode}
               onGapClick={setSelectedGap}
             />
+
+            {/* Video + Waveform row — only when a real file was uploaded */}
+            {filmFile && (
+              <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <VideoPlayer
+                  file={filmFile}
+                  activeTimecode={activeTimecode}
+                  onTimeUpdate={setActiveTimecode}
+                />
+                <WaveformDisplay
+                  file={filmFile}
+                  gaps={report.gaps}
+                  activeTimecode={activeTimecode}
+                  onTimecodeClick={setActiveTimecode}
+                />
+              </div>
+            )}
 
             <div style={{ marginTop: 32, display: 'grid', gridTemplateColumns: selectedGap ? '1fr 380px' : '1fr', gap: 24 }}>
               {/* Rule Results Table */}
