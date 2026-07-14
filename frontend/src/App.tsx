@@ -268,6 +268,10 @@ export default function App() {
                   for the demo (live watsonx vision from committed keyframes) */}
               {selectedGap && (
                 <GatedFixPanel
+                  // Re-key per gap so switching gaps remounts the panel and
+                  // clears the previous draft/DCMP/Guardian result (otherwise a
+                  // new gap's header showed the prior gap's stale result).
+                  key={`${selectedGap.start}-${selectedGap.end}`}
                   gap={selectedGap}
                   filmFile={filmFile}
                   demoMode={!filmFile}
