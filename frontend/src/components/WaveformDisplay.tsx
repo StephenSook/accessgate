@@ -16,6 +16,7 @@ import type { GapRegion } from '../api/client'
 
 interface Props {
   file: File | null
+  src?: string            // URL source (e.g. the committed demo clip)
   gaps: GapRegion[]
   activeTimecode: number
   onTimecodeClick: (t: number) => void
@@ -25,7 +26,8 @@ interface Props {
 const GAP_COLOR = 'rgba(241, 194, 27, 0.25)'
 const GAP_BORDER = 'rgba(241, 194, 27, 0.6)'
 
-export function WaveformDisplay({ file, gaps, activeTimecode, onTimecodeClick }: Props) {
+export function WaveformDisplay({ file, src, gaps, activeTimecode, onTimecodeClick }: Props) {
+  const hasMedia = !!file || !!src
   const containerRef = useRef<HTMLDivElement>(null)
   const wavesurferRef = useRef<WaveSurfer | null>(null)
   const regionsRef = useRef<RegionsPlugin | null>(null)
@@ -62,6 +64,8 @@ export function WaveformDisplay({ file, gaps, activeTimecode, onTimecodeClick }:
     })
 
     return () => {
+      // destroy() aborts any in-flight decode; the resulting AbortError is
+      // handled on the load() promise's .catch below, so it never leaks.
       ws.destroy()
       wavesurferRef.current = null
       regionsRef.current = null
@@ -83,13 +87,24 @@ export function WaveformDisplay({ file, gaps, activeTimecode, onTimecodeClick }:
       srcUrlRef.current = null
     }
 
-    if (!file) return
+    // load() resolves when decode finishes and REJECTS with an AbortError if the
+    // instance is destroyed (or a new source loaded) before it completes. Swallow
+    // that specific rejection so a StrictMode remount or a mid-load media swap
+    // never surfaces an unhandled error in the console.
+    const swallowAbort = (e: unknown) => {
+      if (!(e instanceof Error) || e.name !== 'AbortError') throw e
+    }
 
-    const url = URL.createObjectURL(file)
-    srcUrlRef.current = url
-    lastSeekRef.current = -1
-    ws.load(url)
-  }, [file])
+    if (file) {
+      const url = URL.createObjectURL(file)
+      srcUrlRef.current = url
+      lastSeekRef.current = -1
+      ws.load(url).catch(swallowAbort)
+    } else if (src) {
+      lastSeekRef.current = -1
+      ws.load(src).catch(swallowAbort)
+    }
+  }, [file, src])
 
   // Redraw gap regions whenever gaps or the WaveSurfer instance changes
   useEffect(() => {
@@ -125,7 +140,7 @@ export function WaveformDisplay({ file, gaps, activeTimecode, onTimecodeClick }:
   // Seek when activeTimecode prop changes
   useEffect(() => {
     const ws = wavesurferRef.current
-    if (!ws || !file) return
+    if (!ws || !hasMedia) return
     if (activeTimecode === lastSeekRef.current) return
     lastSeekRef.current = activeTimecode
 
@@ -133,7 +148,7 @@ export function WaveformDisplay({ file, gaps, activeTimecode, onTimecodeClick }:
     ws.setTime(activeTimecode)
     // Reset the flag after the current event loop tick
     setTimeout(() => { seekingProgrammaticallyRef.current = false }, 0)
-  }, [activeTimecode, file])
+  }, [activeTimecode, hasMedia])
 
   // Revoke URL on unmount
   useEffect(() => {
@@ -173,7 +188,7 @@ export function WaveformDisplay({ file, gaps, activeTimecode, onTimecodeClick }:
         )}
       </div>
 
-      {file ? (
+      {hasMedia ? (
         <div
           ref={containerRef}
           role="application"

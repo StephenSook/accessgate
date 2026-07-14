@@ -231,22 +231,30 @@ export default function App() {
               onGapClick={setSelectedGap}
             />
 
-            {/* Video + Waveform row — only when a real file was uploaded */}
-            {filmFile && (
-              <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <VideoPlayer
-                  file={filmFile}
-                  activeTimecode={activeTimecode}
-                  onTimeUpdate={setActiveTimecode}
-                />
-                <WaveformDisplay
-                  file={filmFile}
-                  gaps={report.gaps}
-                  activeTimecode={activeTimecode}
-                  onTimecodeClick={setActiveTimecode}
-                />
-              </div>
-            )}
+            {/* Video + Waveform row — an uploaded file, or the demo clip synced
+                to the timeline (the real public-domain film scrubs under the gaps) */}
+            {(() => {
+              const isDemo = report.report_id === 'demo-notld-2026'
+              const demoSrc = isDemo && !filmFile ? '/notld-demo.mp4' : undefined
+              if (!filmFile && !demoSrc) return null
+              return (
+                <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
+                  <VideoPlayer
+                    file={filmFile}
+                    src={demoSrc}
+                    activeTimecode={activeTimecode}
+                    onTimeUpdate={setActiveTimecode}
+                  />
+                  <WaveformDisplay
+                    file={filmFile}
+                    src={demoSrc}
+                    gaps={report.gaps}
+                    activeTimecode={activeTimecode}
+                    onTimecodeClick={setActiveTimecode}
+                  />
+                </div>
+              )
+            })()}
 
             <div style={{ marginTop: 32, display: 'grid', gridTemplateColumns: selectedGap ? '1fr 380px' : '1fr', gap: 24 }}>
               {/* Rule Results Table */}
