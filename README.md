@@ -27,7 +27,7 @@ The locked claim: **conformance pre-check: automatable checks plus human-judgmen
 | Pre-computed demo report | https://accessgate-api.onrender.com/demo |
 | GitHub | https://github.com/StephenSook/accessgate |
 
-Open the web app and click **LOAD DEMO** to see the full conformance timeline, rule results table, NER score, and gap markers — no file upload needed. The demo report is the real pre-computed output from the Night of the Living Dead broken sidecar files with 10 planted violations.
+Open the web app and click **LOAD DEMO** to see the full conformance timeline, rule results table, NER score, and gap markers, no file upload needed. The demo runs on a Night of the Living Dead segment (United States public domain) whose caption and audio-description sidecars carry realistic conformance defects. Uploading your own caption file on the live site runs the same 23-rule engine on the hosted backend.
 
 To run the full live engine with Ollama models locally, see [Build and Run](#build-and-run).
 
