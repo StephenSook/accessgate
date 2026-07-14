@@ -45,7 +45,7 @@ jobs:
           # Ensure no Ollama connection attempt in CI (no Ollama in CI)
           OLLAMA_BASE_URL: http://localhost:11434
 
-      - name: Run registry, caption, classifier, evaluator, exporter tests
+      - name: Run registry, caption, classifier, evaluator, exporter, gap, fix/MCP tests
         run: |
           pytest \
             tests/test_registry.py \
@@ -56,6 +56,8 @@ jobs:
             tests/test_engine_end_to_end.py \
             tests/test_score_captions.py \
             tests/test_new_endpoints.py \
+            tests/test_gap_engine.py \
+            tests/test_generative_fix_mcp_monitor.py \
             -v --tb=short 2>&1
 
   test-frontend:
