@@ -1,0 +1,188 @@
+{
+  "plan-of-action-and-milestones": {
+    "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "metadata": {
+      "title": "AccessGate — Responsible AI POA&M (IBM Bob /review, Pass 2)",
+      "last-modified": "2026-07-17T14:30:00Z",
+      "version": "1.0",
+      "oscal-version": "1.1.2",
+      "parties": [
+        {
+          "uuid": "party-001",
+          "type": "organization",
+          "name": "AccessGate Project",
+          "remarks": "IBM AI Builders Challenge, July 2026. All product code written through IBM Bob."
+        }
+      ],
+      "roles": [
+        {
+          "id": "reviewer",
+          "title": "IBM Bob Review Agent",
+          "description": "IBM Bob in accessibility-compliance-engineer mode performing /review pass 2."
+        },
+        {
+          "id": "owner",
+          "title": "Project Owner",
+          "description": "Stephen Sookra — AccessGate lead builder."
+        }
+      ]
+    },
+    "system-id": {
+      "identifier-type": "https://github.com/StephenSook/accessgate",
+      "id": "accessgate-v1.0"
+    },
+    "local-definitions": {
+      "components": [
+        {
+          "uuid": "comp-001",
+          "type": "software",
+          "title": "AccessGate Conformance Engine",
+          "description": "Local Python engine: caption parser, gap detector, NER scorer, classifier, rule evaluators, SARIF/OSCAL exporters.",
+          "status": { "state": "operational" }
+        },
+        {
+          "uuid": "comp-002",
+          "type": "software",
+          "title": "AccessGate FastAPI Application",
+          "description": "REST API exposing /check, /gaps, /fix, /health, /live WebSocket endpoints.",
+          "status": { "state": "operational" }
+        },
+        {
+          "uuid": "comp-003",
+          "type": "software",
+          "title": "AccessGate MCP Server",
+          "description": "FastMCP server exposing check_conformance, detect_gaps, score_captions tools for IBM Bob self-referential loop.",
+          "status": { "state": "operational" }
+        },
+        {
+          "uuid": "comp-004",
+          "type": "ai-model",
+          "title": "Caption Error-Type Classifier",
+          "description": "Logistic regression classifier distinguishing recognition vs edition caption errors. Trained on LibriSpeech / Common Voice. Macro-F1: 0.952.",
+          "status": { "state": "operational" }
+        },
+        {
+          "uuid": "comp-005",
+          "type": "ai-model",
+          "title": "IBM Granite Models (Ollama)",
+          "description": "granite3.2:8b (rule rationales), granite3.2-vision:2b (AD draft), granite3-guardian:2b (safety screen).",
+          "status": { "state": "operational" }
+        }
+      ]
+    },
+    "observations": [
+      {
+        "uuid": "obs-001",
+        "title": "ASR Demographic Disparity Policy Compliance",
+        "description": "The engine was reviewed for compliance with the AGENTS.md constraint: never auto-fail a caption on ASR evidence alone. Koenecke et al. (PNAS 2020) documents WER disparity across demographic groups.",
+        "methods": ["EXAMINE", "TEST"],
+        "subjects": [
+          { "subject-uuid": "comp-001", "type": "component", "title": "Conformance Engine" }
+        ],
+        "relevant-evidence": [
+          {
+            "description": "src/ner_scorer.py applies a confidence band. Regions with per-word ASR probability below threshold are flagged for human review, not auto-failed. tests/test_ner_scorer.py verifies this behavior.",
+            "href": "src/ner_scorer.py"
+          }
+        ],
+        "collected": "2026-07-17T14:00:00Z"
+      },
+      {
+        "uuid": "obs-002",
+        "title": "API-Deletion Test",
+        "description": "All four self-built artifacts (rule engine, gap detector, AD validator, classifier) were verified to run with every hosted AI API removed. The engine produces a report from local Ollama models and local Python code only.",
+        "methods": ["TEST"],
+        "subjects": [
+          { "subject-uuid": "comp-001", "type": "component", "title": "Conformance Engine" },
+          { "subject-uuid": "comp-004", "type": "component", "title": "Classifier" }
+        ],
+        "collected": "2026-07-17T14:00:00Z"
+      },
+      {
+        "uuid": "obs-003",
+        "title": "Granite Guardian Screen in Fix Loop",
+        "description": "Every AI-generated audio description line passes through granite3-guardian:2b before being presented to the user. The Accept button is disabled if Guardian does not clear the content.",
+        "methods": ["EXAMINE"],
+        "subjects": [
+          { "subject-uuid": "comp-005", "type": "component", "title": "Granite Guardian" }
+        ],
+        "collected": "2026-07-17T14:00:00Z"
+      },
+      {
+        "uuid": "obs-004",
+        "title": "Classifier Bias Documentation",
+        "description": "The classifier model card at data/training/model_card.md documents training data sources, ASR disparity handling, inter-annotator agreement, limitations, and IBM AI FactSheet alignment.",
+        "methods": ["EXAMINE"],
+        "subjects": [
+          { "subject-uuid": "comp-004", "type": "component", "title": "Caption Error-Type Classifier" }
+        ],
+        "collected": "2026-07-17T14:00:00Z"
+      }
+    ],
+    "risks": [
+      {
+        "uuid": "risk-001",
+        "title": "Path Traversal in Temporary File Handling",
+        "description": "src/app.py constructs /tmp/<uploaded_filename>. A malicious filename could traverse the path. Accepted risk for local-only demo deployment; not exploitable in the intended local use case.",
+        "status": "accepted",
+        "mitigating-factors": [
+          {
+            "uuid": "mf-001",
+            "description": "AccessGate is intended for local use only; the FastAPI server binds to localhost. No public internet exposure in the demo configuration."
+          }
+        ],
+        "deadline": "2026-08-31"
+      },
+      {
+        "uuid": "risk-002",
+        "title": "MIME Type Validation Gap on File Uploads",
+        "description": "The /check and /fix endpoints do not validate file MIME types or extensions before dispatching to the processing pipeline.",
+        "status": "accepted",
+        "mitigating-factors": [
+          {
+            "uuid": "mf-002",
+            "description": "Local use only; accepted for demo scope. Production hardening noted as future work."
+          }
+        ],
+        "deadline": "2026-08-31"
+      }
+    ],
+    "poam-items": [
+      {
+        "uuid": "poam-001",
+        "title": "Harden temporary file handling",
+        "description": "Replace /tmp/<user_filename> construction with tempfile.NamedTemporaryFile(dir='/tmp', suffix=safe_ext) to prevent path traversal.",
+        "related-observations": [{ "observation-uuid": "obs-001" }],
+        "related-risks": [{ "risk-uuid": "risk-001" }],
+        "status": { "state": "open", "reason": "Accepted for demo scope; scheduled for production hardening." },
+        "milestones": [
+          {
+            "uuid": "ms-001",
+            "title": "Implement safe temp file creation in src/app.py",
+            "due-date": "2026-08-31",
+            "status": "planned"
+          }
+        ]
+      }
+    ],
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "ref-001",
+          "title": "IBM AI FactSheet Framework",
+          "rlinks": [{ "href": "https://research.ibm.com/publications/ai-factsheets-a-framework-for-promoting-transparency-and-accountability-for-ai-systems" }]
+        },
+        {
+          "uuid": "ref-002",
+          "title": "Koenecke et al. PNAS 2020 — ASR Racial Disparity",
+          "rlinks": [{ "href": "https://www.pnas.org/doi/10.1073/pnas.1915768117" }]
+        },
+        {
+          "uuid": "ref-003",
+          "title": "OSCAL POA&M Schema v1.1.2",
+          "rlinks": [{ "href": "https://pages.nist.gov/OSCAL-Reference/models/v1.1.2/plan-of-action-and-milestones/" }]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "IBM Bob",
+          "version": "1.0.0",
+          "informationUri": "https://www.ibm.com/products/watsonx",
+          "rules": [
+            {
+              "id": "BOB-SEC-001",
+              "name": "HardcodedSecret",
+              "shortDescription": { "text": "Hardcoded secret detected in source" },
+              "fullDescription": { "text": "API keys, tokens, or passwords should not appear in source code." },
+              "helpUri": "https://owasp.org/www-community/vulnerabilities/Use_of_hard-coded_credentials"
+            },
+            {
+              "id": "BOB-SEC-002",
+              "name": "UnsafeDirectFileWrite",
+              "shortDescription": { "text": "Unsafe direct temporary file write" },
+              "fullDescription": { "text": "Writing user-supplied filenames directly to disk without sanitization can allow path traversal." }
+            },
+            {
+              "id": "BOB-SEC-003",
+              "name": "MissingInputValidation",
+              "shortDescription": { "text": "FastAPI endpoint missing file-type validation" },
+              "fullDescription": { "text": "Endpoints that accept file uploads should validate MIME type and extension before processing." }
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "startTimeUtc": "2026-07-17T12:00:00Z",
+          "endTimeUtc": "2026-07-17T12:04:23Z",
+          "toolExecutionNotifications": [
+            {
+              "message": { "text": "IBM Bob /review audit 1 completed. Mode: accessibility-compliance-engineer. Scope: full repo." }
+            }
+          ]
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "BOB-SEC-001",
+          "kind": "review",
+          "level": "note",
+          "message": {
+            "text": "No hardcoded secrets found in source. .env.example ships with placeholders. .env is git-ignored. WATSONX_API_KEY consumed from environment only."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": ".env.example", "uriBaseId": "%SRCROOT%" }
+              }
+            }
+          ],
+          "properties": {
+            "finding": "pass",
+            "ibm_bob_mode": "accessibility-compliance-engineer",
+            "review_pass": "1"
+          }
+        },
+        {
+          "ruleId": "BOB-SEC-002",
+          "kind": "open",
+          "level": "warning",
+          "message": {
+            "text": "src/app.py writes uploaded files to /tmp/<original_filename>. If the original filename contains path traversal characters (e.g. ../../etc/passwd), the write destination is controllable by the caller. Mitigate: use tempfile.NamedTemporaryFile(dir='/tmp', suffix=safe_ext) instead of constructing a path from the user-supplied filename."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/app.py", "uriBaseId": "%SRCROOT%" }
+              }
+            }
+          ],
+          "properties": {
+            "timecode": null,
+            "finding": "warning",
+            "ibm_bob_mode": "accessibility-compliance-engineer",
+            "review_pass": "1",
+            "remediation_status": "accepted_risk_local_only"
+          }
+        },
+        {
+          "ruleId": "BOB-SEC-003",
+          "kind": "open",
+          "level": "note",
+          "message": {
+            "text": "The /check, /fix, and /gaps endpoints accept arbitrary file uploads. Consider adding MIME-type and extension allowlist validation (video/*, .srt, .vtt) before dispatching to the engine, to prevent sending unexpected file types through the processing pipeline."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/app.py", "uriBaseId": "%SRCROOT%" }
+              }
+            }
+          ],
+          "properties": {
+            "timecode": null,
+            "finding": "note",
+            "ibm_bob_mode": "accessibility-compliance-engineer",
+            "review_pass": "1",
+            "remediation_status": "accepted_risk_local_demo"
+          }
+        }
+      ],
+      "artifacts": [
+        { "location": { "uri": "src/app.py", "uriBaseId": "%SRCROOT%" } },
+        { "location": { "uri": "src/engine.py", "uriBaseId": "%SRCROOT%" } },
+        { "location": { "uri": "src/exporters/sarif.py", "uriBaseId": "%SRCROOT%" } },
+        { "location": { "uri": ".env.example", "uriBaseId": "%SRCROOT%" } }
+      ],
+      "properties": {
+        "ibm_bob_review_type": "security",
+        "ibm_bob_account": "account_1",
+        "review_scope": "full_repo",
+        "rules_engine_version": "1.0",
+        "artifact_self_referential": true,
+        "note": "This SARIF file was produced by IBM Bob /review in accessibility-compliance-engineer mode. Timecodes go in properties, not region fields, per AGENTS.md SARIF rule."
+      }
+    }
+  ]
+}
