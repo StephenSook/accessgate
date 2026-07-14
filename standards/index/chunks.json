@@ -1,0 +1,62 @@
+[
+  {
+    "text": "WCAG 2.2 Success Criterion 1.2.2 Captions (Prerecorded) - Level A\nCaptions are provided for all prerecorded audio content in synchronized media,\nexcept when the media is a media alternative for text and is clearly labeled as such.\nCaptions include all dialogue and important sound effects.",
+    "source": "wcag_122",
+    "start": 0
+  },
+  {
+    "text": "WCAG 2.2 Success Criterion 1.2.5 Audio Description (Prerecorded) - Level AA\nAudio description is provided for all prerecorded video content in synchronized media.\nThe audio description provides information about actions, characters, scene changes,\nand on-screen text that are important to understanding the content.",
+    "source": "wcag_125",
+    "start": 0
+  },
+  {
+    "text": "47 CFR 79.1(j)(2) Caption quality standards.\nCaptioning quality is defined by four factors:\n(i) Accuracy: Captions must match the spoken words in the dialogue and convey\nbackground noises and other sounds to the fullest extent possible.\n(ii) Synchronicity: Captions must be displayed to coincide with their\ncorresponding spoken words and sounds to the greatest extent possible.\n(iii) Program complete",
+    "source": "fcc_79_1_j_2",
+    "start": 0
+  },
+  {
+    "text": "spoken words and sounds to the greatest extent possible.\n(iii) Program completeness: The program must be captioned in its entirety.\n(iv) Placement: Captions should not block other important visual content on the\nscreen including, but not limited to, character faces, speaker identification,\nemergency information, and other information or text.\nThe NER (Net Error Rate) accuracy standard is: (total",
+    "source": "fcc_79_1_j_2",
+    "start": 320
+  },
+  {
+    "text": "ther information or text.\nThe NER (Net Error Rate) accuracy standard is: (total words - errors) / total words.\nPrograms with a score of 98 percent or higher are deemed accurate.",
+    "source": "fcc_79_1_j_2",
+    "start": 640
+  },
+  {
+    "text": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+    "source": "dcmp_captioning_key",
+    "start": 0
+  },
+  {
+    "text": "Minimum display time: Captions should appear on screen for a minimum of 2 seconds.\nSound effects: Use brackets to identify sound sources: [THUNDER], [DOG BARKING].\nNever describe sounds in the past tense; sounds are described as they occur.\nItalics and capitalization indicate vocal emphasis.",
+    "source": "dcmp_captioning_key",
+    "start": 320
+  },
+  {
+    "text": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+    "source": "dcmp_description_key",
+    "start": 0
+  },
+  {
+    "text": "ble.\nTiming: Descriptions must fit within the available dialogue-free time.\nWords per minute: Standard description rate is 150 words per minute.\nOverlap: Audio descriptions must not overlap essential program audio or dialogue.\nJargon: Match vocabulary to the program level; do not introduce technical terms\nbefore the program itself has introduced them.\nCompleteness: Do not describe every pause; pri",
+    "source": "dcmp_description_key",
+    "start": 320
+  },
+  {
+    "text": "ogram itself has introduced them.\nCompleteness: Do not describe every pause; prioritize plot-relevant visual information.",
+    "source": "dcmp_description_key",
+    "start": 640
+  },
+  {
+    "text": "Netflix Timed Text Style Guide (TTSG) - English.\nReading speed: Maximum 20 characters per second (CPS) for adult content.\nMaximum 17 CPS for children's content.\nLine length: Maximum 42 characters per line.\nLine count: Maximum 2 lines per event.\nMinimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum",
+    "source": "netflix_ttsg",
+    "start": 0
+  },
+  {
+    "text": "e event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.\nFrame rate: Typically 23.976, 24, or 25 fps depending on the content locale.\nCharacter encoding: UTF-8.",
+    "source": "netflix_ttsg",
+    "start": 320
+  }
+]

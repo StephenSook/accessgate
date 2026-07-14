@@ -85,7 +85,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install @microsoft/sarif-multitool
-        run: npm install -g @microsoft/sarif-multitool@4.5.4
+        run: npm install -g @microsoft/sarif-multitool@4.3.0
 
       - name: Validate review-audit-1.sarif
         run: npx @microsoft/sarif-multitool validate security/review-audit-1.sarif
