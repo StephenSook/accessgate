@@ -109,3 +109,9 @@ export async function loadDemo(): Promise<ConformanceReport> {
   if (!resp.ok) throw new Error(`/demo failed: ${resp.status}`)
   return resp.json()
 }
+
+export async function loadJudges(): Promise<unknown> {
+  const resp = await fetch(`${BASE}/judges`)
+  if (!resp.ok) throw new Error(`/judges failed: ${resp.status}`)
+  return resp.json()
+}
