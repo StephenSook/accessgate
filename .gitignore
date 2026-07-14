@@ -40,3 +40,18 @@ bob_sessions/*.json
 
 # Trained model weights
 data/training/classifier.pkl
+
+# Internal research / strategy documents (stay local, never public)
+*.pdf
+AccessGate_Master_Build_Spec.md
+PLAN_MODE_PROMPTS.md
+
+# Stray root files that belong in .bob/ only
+/SKILL.md
+/custom_modes.yaml
+
+# Frontend design brief (internal notes)
+frontend visual
+
+# Bob-kit reference (local only)
+.bob/bob-kit-AGENTS.md
