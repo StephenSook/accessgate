@@ -130,7 +130,9 @@ def draft_description(
             data=data,
             headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        # Generous timeout: the first call cold-loads the vision model into
+        # memory (can take 60-90s on CPU); subsequent calls are fast.
+        with urllib.request.urlopen(req, timeout=180) as resp:
             body = json.loads(resp.read())
             return body.get("response", "").strip()
     except Exception as e:
@@ -224,7 +226,7 @@ def screen_guardian(draft: str, model: str = GUARDIAN_MODEL) -> tuple[bool, str]
             data=data,
             headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(req, timeout=20) as resp:
+        with urllib.request.urlopen(req, timeout=120) as resp:
             body = json.loads(resp.read())
             response = body.get("response", "").strip()
             cleared = response.upper().startswith("SAFE")
