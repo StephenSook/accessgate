@@ -4,7 +4,7 @@ Every evaluator, scorer, and exporter uses these types.
 """
 from __future__ import annotations
 from typing import Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 
 class CaptionCue(BaseModel):
@@ -119,14 +119,17 @@ class ConformanceReport(BaseModel):
     gaps: list[GapRegion] = Field(default_factory=list)
     speech_regions: list[SpeechRegion] = Field(default_factory=list)
 
+    @computed_field
     @property
     def error_count(self) -> int:
         return sum(1 for r in self.results if r.status == "fail" and r.sarif_level == "error")
 
+    @computed_field
     @property
     def warning_count(self) -> int:
         return sum(1 for r in self.results if r.status == "fail" and r.sarif_level == "warning")
 
+    @computed_field
     @property
     def flag_count(self) -> int:
         return sum(1 for r in self.results if r.status == "flag")
