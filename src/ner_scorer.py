@@ -131,6 +131,77 @@ def score_ner(
     )
 
 
+def score_captions(
+    cues,
+    film_path: str,
+    *,
+    reference_text: str | None = None,
+    word_confidences: list[float] | None = None,
+) -> NERScoreResult:
+    """
+    Engine-facing wrapper: score a full caption track for accuracy.
+
+    hypothesis = concatenated caption cue text (the vendor file under test)
+    reference  = a transcript of the film's audio
+
+    Reference source (locked split, AGENTS.md): Granite Speech 4.1 2B is the
+    intended high-accuracy reference; when it is not present, faster-whisper
+    supplies an ASR-derived reference plus per-word confidences. Either way the
+    result is asr_derived=True, so the hard rule holds: never auto-fail. The
+    score is confidence-banded and low-confidence regions are flagged for human
+    review (Koenecke et al., PNAS 2020).
+
+    Raises RuntimeError when no reference can be produced (no reference_text and
+    no local transcriber). run_engine catches this and skips the accuracy check
+    rather than inventing a score.
+    """
+    hypothesis = " ".join(c.text.replace("\n", " ") for c in cues).strip()
+
+    if reference_text is None:
+        reference_text, word_confidences = _transcribe_reference(film_path)
+
+    return score_ner(
+        reference=reference_text,
+        hypothesis=hypothesis,
+        word_confidences=word_confidences,
+        asr_derived=True,
+    )
+
+
+def _transcribe_reference(film_path: str) -> tuple[str, list[float]]:
+    """
+    Produce a reference transcript + per-word confidences from film audio.
+
+    Uses faster-whisper (CPU int8, word_timestamps=True), lazy-imported so the
+    deploy image without the ML stack does not require it. Raises RuntimeError
+    when the media file or the transcriber is unavailable, so the caller skips
+    NER instead of fabricating a reference.
+    """
+    from pathlib import Path
+
+    if not film_path or not Path(film_path).exists():
+        raise RuntimeError(f"reference transcription: film not found: {film_path!r}")
+    try:
+        from faster_whisper import WhisperModel
+    except Exception as e:  # noqa: BLE001
+        raise RuntimeError(f"reference transcriber unavailable: {e}") from e
+
+    model = WhisperModel("base", device="cpu", compute_type="int8")
+    segments, _info = model.transcribe(film_path, word_timestamps=True, language="en")
+
+    words: list[str] = []
+    confidences: list[float] = []
+    for seg in segments:
+        for w in (seg.words or []):
+            token = w.word.strip()
+            if token:
+                words.append(token)
+                confidences.append(float(getattr(w, "probability", 1.0)))
+    if not words:
+        raise RuntimeError("reference transcription produced no words")
+    return " ".join(words), confidences
+
+
 def _clean_text(text: str) -> str:
     """Normalize text for WER scoring: lowercase, strip punctuation."""
     text = text.lower()
