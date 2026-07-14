@@ -16,10 +16,14 @@ Hard rule (AGENTS.md):
   confidence-banded, and low-confidence regions are flagged for human review.
 """
 from __future__ import annotations
+import logging
+import os
 import re
 from dataclasses import dataclass, field
 from jiwer import process_words, AlignmentChunk
 from src.models import NERScoreResult
+
+logger = logging.getLogger(__name__)
 
 # Ofcom/Romero-Fresco threshold
 NER_ACCEPTABLE_THRESHOLD = 0.98
@@ -144,7 +148,7 @@ def score_captions(
     hypothesis = concatenated caption cue text (the vendor file under test)
     reference  = a transcript of the film's audio
 
-    Reference source (locked split, AGENTS.md): Granite Speech 4.1 2B is the
+    Reference source (locked split, AGENTS.md): Granite Speech 3.3-2b is the
     intended high-accuracy reference; when it is not present, faster-whisper
     supplies an ASR-derived reference plus per-word confidences. Either way the
     result is asr_derived=True, so the hard rule holds: never auto-fail. The
@@ -199,7 +203,22 @@ def _transcribe_reference(film_path: str) -> tuple[str, list[float]]:
                 confidences.append(float(getattr(w, "probability", 1.0)))
     if not words:
         raise RuntimeError("reference transcription produced no words")
-    return " ".join(words), confidences
+    fw_reference = " ".join(words)
+
+    # Locked split: faster-whisper supplies timing + per-word confidences above;
+    # Granite Speech 3.3-2b supplies the high-accuracy reference transcript when
+    # opted in (heavy on CPU). Fall back to the faster-whisper reference if it is
+    # unavailable rather than blocking the pipeline.
+    if os.getenv("ACCESSGATE_GRANITE_SPEECH", "").lower() in ("1", "true", "yes"):
+        try:
+            from src.granite_speech import transcribe as granite_transcribe
+            reference = granite_transcribe(film_path)
+            logger.info("Using Granite Speech 3.3-2b reference (%d words).", len(reference.split()))
+            return reference, confidences
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Granite Speech reference unavailable (%s); using faster-whisper.", e)
+
+    return fw_reference, confidences
 
 
 def _clean_text(text: str) -> str:
