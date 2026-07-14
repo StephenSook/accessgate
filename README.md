@@ -140,7 +140,9 @@ Every row below is wired in the shipped code, not aspirational. The wiring colum
 | **Granite Vision 3.2 2b** | Drafts the AD fix on a failing gap | Wired, local Ollama (`src/generative_fix.py`) |
 | **Granite Guardian 3 2b** | Screens generated AD for content safety before the row flips green | Wired, local Ollama (`src/generative_fix.py`) |
 | **Granite Embedding r2** | Embeds the standards corpus so citations are retrieved at runtime, never hardcoded | Wired, `sentence-transformers` (`src/rag.py`; deterministic TF-IDF fallback if unavailable) |
-| **watsonx.ai (granite-3-8b-instruct)** | Hosted AD-line generation, side-by-side with the local Granite path in the gated fix | Wired, hosted (`src/watsonx_showcase.py`) |
+| **watsonx.ai (granite-3-8b-instruct)** | Hosted AD-line generation and a plain-English report summary (`src/report_summary.py`), side by side with the local Granite path | Wired, hosted (`src/watsonx_showcase.py`) |
+| **watsonx-hosted vision (Llama 3.2 11B)** | Drafts the gap fix live on the hosted demo where there is no Ollama (`/demo-fix`); Granite Vision is the local model | Wired, `src/watsonx_vision.py` |
+| **Docling** | Parses the WCAG, FCC, DCMP and Netflix source pages into the markdown corpus the RAG cites | Wired, `scripts/parse_standards.py` → `standards/parsed/` (6 docs) |
 | **AI FactSheet model card** | Governance doc for the trained classifier: training data, evaluation, and ASR-disparity bias handling | `data/training/model_card.md` |
 
 ---
