@@ -54,14 +54,16 @@ export interface ConformanceReport {
 export interface FixResult {
   gap: GapRegion
   draft_text: string
+  draft_source?: string | null       // which model drafted (Granite Vision / watsonx / fallback)
   dcmp_valid: boolean
   dcmp_issues: string[]
   guardian_cleared: boolean
+  guardian_ran?: boolean             // false = the safety screen could not run
+  guardian_source?: string | null    // which Guardian ran (Ollama / watsonx)
   guardian_reason: string | null
   accepted: boolean
   word_count: number
   fits_gap: boolean
-  draft_source?: string
 }
 
 // In production (Vercel), VITE_API_URL is set to the Render backend URL.

@@ -5,6 +5,7 @@
  */
 import React, { useState, useMemo } from 'react'
 import type { RuleResult } from '../api/client'
+import { fmtTime } from '../utils/format'
 
 interface Props {
   results: RuleResult[]
@@ -196,9 +197,3 @@ export function RuleResultsTable({ results, onTimecodeClick, onRequestFix }: Pro
   )
 }
 
-function fmtTime(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  const ms = Math.floor((seconds % 1) * 10)
-  return `${m}:${String(s).padStart(2, '0')}.${ms}`
-}

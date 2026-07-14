@@ -9,6 +9,7 @@
 import React, { useState } from 'react'
 import type { FixResult } from '../api/client'
 import { requestFix, loadDemoFix } from '../api/client'
+import { fmtTime } from '../utils/format'
 
 interface Props {
   gap: { start: number; end: number }
@@ -79,7 +80,7 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
       {/* Gap info */}
       <div style={{ marginBottom: 16, padding: '10px 12px', background: 'var(--ag-surface2)', border: '1px solid var(--ag-border)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
         <div style={{ color: 'var(--ag-text-muted)', marginBottom: 4, fontSize: 10, textTransform: 'uppercase' }}>Gap Region</div>
-        <div>{fmtTime(gap.start)} → {fmtTime(gap.end)}</div>
+        <div>{fmtTime(gap.start, false)} → {fmtTime(gap.end, false)}</div>
         <div style={{ color: 'var(--ag-text-muted)', fontSize: 11 }}>{duration.toFixed(1)}s · max {Math.floor(duration / 60 * 150)} words at 150 wpm</div>
       </div>
 
@@ -94,9 +95,7 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
       {loading && (
         <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--ag-text-muted)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
           <div style={{ marginBottom: 8 }}>VISION MODEL DRAFTING...</div>
-          <div style={{ width: '100%', height: 2, background: 'var(--ag-surface2)', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', left: '-40%', width: '40%', height: '100%', background: 'var(--ag-blue)', animation: 'none' }} />
-          </div>
+          <div className="ag-loading-bar" />
         </div>
       )}
 
@@ -134,10 +133,20 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
             )}
           </Stage>
 
-          {/* Guardian screen */}
-          <Stage label="3. Granite Guardian Screen" status={result.guardian_cleared ? 'pass' : 'fail'}>
-            {result.guardian_cleared ? (
-              <div style={{ color: 'var(--ag-green)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>✓ Content safety cleared</div>
+          {/* Guardian screen — distinguishes "cleared", "flagged", and "did not
+              run". A screen that could not run is never shown as passed. */}
+          <Stage
+            label="3. Granite Guardian Screen"
+            status={result.guardian_ran === false ? 'fail' : (result.guardian_cleared ? 'pass' : 'fail')}
+          >
+            {result.guardian_ran === false ? (
+              <div style={{ color: 'var(--ag-amber)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                ⚠ Safety screen did not run{result.guardian_reason ? `: ${result.guardian_reason}` : ''}
+              </div>
+            ) : result.guardian_cleared ? (
+              <div style={{ color: 'var(--ag-green)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                ✓ Content safety cleared{result.guardian_source ? ` (${result.guardian_source})` : ''}
+              </div>
             ) : (
               <div style={{ color: 'var(--ag-red)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>✗ {result.guardian_reason}</div>
             )}
@@ -212,8 +221,3 @@ function Stage({ label, status, children }: { label: string; status: 'done' | 'p
   )
 }
 
-function fmtTime(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${m}:${String(s).padStart(2, '0')}`
-}
