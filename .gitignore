@@ -66,3 +66,6 @@ accessgate-*.jpeg
 
 # SkillsBuild certificate — personal (name); upload to BeMyApp form, not the public repo
 submission/*.pdf
+
+# Internal build/strategy plan — scaffolding, not product docs (kept local only)
+plan/
