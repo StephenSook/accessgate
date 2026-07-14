@@ -107,8 +107,8 @@ def judges_page() -> JSONResponse:
             "integration": [
                 {"name": "Granite Vision 3.2:2b (local Ollama)", "evidence": "src/generative_fix.py", "note": "Local, not hosted — requires Ollama"},
                 {"name": "Granite Guardian 3:2b (local Ollama)", "evidence": "src/generative_fix.py"},
-                {"name": "Granite Speech 4.1 2B (local transformers)", "evidence": "src/ner_scorer.py"},
-                {"name": "watsonx.ai Lite (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_showcase.py", "note": "Showcase comparison — gracefully degrades if API key absent"}
+                {"name": "Granite Speech 3.3-2b (local transformers)", "evidence": "src/granite_speech.py", "note": "High-accuracy NER reference, opt-in ACCESSGATE_GRANITE_SPEECH=1; faster-whisper is the default reference"},
+                {"name": "watsonx.ai (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_showcase.py", "note": "Hosted AD-line generation, side-by-side with the local Granite path; gracefully degrades if the key is absent"}
             ],
             "accelerator": [
                 {"name": "IBM Bob custom mode (accessibility-compliance-engineer)", "evidence": ".bob/custom_modes.yaml"},

@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://lablab.ai)
-[![132 tests](https://img.shields.io/badge/tests-132%20passing-3fb950.svg)](tests/)
+[![174 tests](https://img.shields.io/badge/tests-174%20passing-3fb950.svg)](tests/)
 
 Built for the **IBM AI Builders Challenge July 2026**, **Reimagine Creative Industries with AI** track.
 
@@ -76,7 +76,7 @@ flowchart TB
 
     subgraph SCORE["Scoring Engine (self-built, API-deletion-proof)"]
         direction LR
-        GS["Granite Speech 4.1 2B\nreference transcript"]
+        GS["Granite Speech 3.3-2b\nreference transcript"]
         NER["NER Scorer\n(N-E-R)/N + confidence band"]
         CLS["Error-Type Classifier\nmacro-F1 0.952"]
         GS --> NER
@@ -129,19 +129,19 @@ flowchart TB
 
 ---
 
-## IBM Stack (every tool is load-bearing)
+## IBM Stack (what is actually wired)
 
-| IBM Tool | Load-Bearing Role | What Breaks Without It |
+Every row below is wired in the shipped code, not aspirational. The wiring column states exactly how, because honest labeling is the point: a judge can grep any claim. See the live `/judges` endpoint for the same breakdown.
+
+| IBM Tool | Role | Wiring |
 |---|---|---|
-| **IBM Bob** | Wrote all engine and frontend product code; parallel subagents; custom mode; conformance Skill; Plan specs; two /review audits (SARIF + OSCAL); Bobalytics; self-referential MCP loop | The entry itself; the required primary development tool |
-| **Granite Speech 4.1 2B** | High-accuracy reference transcript feeding the NER scorer | No ASR ground truth for caption accuracy |
-| **Granite Vision** | Drafts the AD fix on a failing gap | No generative-fix moment |
-| **Granite 4.x language** | Plain-English rule rationales, DCMP language heuristics | Rationales become hardcoded |
-| **Granite Guardian** | Screens generated AD before the row flips green | No safety gate on generated content |
-| **Granite Embedding r2** | Embeds standards corpus so citations are retrieved, not hardcoded | Citations lose source provenance |
-| **Docling** | Parses WCAG/FCC/DCMP/Netflix into the structured knowledge base | No grounded citations |
-| **watsonx.governance / AI FactSheet** | Model card for the trained classifier documenting data, evaluation, ASR-disparity bias handling | Loses IBM governance story |
-| **watsonx.ai Lite** | Hosted showcase inference call (ibm/granite-3-8b-instruct), side-by-side with local Granite | Loses hosted-IBM showcase |
+| **IBM Bob** | Wrote all engine and frontend product code; parallel subagents; custom mode; conformance Skill; Plan specs; two /review audits (SARIF + OSCAL); self-referential MCP loop | Primary development tool |
+| **Granite Speech 3.3-2b** | High-accuracy reference transcript feeding the NER scorer | Wired, local `transformers` (`src/granite_speech.py`, opt-in `ACCESSGATE_GRANITE_SPEECH=1`; faster-whisper is the default reference because Granite Speech is ~20x realtime on CPU) |
+| **Granite Vision 3.2 2b** | Drafts the AD fix on a failing gap | Wired, local Ollama (`src/generative_fix.py`) |
+| **Granite Guardian 3 2b** | Screens generated AD for content safety before the row flips green | Wired, local Ollama (`src/generative_fix.py`) |
+| **Granite Embedding r2** | Embeds the standards corpus so citations are retrieved at runtime, never hardcoded | Wired, `sentence-transformers` (`src/rag.py`; deterministic TF-IDF fallback if unavailable) |
+| **watsonx.ai (granite-3-8b-instruct)** | Hosted AD-line generation, side-by-side with the local Granite path in the gated fix | Wired, hosted (`src/watsonx_showcase.py`) |
+| **AI FactSheet model card** | Governance doc for the trained classifier: training data, evaluation, and ASR-disparity bias handling | `data/training/model_card.md` |
 
 ---
 
@@ -238,7 +238,7 @@ accessgate/
 │   ├── exporters/             # sarif.py (2.1.0), oscal.py (POA&M v1.1.2)
 │   └── mcp_server/            # FastMCP server (self-referential IBM Bob loop)
 ├── rules/rules_registry.yaml  # 23 rules across FCC / WCAG / DCMP / Netflix
-├── standards/                 # Docling-parsed source documents + Granite Embedding index
+├── standards/                 # Authoritative standards corpus + Granite Embedding index
 ├── data/
 │   ├── demo/                  # notld_broken.srt, notld_broken_ad.vtt, demo_report.json
 │   └── training/

@@ -17,7 +17,7 @@ AccessGate is a local, explainable conformance pre-check engine for film accessi
 
 ## The timing engine rule
 
-Base Granite Speech 4.1 2B does not emit timestamps. Use faster-whisper with word_timestamps=True for all timing (VAD windows, gap detection, sync checks, per-word confidence). Use Granite Speech 4.1 2B only for the high-accuracy reference transcript.
+Base Granite Speech 3.3-2b does not emit timestamps. Use faster-whisper with word_timestamps=True for all timing (VAD windows, gap detection, sync checks, per-word confidence). Use Granite Speech 3.3-2b only for the high-accuracy reference transcript.
 
 ## Repo map
 
