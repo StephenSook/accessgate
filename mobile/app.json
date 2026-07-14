@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "AccessGate",
+    "slug": "accessgate-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#161616",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stephensook.accessgate"
+    },
+    "android": {
+      "package": "com.stephensook.accessgate",
+      "adaptiveIcon": {
+        "backgroundColor": "#161616",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-document-picker"]
+  }
+}
