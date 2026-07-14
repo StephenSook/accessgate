@@ -86,10 +86,12 @@ def run_engine(
         logger.info("Parsed %d AD cues.", len(ad_cues))
 
     # ---- Step 2: VAD gap / speech detection ----
+    # detect_gaps returns (gaps, speech_regions); it extracts audio once and
+    # computes both, so we unpack it rather than calling detect_speech_regions
+    # separately on the raw film.
     logger.info("Running VAD on: %s", film_path)
     try:
-        speech_regions = detect_speech_regions(film_path)
-        gaps = detect_gaps(film_path)
+        gaps, speech_regions = detect_gaps(film_path)
         logger.info(
             "VAD: %d speech regions, %d dialogue-free gaps.",
             len(speech_regions), len(gaps),
