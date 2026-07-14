@@ -1,39 +1,76 @@
 1
-00:00:01,000 --> 00:00:01,800
-She said he came back she walked she moved she ran she turned he told her yes no maybe.
+00:00:00,500 --> 00:00:03,000
+There's nothing wrong
+with the radio.
 
 2
-00:00:03,000 --> 00:00:04,200
-Looks like something is in the cellar.
+00:00:03,500 --> 00:00:06,000
+It must have been
+a station.
 
 3
-00:00:05,000 --> 00:00:06,200
-This is a line that is forty-four characters long here.
+00:00:15,500 --> 00:00:18,500
+Well, there's no one
+around here.
 
 4
-00:00:07,000 --> 00:00:08,200
-They're coming to get you, Barbara.
+00:00:28,000 --> 00:00:31,000
+It's late. You've
+gotten up earlier.
 
 5
-00:00:09,000 --> 00:00:09,800
-There sound in the house.
+00:00:31,500 --> 00:00:34,500
+I already lost a whole hour of sleep on this.
 
 6
-00:00:11,000 --> 00:00:12,200
-We have to board up the windows.
+00:00:36,900 --> 00:00:37,700
+There it is.
 
 7
-00:00:15,000 --> 00:00:16,200
-There is no way out.
+00:00:50,500 --> 00:00:53,500
+I wonder what happened
+to last year's.
 
 8
-00:00:16,000 --> 00:00:17,200
-We need to stay together.
+00:00:54,000 --> 00:00:57,000
+Each year we spend
+good money on these.
 
 9
-00:00:20,000 --> 00:00:21,200
-I think we can make it.
+00:00:57,500 --> 00:01:00,500
+We drive all the way out
+and it's vanished.
 
 10
-00:00:25,000 --> 00:00:26,200
-Paraphrased: the individual made his way back reconfigured the position.
+00:01:03,500 --> 00:01:06,500
+wind rushes through
+the bare trees
+
+11
+00:01:32,500 --> 00:01:35,000
+Church was this
+morning, remember?
+
+12
+00:01:59,000 --> 00:02:02,000
+I haven't seen you
+in church lately.
+
+13
+00:02:32,600 --> 00:02:35,000
+They're coming to get
+you, Barbara.
+
+14
+00:02:38,600 --> 00:02:41,000
+Stop it. You're
+ignorant.
+
+15
+00:02:43,800 --> 00:02:46,500
+Stop it. You're acting
+like a child.
+
+16
+00:02:48,600 --> 00:02:49,600
+Look here comes one of them right now, come on hurry.

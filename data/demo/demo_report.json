@@ -1,167 +1,1161 @@
 {
-  "report_id": "demo-notld-2026",
   "film_path": "data/demo/notld_segment.mp4",
   "caption_path": "data/demo/notld_broken.srt",
   "ad_path": "data/demo/notld_broken_ad.vtt",
   "profile": "netflix",
-  "error_count": 7,
-  "warning_count": 1,
-  "flag_count": 2,
-  "ner": {
-    "ner_score": 0.941,
-    "band_low": 0.921,
-    "band_high": 0.961,
-    "n_words": 272,
-    "recognition_errors": 6,
-    "edition_errors": 10,
-    "passes_98_threshold": false,
-    "straddles_threshold": false
-  },
-  "gaps": [
-    { "start": 14.2, "end": 21.8, "duration": 7.6, "max_words": 19 },
-    { "start": 38.5, "end": 44.1, "duration": 5.6, "max_words": 14 },
-    { "start": 67.2, "end": 73.8, "duration": 6.6, "max_words": 17 },
-    { "start": 102.4, "end": 109.0, "duration": 6.6, "max_words": 17 },
-    { "start": 145.8, "end": 153.2, "duration": 7.4, "max_words": 18 }
-  ],
-  "speech_regions": [
-    { "start": 0.0,   "end": 14.1 },
-    { "start": 21.9,  "end": 38.4 },
-    { "start": 44.2,  "end": 67.1 },
-    { "start": 73.9,  "end": 102.3 },
-    { "start": 109.1, "end": 145.7 },
-    { "start": 153.3, "end": 180.0 }
-  ],
   "results": [
     {
-      "rule_id": "DCMP-CAP-03",
+      "rule_id": "FCC-ACC-01",
       "status": "fail",
-      "message": "Caption reading speed 240 wpm exceeds 160 wpm educational / near-verbatim cap (DCMP Captioning Key, Standard 3).",
-      "timecode": 23.4,
-      "citation": "The Described and Captioned Media Program Captioning Key states: 'Reading speed should not exceed 160 wpm for educational material and 225 wpm as an absolute maximum for adult material.'",
-      "sarif_level": "error",
-      "confidence": 1.0,
-      "human_review_required": false
-    },
-    {
-      "rule_id": "NFLX-LEN-01",
-      "status": "fail",
-      "message": "Caption line length 44 characters exceeds 42-character Netflix limit (Netflix Timed Text Style Guide, Section 2.3).",
-      "timecode": 41.2,
-      "citation": "Netflix Timed Text Style Guide: 'Maximum 42 characters per line for English.'",
-      "sarif_level": "error",
-      "confidence": 1.0,
-      "human_review_required": false
-    },
-    {
-      "rule_id": "DCMP-CAP-04",
-      "status": "fail",
-      "message": "Caption display duration 1.2s is below the 2-second minimum (DCMP Captioning Key, Standard 4).",
-      "timecode": 57.8,
-      "citation": "DCMP Captioning Key Standard 4: 'A caption should be displayed for a minimum of 2 seconds.'",
-      "sarif_level": "error",
-      "confidence": 1.0,
-      "human_review_required": false
-    },
-    {
-      "rule_id": "DCMP-CAP-05",
-      "status": "fail",
-      "message": "Sound effect '[door creaks]' lacks a bracketed source identifier (DCMP Captioning Key, Standard 5).",
-      "timecode": 72.1,
-      "citation": "DCMP Captioning Key Standard 5: 'Sound effects should be identified with the source in brackets, e.g. [DOOR CREAKS].'",
-      "sarif_level": "error",
-      "confidence": 1.0,
-      "human_review_required": false
+      "message": "NER score 89.93% (band 89.93%\u201394.6%) is below the 98% threshold. Note: 2 low-confidence region(s) flagged for human review.",
+      "timecode": null,
+      "citation": "ther information or text.\nThe NER (Net Error Rate) accuracy standard is: (total words - errors) / total words.\nPrograms with a score of 98 percent or higher are deemed accurate.",
+      "sarif_level": "warning",
+      "confidence": 0.8993,
+      "human_review_required": true
     },
     {
       "rule_id": "FCC-SYN-01",
-      "status": "fail",
-      "message": "Caption cue at 89.4s is 2.1s ahead of its speech region onset (FCC 47 CFR 79.1(j)(2)(ii): synchronous).",
-      "timecode": 89.4,
-      "citation": "FCC 47 CFR 79.1(j)(2)(ii): Captions must be 'synchronous with the audio of the programming to the greatest extent possible.'",
-      "sarif_level": "error",
-      "confidence": 1.0,
+      "status": "pass",
+      "message": "All 16 caption cues overlap detected speech regions.",
+      "timecode": null,
+      "citation": "47 CFR 79.1(j)(2) Caption quality standards.\nCaptioning quality is defined by four factors:\n(i) Accuracy: Captions must match the spoken words in the dialogue and convey\nbackground noises and other sounds to the fullest extent possible.\n(ii) Synchronicity: Captions must be displayed to coincide with their\ncorresponding spoken words and sounds to the greatest extent possible.\n(iii) Program complete",
+      "sarif_level": "warning",
+      "confidence": null,
       "human_review_required": false
     },
     {
       "rule_id": "FCC-CMP-01",
       "status": "fail",
-      "message": "Caption coverage drops to 0% for a 4.2-second spoken segment at 118.0s (FCC 47 CFR 79.1(j)(2)(iii): complete).",
-      "timecode": 118.0,
-      "citation": "FCC 47 CFR 79.1(j)(2)(iii): Captions must be 'complete, meaning they include all dialogue and audible sounds.'",
+      "message": "150 speech region(s) have no caption coverage. First uncovered region: 37.80s\u201337.83s.",
+      "timecode": 37.8,
+      "citation": "47 CFR 79.1(j)(2) Caption quality standards.\nCaptioning quality is defined by four factors:\n(i) Accuracy: Captions must match the spoken words in the dialogue and convey\nbackground noises and other sounds to the fullest extent possible.\n(ii) Synchronicity: Captions must be displayed to coincide with their\ncorresponding spoken words and sounds to the greatest extent possible.\n(iii) Program complete",
       "sarif_level": "error",
-      "confidence": 1.0,
+      "confidence": null,
       "human_review_required": false
     },
     {
       "rule_id": "FCC-PLC-01",
-      "status": "fail",
-      "message": "Two caption cues overlap at 134.7s (FCC 47 CFR 79.1(j)(2)(iv): appropriately placed).",
-      "timecode": 134.7,
-      "citation": "FCC 47 CFR 79.1(j)(2)(iv): Captions must be 'appropriately placed so as not to obscure other important visual information.'",
+      "status": "pass",
+      "message": "No overlapping caption cues detected.",
+      "timecode": null,
+      "citation": "47 CFR 79.1(j)(2) Caption quality standards.\nCaptioning quality is defined by four factors:\n(i) Accuracy: Captions must match the spoken words in the dialogue and convey\nbackground noises and other sounds to the fullest extent possible.\n(ii) Synchronicity: Captions must be displayed to coincide with their\ncorresponding spoken words and sounds to the greatest extent possible.\n(iii) Program complete",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "WCAG-122-01",
+      "status": "pass",
+      "message": "Caption track present with 16 cues.",
+      "timecode": null,
+      "citation": "WCAG 2.2 Success Criterion 1.2.2 Captions (Prerecorded) - Level A\nCaptions are provided for all prerecorded audio content in synchronized media,\nexcept when the media is a media alternative for text and is clearly labeled as such.\nCaptions include all dialogue and important sound effects.",
       "sarif_level": "error",
-      "confidence": 1.0,
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "WCAG-125-01",
+      "status": "pass",
+      "message": "Audio description track present with 3 cues.",
+      "timecode": null,
+      "citation": "WCAG 2.2 Success Criterion 1.2.5 Audio Description (Prerecorded) - Level AA\nAudio description is provided for all prerecorded video content in synchronized media.\nThe audio description provides information about actions, characters, scene changes,\nand on-screen text that are important to understanding the content.",
+      "sarif_level": "error",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "WCAG-125-02",
+      "status": "flag",
+      "message": "Audio description semantic sufficiency requires human review. Automatable checks (presence, timing, structure) are covered by other rules. SC 1.2.5 sufficiency \u2014 whether descriptions convey important visual information \u2014 cannot be machine-verified per W3C ACT guidance.",
+      "timecode": null,
+      "citation": "WCAG 2.2 Success Criterion 1.2.5 Audio Description (Prerecorded) - Level AA\nAudio description is provided for all prerecorded video content in synchronized media.\nThe audio description provides information about actions, characters, scene changes,\nand on-screen text that are important to understanding the content.",
+      "sarif_level": "note",
+      "confidence": null,
+      "human_review_required": true
+    },
+    {
+      "rule_id": "DCMP-CAP-01",
+      "status": "fail",
+      "message": "Line exceeds 32 chars (45 chars) at 31.50s: 'I already lost a whole hour of sleep on this.'",
+      "timecode": 31.5,
+      "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-01",
+      "status": "fail",
+      "message": "Line exceeds 32 chars (53 chars) at 168.60s: 'Look here comes one of them right now, come on hurry.'",
+      "timecode": 168.6,
+      "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-02",
+      "status": "pass",
+      "message": "All captions have 2 or fewer lines.",
+      "timecode": null,
+      "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-03",
+      "status": "fail",
+      "message": "Caption at 168.60s exceeds 225 wpm (660 wpm). Text: 'Look here comes one of them right now, come on hur'",
+      "timecode": 168.6,
+      "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-04",
+      "status": "fail",
+      "message": "Caption at 36.90s displayed for 0.80s (minimum 2.0s). Text: 'There it is.'",
+      "timecode": 36.9,
+      "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-04",
+      "status": "fail",
+      "message": "Caption at 168.60s displayed for 1.00s (minimum 2.0s). Text: 'Look here comes one of them right now, come on hur'",
+      "timecode": 168.6,
+      "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-05",
+      "status": "pass",
+      "message": "No unbracketed sound-effect captions detected.",
+      "timecode": null,
+      "citation": "Minimum display time: Captions should appear on screen for a minimum of 2 seconds.\nSound effects: Use brackets to identify sound sources: [THUNDER], [DOG BARKING].\nNever describe sounds in the past tense; sounds are described as they occur.\nItalics and capitalization indicate vocal emphasis.",
+      "sarif_level": "note",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-06",
+      "status": "pass",
+      "message": "No past-tense sound captions detected.",
+      "timecode": null,
+      "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "sarif_level": "note",
+      "confidence": null,
       "human_review_required": false
     },
     {
       "rule_id": "DCMP-DESC-01",
-      "status": "fail",
-      "message": "AD line at gap 67.2s uses past tense ('walked') — DCMP requires present tense (DCMP Description Key, Standard 1).",
-      "timecode": 67.2,
-      "citation": "DCMP Description Key Standard 1: 'Use present tense when describing action on screen.'",
-      "sarif_level": "error",
-      "confidence": 1.0,
+      "status": "pass",
+      "message": "No past-tense or passive-voice AD lines detected.",
+      "timecode": null,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "note",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-DESC-02",
+      "status": "pass",
+      "message": "No first/second person pronouns found in AD.",
+      "timecode": null,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "note",
+      "confidence": null,
       "human_review_required": false
     },
     {
       "rule_id": "DCMP-DESC-03",
-      "status": "flag",
-      "message": "AD line contains possible cinematic jargon ('low-angle shot') — review for objectivity (DCMP Description Key, Standard 3).",
-      "timecode": 67.2,
-      "citation": "DCMP Description Key Standard 3: 'Avoid technical film terms and jargon that might not be understood by the listener.'",
+      "status": "pass",
+      "message": "No premature jargon or cinematic terms detected in AD.",
+      "timecode": null,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "note",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-DESC-04",
+      "status": "fail",
+      "message": "AD at 46.00s has 10 words but gap (3.93s) fits only 9 words at 150 wpm.",
+      "timecode": 46.0,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
       "sarif_level": "warning",
-      "confidence": 0.74,
-      "human_review_required": true
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-DESC-04",
+      "status": "fail",
+      "message": "AD at 157.90s has 8 words but gap (2.58s) fits only 6 words at 150 wpm.",
+      "timecode": 157.9,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
     },
     {
       "rule_id": "DCMP-DESC-05",
       "status": "fail",
-      "message": "AD line at 102.4s overlaps speech region by 1.8s (DCMP Description Key, Standard 5).",
-      "timecode": 102.4,
-      "citation": "DCMP Description Key Standard 5: 'Audio description must not overlap dialogue or other essential audio.'",
+      "message": "AD at 39.60s\u201344.40s overlaps a detected speech region. Text: 'A sedan drove slowly along the cemetery road.'",
+      "timecode": 39.6,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
       "sarif_level": "error",
-      "confidence": 1.0,
+      "confidence": null,
       "human_review_required": false
     },
     {
-      "rule_id": "FCC-ACC-01",
+      "rule_id": "DCMP-DESC-05",
+      "status": "fail",
+      "message": "AD at 46.00s\u201349.20s overlaps a detected speech region. Text: 'In a dolly shot, the camera creeps toward the graves.'",
+      "timecode": 46.0,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "error",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-DESC-05",
+      "status": "fail",
+      "message": "AD at 157.90s\u2013160.10s overlaps a detected speech region. Text: 'A figure lurches out from behind the trees.'",
+      "timecode": 157.9,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "error",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-DESC-06",
       "status": "flag",
-      "message": "NER caption accuracy 94.1% (band 92.1%\u201396.1%) is below the 98% broadcast threshold but low-confidence ASR regions present — flagged for human review, not auto-failed (Koenecke et al., PNAS 2020 ASR disparity).",
-      "timecode": null,
-      "citation": "FCC 47 CFR 79.1(j)(2)(i): Captions must be 'accurate' — (total words minus errors) / total words. Band reflects ASR confidence; regions below threshold are flagged for human review per AGENTS.md responsible-AI constraint.",
-      "sarif_level": "warning",
-      "confidence": 0.87,
+      "message": "AD at 39.60s may be a sentence fragment (no verb detected). Text: 'A sedan drove slowly along the cemetery road.'",
+      "timecode": 39.6,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "note",
+      "confidence": null,
       "human_review_required": true
     },
     {
-      "rule_id": "WCAG-1.2.2",
-      "status": "pass",
-      "message": "Captions present for all pre-recorded audio content (WCAG 2.2 SC 1.2.2, Level A).",
-      "timecode": null,
-      "citation": "WCAG 2.2 SC 1.2.2: Captions are provided for all prerecorded audio content in synchronized media.",
+      "rule_id": "DCMP-DESC-06",
+      "status": "flag",
+      "message": "AD at 46.00s may be a sentence fragment (no verb detected). Text: 'In a dolly shot, the camera creeps toward the graves.'",
+      "timecode": 46.0,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
       "sarif_level": "note",
-      "confidence": 1.0,
+      "confidence": null,
+      "human_review_required": true
+    },
+    {
+      "rule_id": "DCMP-DESC-06",
+      "status": "flag",
+      "message": "AD at 157.90s may be a sentence fragment (no verb detected). Text: 'A figure lurches out from behind the trees.'",
+      "timecode": 157.9,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "note",
+      "confidence": null,
+      "human_review_required": true
+    },
+    {
+      "rule_id": "DCMP-DESC-07",
+      "status": "pass",
+      "message": "No obvious subjectivity indicators found in AD (human review still recommended).",
+      "timecode": null,
+      "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "sarif_level": "note",
+      "confidence": null,
       "human_review_required": false
     },
     {
-      "rule_id": "WCAG-1.2.5",
-      "status": "pass",
-      "message": "Audio description sidecar file present for pre-recorded video (WCAG 2.2 SC 1.2.5, Level AA).",
-      "timecode": null,
-      "citation": "WCAG 2.2 SC 1.2.5: Audio description is provided for all prerecorded video content in synchronized media.",
-      "sarif_level": "note",
-      "confidence": 1.0,
+      "rule_id": "NFLX-CPS-01",
+      "status": "fail",
+      "message": "Caption at 168.60s exceeds 20.0 CPS (43.0 CPS, adult profile). Text: 'Look here comes one of them right now, come on hur'",
+      "timecode": 168.6,
+      "citation": "Netflix Timed Text Style Guide (TTSG) - English.\nReading speed: Maximum 20 characters per second (CPS) for adult content.\nMaximum 17 CPS for children's content.\nLine length: Maximum 42 characters per line.\nLine count: Maximum 2 lines per event.\nMinimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "NFLX-LEN-01",
+      "status": "fail",
+      "message": "Caption at 31.50s: line 45 chars: 'I already lost a whole hour of sleep on this.'",
+      "timecode": 31.5,
+      "citation": "e event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.\nFrame rate: Typically 23.976, 24, or 25 fps depending on the content locale.\nCharacter encoding: UTF-8.",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "NFLX-LEN-01",
+      "status": "fail",
+      "message": "Caption at 168.60s: line 53 chars: 'Look here comes one of them right now, come on hurry.'",
+      "timecode": 168.6,
+      "citation": "Netflix Timed Text Style Guide (TTSG) - English.\nReading speed: Maximum 20 characters per second (CPS) for adult content.\nMaximum 17 CPS for children's content.\nLine length: Maximum 42 characters per line.\nLine count: Maximum 2 lines per event.\nMinimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum",
+      "sarif_level": "warning",
+      "confidence": null,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "NFLX-DUR-01",
+      "status": "fail",
+      "message": "Caption at 36.90s: duration 0.800s below minimum 0.833s",
+      "timecode": 36.9,
+      "citation": "e event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.\nFrame rate: Typically 23.976, 24, or 25 fps depending on the content locale.\nCharacter encoding: UTF-8.",
+      "sarif_level": "warning",
+      "confidence": null,
       "human_review_required": false
     }
-  ]
+  ],
+  "ner": {
+    "ner_score": 0.8993,
+    "band_low": 0.8993,
+    "band_high": 0.946,
+    "n_words": 278,
+    "n_errors": 28,
+    "recognition_errors": 2,
+    "edition_errors": 17,
+    "asr_derived": true,
+    "low_confidence_regions": [
+      {
+        "ref_words": [
+          "hey"
+        ],
+        "hyp_words": [],
+        "confidence": 0.1117325946688652,
+        "chunk_type": "delete"
+      },
+      {
+        "ref_words": [
+          "of",
+          "here",
+          "johnny",
+          "im",
+          "getting",
+          "out",
+          "of",
+          "here"
+        ],
+        "hyp_words": [],
+        "confidence": 0.3627079443540424,
+        "chunk_type": "delete"
+      }
+    ]
+  },
+  "gaps": [
+    {
+      "start": 39.06,
+      "end": 44.94
+    },
+    {
+      "start": 45.69,
+      "end": 49.62
+    },
+    {
+      "start": 157.74,
+      "end": 160.32
+    }
+  ],
+  "speech_regions": [
+    {
+      "start": 0.0,
+      "end": 34.35
+    },
+    {
+      "start": 34.38,
+      "end": 37.77
+    },
+    {
+      "start": 37.8,
+      "end": 37.83
+    },
+    {
+      "start": 38.07,
+      "end": 38.28
+    },
+    {
+      "start": 38.31,
+      "end": 38.49
+    },
+    {
+      "start": 38.64,
+      "end": 38.67
+    },
+    {
+      "start": 38.7,
+      "end": 38.73
+    },
+    {
+      "start": 38.76,
+      "end": 39.06
+    },
+    {
+      "start": 39.12,
+      "end": 39.21
+    },
+    {
+      "start": 39.48,
+      "end": 39.51
+    },
+    {
+      "start": 39.81,
+      "end": 39.84
+    },
+    {
+      "start": 39.87,
+      "end": 39.96
+    },
+    {
+      "start": 40.41,
+      "end": 40.44
+    },
+    {
+      "start": 40.62,
+      "end": 40.68
+    },
+    {
+      "start": 41.94,
+      "end": 41.97
+    },
+    {
+      "start": 42.06,
+      "end": 42.09
+    },
+    {
+      "start": 42.66,
+      "end": 42.69
+    },
+    {
+      "start": 42.72,
+      "end": 42.75
+    },
+    {
+      "start": 42.9,
+      "end": 42.96
+    },
+    {
+      "start": 43.17,
+      "end": 43.29
+    },
+    {
+      "start": 43.32,
+      "end": 43.35
+    },
+    {
+      "start": 43.44,
+      "end": 43.53
+    },
+    {
+      "start": 43.56,
+      "end": 43.62
+    },
+    {
+      "start": 43.65,
+      "end": 43.71
+    },
+    {
+      "start": 43.8,
+      "end": 43.83
+    },
+    {
+      "start": 43.86,
+      "end": 43.89
+    },
+    {
+      "start": 44.1,
+      "end": 44.13
+    },
+    {
+      "start": 44.22,
+      "end": 44.31
+    },
+    {
+      "start": 44.34,
+      "end": 44.46
+    },
+    {
+      "start": 44.49,
+      "end": 44.55
+    },
+    {
+      "start": 44.58,
+      "end": 44.61
+    },
+    {
+      "start": 44.64,
+      "end": 44.67
+    },
+    {
+      "start": 44.7,
+      "end": 44.76
+    },
+    {
+      "start": 44.82,
+      "end": 44.91
+    },
+    {
+      "start": 44.94,
+      "end": 45.69
+    },
+    {
+      "start": 45.72,
+      "end": 45.93
+    },
+    {
+      "start": 45.96,
+      "end": 45.99
+    },
+    {
+      "start": 46.02,
+      "end": 46.14
+    },
+    {
+      "start": 46.26,
+      "end": 46.35
+    },
+    {
+      "start": 46.38,
+      "end": 46.47
+    },
+    {
+      "start": 46.5,
+      "end": 46.62
+    },
+    {
+      "start": 46.68,
+      "end": 46.71
+    },
+    {
+      "start": 46.74,
+      "end": 46.8
+    },
+    {
+      "start": 46.83,
+      "end": 46.98
+    },
+    {
+      "start": 47.04,
+      "end": 47.07
+    },
+    {
+      "start": 47.16,
+      "end": 47.37
+    },
+    {
+      "start": 47.4,
+      "end": 47.46
+    },
+    {
+      "start": 47.49,
+      "end": 47.55
+    },
+    {
+      "start": 47.58,
+      "end": 47.61
+    },
+    {
+      "start": 47.67,
+      "end": 47.79
+    },
+    {
+      "start": 47.85,
+      "end": 47.88
+    },
+    {
+      "start": 47.91,
+      "end": 48.0
+    },
+    {
+      "start": 48.06,
+      "end": 48.09
+    },
+    {
+      "start": 48.24,
+      "end": 48.3
+    },
+    {
+      "start": 48.33,
+      "end": 48.36
+    },
+    {
+      "start": 48.39,
+      "end": 48.51
+    },
+    {
+      "start": 48.54,
+      "end": 48.66
+    },
+    {
+      "start": 48.72,
+      "end": 48.75
+    },
+    {
+      "start": 48.81,
+      "end": 48.87
+    },
+    {
+      "start": 48.96,
+      "end": 49.11
+    },
+    {
+      "start": 49.23,
+      "end": 49.26
+    },
+    {
+      "start": 49.29,
+      "end": 49.32
+    },
+    {
+      "start": 49.35,
+      "end": 49.41
+    },
+    {
+      "start": 49.47,
+      "end": 49.59
+    },
+    {
+      "start": 49.62,
+      "end": 49.95
+    },
+    {
+      "start": 50.1,
+      "end": 50.13
+    },
+    {
+      "start": 50.16,
+      "end": 50.46
+    },
+    {
+      "start": 50.49,
+      "end": 51.33
+    },
+    {
+      "start": 51.36,
+      "end": 51.81
+    },
+    {
+      "start": 51.84,
+      "end": 52.26
+    },
+    {
+      "start": 52.29,
+      "end": 52.53
+    },
+    {
+      "start": 52.56,
+      "end": 52.59
+    },
+    {
+      "start": 52.65,
+      "end": 52.74
+    },
+    {
+      "start": 53.01,
+      "end": 53.04
+    },
+    {
+      "start": 53.13,
+      "end": 53.19
+    },
+    {
+      "start": 53.25,
+      "end": 53.28
+    },
+    {
+      "start": 53.4,
+      "end": 53.49
+    },
+    {
+      "start": 53.52,
+      "end": 53.58
+    },
+    {
+      "start": 53.67,
+      "end": 53.73
+    },
+    {
+      "start": 54.12,
+      "end": 54.15
+    },
+    {
+      "start": 54.48,
+      "end": 55.26
+    },
+    {
+      "start": 55.32,
+      "end": 56.28
+    },
+    {
+      "start": 56.34,
+      "end": 56.64
+    },
+    {
+      "start": 58.17,
+      "end": 58.83
+    },
+    {
+      "start": 58.89,
+      "end": 60.0
+    },
+    {
+      "start": 60.06,
+      "end": 60.33
+    },
+    {
+      "start": 60.63,
+      "end": 60.72
+    },
+    {
+      "start": 60.78,
+      "end": 62.19
+    },
+    {
+      "start": 62.22,
+      "end": 62.49
+    },
+    {
+      "start": 62.52,
+      "end": 62.85
+    },
+    {
+      "start": 63.6,
+      "end": 63.78
+    },
+    {
+      "start": 63.84,
+      "end": 64.23
+    },
+    {
+      "start": 64.29,
+      "end": 64.86
+    },
+    {
+      "start": 64.89,
+      "end": 64.98
+    },
+    {
+      "start": 65.52,
+      "end": 65.85
+    },
+    {
+      "start": 65.88,
+      "end": 66.06
+    },
+    {
+      "start": 66.09,
+      "end": 66.39
+    },
+    {
+      "start": 66.42,
+      "end": 66.69
+    },
+    {
+      "start": 66.72,
+      "end": 66.84
+    },
+    {
+      "start": 66.87,
+      "end": 67.02
+    },
+    {
+      "start": 67.2,
+      "end": 67.71
+    },
+    {
+      "start": 68.49,
+      "end": 69.21
+    },
+    {
+      "start": 69.27,
+      "end": 69.51
+    },
+    {
+      "start": 69.54,
+      "end": 69.96
+    },
+    {
+      "start": 70.02,
+      "end": 70.11
+    },
+    {
+      "start": 70.14,
+      "end": 70.2
+    },
+    {
+      "start": 70.23,
+      "end": 73.41
+    },
+    {
+      "start": 73.47,
+      "end": 73.53
+    },
+    {
+      "start": 73.56,
+      "end": 73.62
+    },
+    {
+      "start": 73.65,
+      "end": 74.19
+    },
+    {
+      "start": 74.22,
+      "end": 74.94
+    },
+    {
+      "start": 75.0,
+      "end": 75.66
+    },
+    {
+      "start": 75.69,
+      "end": 76.8
+    },
+    {
+      "start": 76.83,
+      "end": 76.95
+    },
+    {
+      "start": 77.01,
+      "end": 79.5
+    },
+    {
+      "start": 79.53,
+      "end": 79.89
+    },
+    {
+      "start": 79.95,
+      "end": 80.01
+    },
+    {
+      "start": 80.07,
+      "end": 80.1
+    },
+    {
+      "start": 80.13,
+      "end": 80.16
+    },
+    {
+      "start": 80.22,
+      "end": 80.34
+    },
+    {
+      "start": 80.37,
+      "end": 80.49
+    },
+    {
+      "start": 80.55,
+      "end": 80.58
+    },
+    {
+      "start": 80.64,
+      "end": 81.03
+    },
+    {
+      "start": 81.06,
+      "end": 81.66
+    },
+    {
+      "start": 81.72,
+      "end": 81.78
+    },
+    {
+      "start": 81.81,
+      "end": 81.99
+    },
+    {
+      "start": 82.02,
+      "end": 104.49
+    },
+    {
+      "start": 104.79,
+      "end": 112.5
+    },
+    {
+      "start": 112.53,
+      "end": 112.59
+    },
+    {
+      "start": 113.76,
+      "end": 113.79
+    },
+    {
+      "start": 113.97,
+      "end": 114.0
+    },
+    {
+      "start": 114.06,
+      "end": 114.27
+    },
+    {
+      "start": 114.33,
+      "end": 126.66
+    },
+    {
+      "start": 126.72,
+      "end": 126.78
+    },
+    {
+      "start": 126.81,
+      "end": 127.92
+    },
+    {
+      "start": 127.95,
+      "end": 132.36
+    },
+    {
+      "start": 132.39,
+      "end": 132.45
+    },
+    {
+      "start": 132.57,
+      "end": 132.99
+    },
+    {
+      "start": 133.02,
+      "end": 133.29
+    },
+    {
+      "start": 133.32,
+      "end": 133.56
+    },
+    {
+      "start": 133.59,
+      "end": 136.74
+    },
+    {
+      "start": 136.77,
+      "end": 137.4
+    },
+    {
+      "start": 137.43,
+      "end": 138.36
+    },
+    {
+      "start": 138.42,
+      "end": 138.96
+    },
+    {
+      "start": 139.35,
+      "end": 146.07
+    },
+    {
+      "start": 146.1,
+      "end": 146.76
+    },
+    {
+      "start": 146.79,
+      "end": 147.06
+    },
+    {
+      "start": 147.42,
+      "end": 147.48
+    },
+    {
+      "start": 147.51,
+      "end": 147.57
+    },
+    {
+      "start": 147.63,
+      "end": 147.99
+    },
+    {
+      "start": 148.02,
+      "end": 148.23
+    },
+    {
+      "start": 148.26,
+      "end": 148.83
+    },
+    {
+      "start": 148.92,
+      "end": 149.04
+    },
+    {
+      "start": 149.46,
+      "end": 149.55
+    },
+    {
+      "start": 149.58,
+      "end": 149.82
+    },
+    {
+      "start": 149.85,
+      "end": 149.94
+    },
+    {
+      "start": 149.97,
+      "end": 150.69
+    },
+    {
+      "start": 150.87,
+      "end": 150.9
+    },
+    {
+      "start": 151.2,
+      "end": 151.32
+    },
+    {
+      "start": 151.35,
+      "end": 151.38
+    },
+    {
+      "start": 151.5,
+      "end": 151.53
+    },
+    {
+      "start": 151.71,
+      "end": 151.98
+    },
+    {
+      "start": 152.01,
+      "end": 152.07
+    },
+    {
+      "start": 152.1,
+      "end": 152.34
+    },
+    {
+      "start": 152.37,
+      "end": 152.61
+    },
+    {
+      "start": 152.7,
+      "end": 152.82
+    },
+    {
+      "start": 152.85,
+      "end": 152.88
+    },
+    {
+      "start": 152.91,
+      "end": 153.03
+    },
+    {
+      "start": 153.06,
+      "end": 153.75
+    },
+    {
+      "start": 153.78,
+      "end": 154.59
+    },
+    {
+      "start": 154.62,
+      "end": 154.77
+    },
+    {
+      "start": 154.83,
+      "end": 155.01
+    },
+    {
+      "start": 155.07,
+      "end": 155.25
+    },
+    {
+      "start": 155.28,
+      "end": 155.49
+    },
+    {
+      "start": 155.52,
+      "end": 156.45
+    },
+    {
+      "start": 156.51,
+      "end": 157.74
+    },
+    {
+      "start": 158.28,
+      "end": 158.31
+    },
+    {
+      "start": 158.4,
+      "end": 158.43
+    },
+    {
+      "start": 158.73,
+      "end": 158.79
+    },
+    {
+      "start": 158.82,
+      "end": 158.91
+    },
+    {
+      "start": 159.0,
+      "end": 159.21
+    },
+    {
+      "start": 159.3,
+      "end": 159.42
+    },
+    {
+      "start": 159.48,
+      "end": 159.54
+    },
+    {
+      "start": 160.02,
+      "end": 160.26
+    },
+    {
+      "start": 160.32,
+      "end": 160.8
+    },
+    {
+      "start": 160.86,
+      "end": 160.92
+    },
+    {
+      "start": 161.07,
+      "end": 161.1
+    },
+    {
+      "start": 161.22,
+      "end": 161.4
+    },
+    {
+      "start": 161.43,
+      "end": 162.42
+    },
+    {
+      "start": 162.45,
+      "end": 163.11
+    },
+    {
+      "start": 163.32,
+      "end": 163.35
+    },
+    {
+      "start": 163.41,
+      "end": 164.46
+    },
+    {
+      "start": 164.52,
+      "end": 175.5
+    },
+    {
+      "start": 175.53,
+      "end": 175.56
+    },
+    {
+      "start": 175.59,
+      "end": 175.62
+    },
+    {
+      "start": 175.68,
+      "end": 176.22
+    },
+    {
+      "start": 176.31,
+      "end": 180.0
+    }
+  ],
+  "error_count": 4,
+  "warning_count": 12,
+  "flag_count": 4,
+  "report_id": "demo-notld-2026"
 }
