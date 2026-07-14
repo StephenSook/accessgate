@@ -135,7 +135,7 @@ Every row below is wired in the shipped code, not aspirational. The wiring colum
 
 | IBM Tool | Role | Wiring |
 |---|---|---|
-| **IBM Bob** | Wrote all engine and frontend product code; parallel subagents; custom mode; conformance Skill; Plan specs; two /review audits (SARIF + OSCAL); self-referential MCP loop | Primary development tool |
+| **IBM Bob** | Primary development tool: authored the conformance engine, the test suite, and the frontend; parallel subagents; custom mode; conformance Skill; Plan specs; two /review audits (SARIF + OSCAL); self-referential MCP loop. Deployment and later Granite Speech wiring / UI refinements were finished with other tooling after Bob credits ran out. | Primary development tool |
 | **Granite Speech 3.3-2b** | High-accuracy reference transcript feeding the NER scorer | Wired, local `transformers` (`src/granite_speech.py`, opt-in `ACCESSGATE_GRANITE_SPEECH=1`; faster-whisper is the default reference because Granite Speech is ~20x realtime on CPU) |
 | **Granite Vision 3.2 2b** | Drafts the AD fix on a failing gap | Wired, local Ollama (`src/generative_fix.py`) |
 | **Granite Guardian 3 2b** | Screens generated AD for content safety before the row flips green | Wired, local Ollama (`src/generative_fix.py`) |

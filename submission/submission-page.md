@@ -87,14 +87,16 @@ claim against the code.
 
 ## How IBM Bob was used
 
-IBM Bob wrote the engine and frontend product code end to end: it authored the
-23 rule evaluators, the NER scorer, the timing engine, the RAG layer, the SARIF
-and OSCAL exporters, and the React interface. Bob ran parallel subagents for the
-caption, audio-description, and report paths, used a custom
-accessibility-compliance-engineer mode, authored a conformance rule-authoring
-Skill, produced Plan-mode specifications, and ran two /review passes that emitted
-a SARIF audit and an OSCAL audit. Bob also consumed the project's own MCP server
-during development, a self-referential loop. Evidence lives in `.bob/`,
+IBM Bob was the primary development tool. It authored the conformance engine
+(the 23 rule evaluators, the NER scorer, the timing engine, the RAG layer, the
+SARIF and OSCAL exporters), the test suite, and the React frontend. Bob ran
+parallel subagents for the caption, audio-description, and report paths, used a
+custom accessibility-compliance-engineer mode, authored a conformance
+rule-authoring Skill, produced Plan-mode specifications, and ran two /review
+passes that emitted a SARIF audit and an OSCAL audit. Bob also consumed the
+project's own MCP server during development, a self-referential loop. Deployment,
+the Granite Speech wiring, and later honesty and UI refinements were finished
+with other tooling after Bob credits ran out. Evidence lives in `.bob/`,
 `security/review-audit-*.{sarif,oscal.json}`, and the `plan/` specs.
 
 ## Real-world impact

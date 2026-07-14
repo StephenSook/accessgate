@@ -8,7 +8,7 @@ AccessGate is a local, explainable conformance pre-check engine for film accessi
 
 ## Hard integrity constraints (do not violate)
 
-- All product code is written through IBM Bob. No other AI coding assistant touches this repo.
+- IBM Bob is the primary development tool: it authored the conformance engine, the test suite, and the frontend. Deployment, the Granite Speech wiring, and later honesty and UI refinements were finished with other tooling after Bob credits ran out. Do not claim Bob is the exclusive author of every line.
 - The locked product claim is "conformance pre-check: automatable checks plus human-judgment flags." Never write "conformance checker" or "certifier" in code comments, UI strings, docs, or the README.
 - Every rule the engine implements must cite its source (standard, section, verbatim short quote). Citations are retrieved from the parsed standard text via the RAG layer, never hardcoded from memory.
 - Never auto-fail a caption on ASR evidence alone. ASR carries measured demographic disparity (Koenecke et al., PNAS 2020: average WER 0.35 for Black speakers vs 0.19 for white speakers across five commercial systems including IBM). ASR-derived accuracy is reference-relative and confidence-banded, and low-confidence regions are flagged for human review rather than penalized.

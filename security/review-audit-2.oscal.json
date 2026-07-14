@@ -11,7 +11,7 @@
           "uuid": "party-001",
           "type": "organization",
           "name": "AccessGate Project",
-          "remarks": "IBM AI Builders Challenge, July 2026. All product code written through IBM Bob."
+          "remarks": "IBM AI Builders Challenge, July 2026. IBM Bob was the primary development tool (engine, tests, frontend); deployment and later refinements finished with other tooling."
         }
       ],
       "roles": [

@@ -19,7 +19,7 @@ customModes:
       detection and timing engine, the audio-description structure validator, the
       report schema, or the SARIF and OSCAL exporters.
     customInstructions: >
-      All product code is written through Bob. Never write "conformance checker"
+      Bob is the primary development tool for this repo's product code. Never write "conformance checker"
       or "certifier"; the product is a conformance pre-check (automatable checks
       plus human-judgment flags). Every rule must cite its source. Never auto-fail
       a caption on ASR evidence alone; ASR-derived accuracy is reference-relative,

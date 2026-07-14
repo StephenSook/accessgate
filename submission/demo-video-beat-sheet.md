@@ -24,7 +24,7 @@
 
 **Screen:** Show the notld_broken.srt and notld_broken_ad.vtt files side by side.
 
-"These are the broken files we planted 10 violations into. Let's run the check."
+"These are the caption and audio-description files for a public-domain film segment, with realistic conformance defects. Let's run the check."
 
 ---
 
@@ -37,7 +37,7 @@
 
 **Screen:** Click DCMP-CAP-03 row to expand — show the verbatim citation in the blockquote.
 
-"And the NER caption score: 94.1 percent, with a confidence band — flagged for human review, never auto-failed. Because ASR carries measured racial disparity that makes a hard fail unjust."
+"And the NER caption score comes back below the 98 percent broadcast threshold, with a confidence band, flagged for human review, never auto-failed. Because ASR carries measured racial disparity that makes a hard fail unjust." (Read the actual score shown on screen.)
 
 ---
 
@@ -63,7 +63,7 @@
 **Screen:** Show .bob/custom_modes.yaml + .bob/skills/conformance/SKILL.md in the editor.
 
 **Narration:**
-"Every line of product code was written through IBM Bob. We used a custom accessibility-compliance-engineer mode, a DCMP/FCC/Netflix rule-authoring skill, Plan-mode specs committed to the repo, two slash-review audits emitting SARIF and OSCAL, and the self-referential MCP loop — the product's own MCP server consumed by Bob during development."
+"IBM Bob was the primary development tool. It authored the conformance engine, the test suite, and the frontend, using a custom accessibility-compliance-engineer mode, a DCMP/FCC/Netflix rule-authoring skill, Plan-mode specs committed to the repo, two slash-review audits emitting SARIF and OSCAL, and the self-referential MCP loop, the product's own MCP server consumed by Bob during development."
 
 **Screen:** Show security/review-audit-1.sarif and security/review-audit-2.oscal.json. Show Bobalytics screenshot.
 
