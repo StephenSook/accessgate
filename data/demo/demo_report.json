@@ -1,0 +1,167 @@
+{
+  "report_id": "demo-notld-2026",
+  "film_path": "data/demo/notld_segment.mp4",
+  "caption_path": "data/demo/notld_broken.srt",
+  "ad_path": "data/demo/notld_broken_ad.vtt",
+  "profile": "netflix",
+  "error_count": 7,
+  "warning_count": 1,
+  "flag_count": 2,
+  "ner": {
+    "ner_score": 0.941,
+    "band_low": 0.921,
+    "band_high": 0.961,
+    "n_words": 272,
+    "recognition_errors": 6,
+    "edition_errors": 10,
+    "passes_98_threshold": false,
+    "straddles_threshold": false
+  },
+  "gaps": [
+    { "start": 14.2, "end": 21.8, "duration": 7.6, "max_words": 19 },
+    { "start": 38.5, "end": 44.1, "duration": 5.6, "max_words": 14 },
+    { "start": 67.2, "end": 73.8, "duration": 6.6, "max_words": 17 },
+    { "start": 102.4, "end": 109.0, "duration": 6.6, "max_words": 17 },
+    { "start": 145.8, "end": 153.2, "duration": 7.4, "max_words": 18 }
+  ],
+  "speech_regions": [
+    { "start": 0.0,   "end": 14.1 },
+    { "start": 21.9,  "end": 38.4 },
+    { "start": 44.2,  "end": 67.1 },
+    { "start": 73.9,  "end": 102.3 },
+    { "start": 109.1, "end": 145.7 },
+    { "start": 153.3, "end": 180.0 }
+  ],
+  "results": [
+    {
+      "rule_id": "DCMP-CAP-03",
+      "status": "fail",
+      "message": "Caption reading speed 240 wpm exceeds 160 wpm educational / near-verbatim cap (DCMP Captioning Key, Standard 3).",
+      "timecode": 23.4,
+      "citation": "The Described and Captioned Media Program Captioning Key states: 'Reading speed should not exceed 160 wpm for educational material and 225 wpm as an absolute maximum for adult material.'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "NFLX-LEN-01",
+      "status": "fail",
+      "message": "Caption line length 44 characters exceeds 42-character Netflix limit (Netflix Timed Text Style Guide, Section 2.3).",
+      "timecode": 41.2,
+      "citation": "Netflix Timed Text Style Guide: 'Maximum 42 characters per line for English.'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-04",
+      "status": "fail",
+      "message": "Caption display duration 1.2s is below the 2-second minimum (DCMP Captioning Key, Standard 4).",
+      "timecode": 57.8,
+      "citation": "DCMP Captioning Key Standard 4: 'A caption should be displayed for a minimum of 2 seconds.'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-CAP-05",
+      "status": "fail",
+      "message": "Sound effect '[door creaks]' lacks a bracketed source identifier (DCMP Captioning Key, Standard 5).",
+      "timecode": 72.1,
+      "citation": "DCMP Captioning Key Standard 5: 'Sound effects should be identified with the source in brackets, e.g. [DOOR CREAKS].'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "FCC-SYN-01",
+      "status": "fail",
+      "message": "Caption cue at 89.4s is 2.1s ahead of its speech region onset (FCC 47 CFR 79.1(j)(2)(ii): synchronous).",
+      "timecode": 89.4,
+      "citation": "FCC 47 CFR 79.1(j)(2)(ii): Captions must be 'synchronous with the audio of the programming to the greatest extent possible.'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "FCC-CMP-01",
+      "status": "fail",
+      "message": "Caption coverage drops to 0% for a 4.2-second spoken segment at 118.0s (FCC 47 CFR 79.1(j)(2)(iii): complete).",
+      "timecode": 118.0,
+      "citation": "FCC 47 CFR 79.1(j)(2)(iii): Captions must be 'complete, meaning they include all dialogue and audible sounds.'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "FCC-PLC-01",
+      "status": "fail",
+      "message": "Two caption cues overlap at 134.7s (FCC 47 CFR 79.1(j)(2)(iv): appropriately placed).",
+      "timecode": 134.7,
+      "citation": "FCC 47 CFR 79.1(j)(2)(iv): Captions must be 'appropriately placed so as not to obscure other important visual information.'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-DESC-01",
+      "status": "fail",
+      "message": "AD line at gap 67.2s uses past tense ('walked') — DCMP requires present tense (DCMP Description Key, Standard 1).",
+      "timecode": 67.2,
+      "citation": "DCMP Description Key Standard 1: 'Use present tense when describing action on screen.'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "DCMP-DESC-03",
+      "status": "flag",
+      "message": "AD line contains possible cinematic jargon ('low-angle shot') — review for objectivity (DCMP Description Key, Standard 3).",
+      "timecode": 67.2,
+      "citation": "DCMP Description Key Standard 3: 'Avoid technical film terms and jargon that might not be understood by the listener.'",
+      "sarif_level": "warning",
+      "confidence": 0.74,
+      "human_review_required": true
+    },
+    {
+      "rule_id": "DCMP-DESC-05",
+      "status": "fail",
+      "message": "AD line at 102.4s overlaps speech region by 1.8s (DCMP Description Key, Standard 5).",
+      "timecode": 102.4,
+      "citation": "DCMP Description Key Standard 5: 'Audio description must not overlap dialogue or other essential audio.'",
+      "sarif_level": "error",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "FCC-ACC-01",
+      "status": "flag",
+      "message": "NER caption accuracy 94.1% (band 92.1%\u201396.1%) is below the 98% broadcast threshold but low-confidence ASR regions present — flagged for human review, not auto-failed (Koenecke et al., PNAS 2020 ASR disparity).",
+      "timecode": null,
+      "citation": "FCC 47 CFR 79.1(j)(2)(i): Captions must be 'accurate' — (total words minus errors) / total words. Band reflects ASR confidence; regions below threshold are flagged for human review per AGENTS.md responsible-AI constraint.",
+      "sarif_level": "warning",
+      "confidence": 0.87,
+      "human_review_required": true
+    },
+    {
+      "rule_id": "WCAG-1.2.2",
+      "status": "pass",
+      "message": "Captions present for all pre-recorded audio content (WCAG 2.2 SC 1.2.2, Level A).",
+      "timecode": null,
+      "citation": "WCAG 2.2 SC 1.2.2: Captions are provided for all prerecorded audio content in synchronized media.",
+      "sarif_level": "note",
+      "confidence": 1.0,
+      "human_review_required": false
+    },
+    {
+      "rule_id": "WCAG-1.2.5",
+      "status": "pass",
+      "message": "Audio description sidecar file present for pre-recorded video (WCAG 2.2 SC 1.2.5, Level AA).",
+      "timecode": null,
+      "citation": "WCAG 2.2 SC 1.2.5: Audio description is provided for all prerecorded video content in synchronized media.",
+      "sarif_level": "note",
+      "confidence": 1.0,
+      "human_review_required": false
+    }
+  ]
+}

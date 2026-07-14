@@ -51,7 +51,30 @@ _report_cache: dict[str, dict] = {}
 @app.get("/health")
 def health() -> dict:
     """Health check endpoint — used by CI keepalive and frontend."""
-    return {"status": "ok", "service": "AccessGate"}
+    demo_mode = os.getenv("ACCESSGATE_DEMO_MODE", "false").lower() == "true"
+    return {"status": "ok", "service": "AccessGate", "demo_mode": demo_mode}
+
+
+# ---------------------------------------------------------------------------
+# Demo endpoint — pre-computed NOTLD report (served on Render / no Ollama)
+# ---------------------------------------------------------------------------
+
+@app.get("/demo")
+def demo_report() -> JSONResponse:
+    """
+    Return the pre-computed Night of the Living Dead conformance report.
+
+    This endpoint is always available — in both full local mode and on the
+    Render-hosted deployment where the heavy ML inference stack is not present.
+    It lets judges see the full UI (timeline, rule table, NER score, gap markers)
+    without needing to upload a video file.
+    """
+    demo_path = Path(__file__).parent.parent / "data" / "demo" / "demo_report.json"
+    if not demo_path.exists():
+        raise HTTPException(status_code=404, detail="Demo report not found.")
+    import json as _json
+    with open(demo_path) as f:
+        return JSONResponse(content=_json.load(f))
 
 
 # ---------------------------------------------------------------------------

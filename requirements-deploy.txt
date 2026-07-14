@@ -1,0 +1,34 @@
+# Render deployment dependencies — lightweight subset for the hosted demo.
+# The full ML inference stack (torch, faster-whisper, silero-vad, faiss-cpu,
+# sentence-transformers) is excluded because it exceeds Render's free-tier
+# build time and memory limits.
+#
+# What runs on Render:
+#   - FastAPI + uvicorn (REST server)
+#   - /health, /demo, /report endpoints
+#   - Conformance rule evaluators (pysubs2, PyYAML, jiwer, jellyfish, scikit-learn)
+#   - SARIF / OSCAL exporters
+#   - Static pre-computed demo report served from data/demo/demo_report.json
+#
+# What does NOT run on Render (runs locally with full stack):
+#   - faster-whisper (audio transcription + timing)
+#   - silero-vad (speech region detection)
+#   - sentence-transformers / faiss-cpu (RAG layer)
+#   - torch / torchaudio (model inference)
+#   - Ollama Granite models (generative fix loop)
+#
+# Full local install: pip install -r requirements.txt
+
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+pysubs2>=1.8.0
+PyYAML>=6.0
+jiwer>=3.0.0
+jellyfish>=1.1.0
+scikit-learn>=1.6.0
+numpy>=1.26.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+httpx>=0.28.0
+requests>=2.32.0
+pytest>=8.0.0
