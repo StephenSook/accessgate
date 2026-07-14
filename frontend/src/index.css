@@ -1,0 +1,224 @@
+/* AccessGate global styles — Carbon Gray 100 dark theme + 21hrs.space-inspired design */
+
+/* IBM Plex fonts (loaded via index.html from Google Fonts) */
+:root {
+  --ag-bg: #161616;           /* Carbon Gray 100 */
+  --ag-surface: #262626;      /* Carbon Gray 90 */
+  --ag-surface2: #393939;     /* Carbon Gray 80 */
+  --ag-border: #525252;       /* Carbon Gray 60 */
+  --ag-text: #f4f4f4;         /* Carbon Gray 10 */
+  --ag-text-muted: #a8a8a8;   /* Carbon Gray 40 */
+  --ag-blue: #0f62fe;         /* IBM Blue 60 */
+  --ag-blue-light: #4589ff;   /* IBM Blue 50 */
+  --ag-red: #da1e28;          /* IBM Red 60 — error */
+  --ag-amber: #f1c21b;        /* IBM Yellow 30 — warning/flag */
+  --ag-green: #24a148;        /* IBM Green 50 — pass */
+  --ag-corner-color: #e4b592; /* 21hrs.space warm amber for corner brackets */
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--ag-bg);
+  color: var(--ag-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Corner bracket frame decoration (from 21hrs.space) */
+.ag-frame {
+  pointer-events: none;
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  height: calc(100vh - 24px);
+  width: calc(100vw - 24px);
+  z-index: 100;
+}
+
+.ag-frame-corner {
+  -webkit-filter: blur(0.5px);
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  opacity: 0.35;
+  mix-blend-mode: screen;
+  border-radius: 8px 0 0;
+  border-top: 2px solid var(--ag-corner-color);
+  border-left: 2px solid var(--ag-corner-color);
+}
+
+.ag-frame-corner:nth-child(1) { top: 0; left: 0; transform: rotate(0deg); }
+.ag-frame-corner:nth-child(2) { top: 0; right: 0; transform: rotate(90deg); }
+.ag-frame-corner:nth-child(3) { bottom: 0; left: 0; transform: rotate(-90deg); }
+.ag-frame-corner:nth-child(4) { bottom: 0; right: 0; transform: rotate(180deg); }
+
+/* Timecode monospace label */
+.ag-timecode {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ag-text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* Status badge colors */
+.status-pass   { color: var(--ag-green); }
+.status-fail   { color: var(--ag-red); }
+.status-flag   { color: var(--ag-amber); }
+.status-skip   { color: var(--ag-text-muted); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ag-bg); }
+::-webkit-scrollbar-thumb { background: var(--ag-border); border-radius: 2px; }
+
+/* Line top/bottom divider style */
+.ag-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--ag-border);
+  opacity: 0.5;
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Scanline progress bar — 21hrs.space progress-bar motif    */
+/* Used during CHECKING... loading state                      */
+/* ────────────────────────────────────────────────────────── */
+@keyframes ag-scan {
+  0%   { left: -40%; }
+  100% { left: 110%; }
+}
+
+@keyframes ag-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1.0; }
+}
+
+.ag-loading-bar {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  background: var(--ag-surface2);
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.ag-loading-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--ag-blue), transparent);
+  animation: ag-scan 1.4s ease-in-out infinite;
+}
+
+/* Pulsing status dot (used in LiveMonitor) */
+@keyframes ag-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+.ag-pulse-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ag-green);
+  animation: ag-blink 1.2s ease-in-out infinite;
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Subtle CRT scanline texture over the whole page           */
+/* (21hrs.space uses a similar full-page overlay)            */
+/* ────────────────────────────────────────────────────────── */
+#root::before {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 200;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Timeline item hover highlight                             */
+/* ────────────────────────────────────────────────────────── */
+.ag-timeline-gap:hover {
+  filter: brightness(1.4);
+  cursor: pointer;
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Table row hover                                           */
+/* ────────────────────────────────────────────────────────── */
+.ag-table-row:hover {
+  background: rgba(15, 98, 254, 0.06) !important;
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Fix accepted success flash                                */
+/* ────────────────────────────────────────────────────────── */
+@keyframes ag-green-flash {
+  0%   { background: rgba(36, 161, 72, 0.4); }
+  100% { background: rgba(36, 161, 72, 0.15); }
+}
+
+.ag-fix-accepted {
+  animation: ag-green-flash 0.6s ease-out forwards;
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* 21hrs.space-inspired: top monospace status line           */
+/* ────────────────────────────────────────────────────────── */
+.ag-status-line {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ag-text-muted);
+  opacity: 0.5;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--ag-border);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Blur effect on decorative text (21hrs.space motif)        */
+/* ────────────────────────────────────────────────────────── */
+.ag-blur-text {
+  -webkit-filter: blur(0.5px);
+  filter: blur(0.5px);
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Line-left border decoration                               */
+/* ────────────────────────────────────────────────────────── */
+.ag-line-left {
+  border-left: 2px solid var(--ag-border);
+  padding-left: 12px;
+}
