@@ -1,0 +1,25 @@
+name: Render keepalive
+
+# Render free tier spins the service down after 15 min idle; the next request
+# then eats a ~50 s cold start. This ping keeps the demo warm for judges.
+# Offset minute list on purpose: */N and :00 schedules get deprioritized by
+# GitHub Actions and can fire an hour late.
+on:
+  schedule:
+    - cron: "4,14,24,34,44,54 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping /health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 \
+            "https://accessgate-api.onrender.com/health")
+          echo "HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "Health check failed with HTTP $code" >&2
+            exit 1
+          fi
