@@ -263,6 +263,39 @@ async def request_fix(
 
 
 # ---------------------------------------------------------------------------
+# Demo generative fix — live watsonx vision draft from committed keyframes
+# ---------------------------------------------------------------------------
+
+@app.post("/demo-fix")
+async def demo_fix(gap_start: float = Form(...), gap_end: float = Form(...)) -> JSONResponse:
+    """
+    Run the gated generative fix for a demo gap, live, with no file upload.
+
+    Uses the pre-committed keyframes for the demo film (data/demo/keyframes/),
+    drafts the audio description on watsonx vision, validates it against the
+    DCMP structure rules live, and returns the FixResult plus the draft source.
+    This lets a judge trigger the fix on the hosted demo where there is no
+    Ollama and no uploaded film.
+    """
+    from src.generative_fix import generate_demo_fix
+    from src.models import GapRegion
+
+    kf_dir = Path(__file__).parent.parent / "data" / "demo" / "keyframes"
+    bucket = int(gap_start)
+    keyframes = sorted(str(p) for p in kf_dir.glob(f"gap_{bucket}_*.jpg"))
+    if not keyframes:
+        keyframes = sorted(str(p) for p in kf_dir.glob("*.jpg"))[:2]
+    if not keyframes:
+        raise HTTPException(status_code=404, detail="No demo keyframes available.")
+
+    gap = GapRegion(start=gap_start, end=gap_end)
+    result, source = generate_demo_fix(gap, keyframes)
+    payload = json.loads(result.model_dump_json())
+    payload["draft_source"] = source
+    return JSONResponse(content=payload)
+
+
+# ---------------------------------------------------------------------------
 # Live caption monitoring (WebSocket)
 # ---------------------------------------------------------------------------
 

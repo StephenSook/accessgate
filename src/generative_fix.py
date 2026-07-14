@@ -134,9 +134,23 @@ def draft_description(
         # memory (can take 60-90s on CPU); subsequent calls are fast.
         with urllib.request.urlopen(req, timeout=180) as resp:
             body = json.loads(resp.read())
-            return body.get("response", "").strip()
+            text = body.get("response", "").strip()
+            if text:
+                return text
+            raise RuntimeError("empty Granite Vision response")
     except Exception as e:
-        logger.warning("Granite Vision call failed: %s. Using fallback draft.", e)
+        # Local Granite Vision (Ollama) unavailable, e.g. on the hosted deploy.
+        # Draft the vision step on watsonx so a judge can still trigger the fix
+        # live. Clearly labeled as the watsonx path wherever it surfaces.
+        logger.info("Granite Vision (Ollama) unavailable: %s. Trying watsonx vision.", e)
+        try:
+            from src.watsonx_vision import draft_from_keyframes
+            wx = draft_from_keyframes(keyframe_paths, gap.start, gap.end)
+            if wx.get("generated_text"):
+                return wx["generated_text"]
+            logger.warning("watsonx vision unavailable (%s). Using fallback draft.", wx.get("error"))
+        except Exception as e2:  # noqa: BLE001
+            logger.warning("watsonx vision error (%s). Using fallback draft.", e2)
         return _fallback_draft(gap)
 
 
@@ -294,6 +308,51 @@ def generate_fix(
         dcmp_valid, guardian_cleared, fits_gap, accepted,
     )
     return result
+
+
+def generate_demo_fix(
+    gap: GapRegion,
+    keyframe_paths: list[str],
+    speech_regions: Optional[list[SpeechRegion]] = None,
+) -> tuple[FixResult, str]:
+    """
+    Hosted-demo fix path: draft from PRE-COMMITTED keyframes (no film upload,
+    no Ollama) so a judge can trigger the gap fix live on the deployed backend.
+
+    The vision draft runs on watsonx (Llama 3.2 Vision); the DCMP structure
+    validator runs live and is the real gate. Returns (FixResult, draft_source).
+    """
+    from src.watsonx_vision import draft_from_keyframes
+
+    if speech_regions is None:
+        speech_regions = []
+
+    wx = draft_from_keyframes(keyframe_paths, gap.start, gap.end)
+    if wx.get("generated_text"):
+        draft = wx["generated_text"]
+        source = wx["source"]
+    else:
+        draft = _fallback_draft(gap)
+        source = "fallback (watsonx unavailable)"
+
+    word_count = len(draft.split())
+    fits_gap = word_count <= gap.max_words(wpm=AD_WPM)
+    dcmp_valid, dcmp_issues = validate_dcmp_structure(draft, gap, speech_regions)
+    guardian_cleared, guardian_reason = screen_guardian(draft)
+    accepted = dcmp_valid and guardian_cleared and fits_gap
+
+    result = FixResult(
+        gap=gap,
+        draft_text=draft,
+        dcmp_valid=dcmp_valid,
+        dcmp_issues=dcmp_issues,
+        guardian_cleared=guardian_cleared,
+        guardian_reason=guardian_reason if not guardian_cleared else None,
+        accepted=accepted,
+        word_count=word_count,
+        fits_gap=fits_gap,
+    )
+    return result, source
 
 
 # ---------------------------------------------------------------------------
