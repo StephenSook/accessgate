@@ -77,7 +77,7 @@ export default function App() {
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', color: 'var(--ag-text-muted)', letterSpacing: 2, marginBottom: 4 }}>
               IBM AI Builders Challenge 2026
             </div>
-            <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: 'var(--ag-text)', letterSpacing: -0.5 }}>
+            <h1 className="ag-title" style={{ margin: 0, fontSize: 28, fontWeight: 700, color: 'var(--ag-text)', letterSpacing: -0.5 }}>
               AccessGate
             </h1>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--ag-text-muted)' }}>
@@ -85,6 +85,10 @@ export default function App() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <span className="ag-status" aria-label="Engine online">
+              <span className="ag-status__dot" aria-hidden="true" />
+              Engine online
+            </span>
             <AxeScoreBadge />
             <LiveMonitor />
             <button
@@ -177,7 +181,7 @@ export default function App() {
 
         {/* Results */}
         {report && (
-          <>
+          <div className="ag-reveal">
             {/* Summary bar */}
             {(() => {
               const metricsData = [
@@ -254,7 +258,7 @@ export default function App() {
                 />
               )}
             </div>
-          </>
+          </div>
         )}
       </div>
     </>

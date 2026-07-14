@@ -339,3 +339,86 @@ html, body {
   border-left: 2px solid var(--ag-border);
 }
 .ag-mode-note b { color: var(--ag-text); font-weight: 600; }
+
+/* ══════════════════════════════════════════════════════════ */
+/* Phase 2: cinematic atmosphere (broadcast-QC console)      */
+/* ══════════════════════════════════════════════════════════ */
+
+/* Ambient background: cool blue wash from the top, warm film glow */
+/* from the corner, over Carbon Gray 100. Fixed so it does not scroll. */
+body {
+  background:
+    radial-gradient(1200px 620px at 50% -12%, rgba(69, 137, 255, 0.07), transparent 60%),
+    radial-gradient(900px 520px at 108% 112%, rgba(228, 181, 146, 0.05), transparent 55%),
+    var(--ag-bg);
+  background-attachment: fixed;
+}
+
+/* Static CRT scanlines — faint horizontal lines for the console texture. */
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 90;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 2px,
+    rgba(255, 255, 255, 0.014) 3px,
+    rgba(255, 255, 255, 0.014) 4px
+  );
+}
+
+/* Cinematic vignette — darkens the frame edges for depth. */
+#root::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 89;
+  box-shadow: inset 0 0 220px rgba(0, 0, 0, 0.55);
+}
+
+/* Header title glow */
+.ag-title {
+  text-shadow: 0 0 28px rgba(69, 137, 255, 0.18);
+}
+
+/* Live system-status pill */
+.ag-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ag-green);
+  border: 1px solid rgba(36, 161, 72, 0.4);
+  padding: 5px 9px;
+  white-space: nowrap;
+}
+.ag-status__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ag-green);
+  box-shadow: 0 0 8px var(--ag-green);
+  animation: ag-pulse 2.2s ease-in-out infinite;
+}
+
+/* Results sections reveal on load */
+@keyframes ag-reveal {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ag-reveal { animation: ag-reveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Respect reduced-motion: kill non-essential animation */
+@media (prefers-reduced-motion: reduce) {
+  .ag-status__dot,
+  .ag-reveal,
+  .ag-metric-appear,
+  .ag-hero { animation: none; }
+}
