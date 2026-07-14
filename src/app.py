@@ -161,9 +161,12 @@ async def request_fix(
     Request a gated generative AD fix for a specific gap.
 
     Returns FixResult: draft text, DCMP validation, Guardian screen, accepted flag.
+    Also includes a watsonx_showcase field with the ibm/granite-3-8b-instruct
+    hosted inference result for side-by-side comparison.
     """
     from src.generative_fix import generate_fix
     from src.models import GapRegion
+    from src.watsonx_showcase import generate_ad_line
 
     tmp_dir = Path(tempfile.mkdtemp())
     try:
@@ -173,7 +176,19 @@ async def request_fix(
 
         gap = GapRegion(start=gap_start, end=gap_end)
         result = generate_fix(gap=gap, film_path=str(film_path))
-        return JSONResponse(content=json.loads(result.model_dump_json()))
+        result_dict = json.loads(result.model_dump_json())
+
+        # watsonx.ai Lite showcase — runs in parallel with local Granite path
+        # Uses the local Granite Vision draft as the scene description input
+        scene_desc = result_dict.get("draft_text", "scene in progress")
+        showcase = generate_ad_line(
+            gap_start=gap_start,
+            gap_end=gap_end,
+            scene_description=scene_desc,
+        )
+        result_dict["watsonx_showcase"] = showcase
+
+        return JSONResponse(content=result_dict)
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
