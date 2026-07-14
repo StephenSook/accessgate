@@ -84,19 +84,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+      # sarif-multitool is unusable on ubuntu-24.04 runners: the npm wrapper's
+      # single-file exe crashes (empty Assembly.Location) and the dotnet tool
+      # build targets .NET Core 3.1, which the runner no longer ships. Validate
+      # against the vendored official SARIF 2.1.0 JSON schema instead.
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          dotnet-version: "8.0.x"
+          python-version: "3.11"
 
-      # npm wrapper ships a self-contained single-file exe whose Assembly.Location
-      # is empty, crashing FileVersionInfo on Linux. The dotnet tool build is
-      # framework-dependent and does not hit that path.
-      - name: Install Sarif.Multitool (dotnet tool)
-        run: dotnet tool install --global Sarif.Multitool --version 4.5.4
+      - name: Install jsonschema
+        run: pip install "jsonschema>=4.0"
 
-      - name: Validate review-audit-1.sarif
-        run: sarif validate security/review-audit-1.sarif
+      - name: Validate review-audit-1.sarif against SARIF 2.1.0 schema
+        run: python scripts/validate_sarif.py security/review-audit-1.sarif
 
   check-secrets:
     name: Secret scan

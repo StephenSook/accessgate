@@ -211,8 +211,8 @@ uvicorn src.app:app --reload --port 8000
 cd frontend && npm install && npm run dev
 # Open http://localhost:5173
 
-# 8. Lint SARIF export
-npx @microsoft/sarif-multitool validate security/review-audit-1.sarif
+# 8. Lint SARIF export (validates against the vendored SARIF 2.1.0 schema)
+python scripts/validate_sarif.py security/review-audit-1.sarif
 ```
 
 ---
