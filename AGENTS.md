@@ -26,8 +26,7 @@ Base Granite Speech 3.3-2b does not emit timestamps. Use faster-whisper with wor
 - `src/exporters/` — SARIF 2.1.0 and OSCAL POA&M v1.1.2 exporters
 - `src/mcp_server/` — FastMCP server exposing check_conformance, detect_gaps, score_captions
 - `rules/` — the rule registry (rules_registry.yaml) and parsed standards
-- `standards/` — Docling-parsed source documents and Granite Embedding FAISS index
-- `plan/` — Bob Plan-mode specs, committed
+- `standards/` — Docling-parsed source documents and the Granite Embedding numpy cosine index
 - `security/` — SARIF and OSCAL POA&M outputs from /review audits
 - `bob_sessions/` — exported Bob task histories and Bobalytics screenshots
 - `data/` — demo assets and NOTICE-tracked media; hand-labeled training data

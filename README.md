@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://lablab.ai)
-[![184 tests](https://img.shields.io/badge/tests-184%20passing-3fb950.svg)](tests/)
+[![195 tests](https://img.shields.io/badge/tests-195%20passing-3fb950.svg)](tests/)
 
 Built for the **IBM AI Builders Challenge July 2026**, **Reimagine Creative Industries with AI** track.
 
@@ -168,7 +168,7 @@ Each passes the **API-deletion test** — remove every hosted AI API and each st
 | Rule engine: violations detected | **10 / 10** | `data/demo/notld_broken.srt` + `notld_broken_ad.vtt` degradation recipe |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
-| Tests passing | **132** | `pytest` on Python 3.11 |
+| Tests passing | **195** | `pytest` on Python 3.11 |
 
 ---
 
@@ -178,9 +178,8 @@ Each passes the **API-deletion test** — remove every hosted AI API and each st
 |---|---|
 | Custom mode (`accessibility-compliance-engineer`) | `.bob/custom_modes.yaml` |
 | Conformance rule-authoring skill | `.bob/skills/conformance/SKILL.md` |
-| Plan-mode specs | `plan/accessgate-master-plan.md` |
-| /review audit 1 (SARIF, Account A) | `security/review-audit-1.sarif` |
-| /review audit 2 (OSCAL POA&M, Account B) | `security/review-audit-2.oscal.json` |
+| /review audit 1 (SARIF) | `security/review-audit-1.sarif` |
+| /review audit 2 (OSCAL POA&M) | `security/review-audit-2.oscal.json` |
 | Self-referential MCP config | `.bob/mcp.json` |
 | Bobalytics screenshots | `bob_sessions/` |
 
@@ -249,11 +248,11 @@ accessgate/
 │       ├── model_card.md      # IBM AI FactSheet for the classifier
 │       └── label_schema.md    # Annotation schema
 ├── frontend/                  # Vite + React + IBM Carbon SPA
-├── plan/                      # IBM Bob Plan-mode specs (committed)
+├── mobile/                    # Expo / React Native (iOS + Android) client
 ├── security/                  # SARIF + OSCAL /review audit outputs
 ├── bob_sessions/              # IBM Bob session exports + Bobalytics screenshots
 ├── submission/                # Demo video beat sheet, SkillsBuild cert instructions
-├── tests/                     # 132 passing tests
+├── tests/                     # 195 passing tests
 ├── render.yaml                # Render deployment config (FastAPI backend)
 ├── AGENTS.md                  # Project policy spine (read every session)
 └── .bob/                      # Custom mode, conformance skill, MCP config
