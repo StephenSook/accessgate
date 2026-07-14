@@ -55,3 +55,11 @@ frontend visual
 
 # Bob-kit reference (local only)
 .bob/bob-kit-AGENTS.md
+
+# Large source media (demo film) — not committed; used to generate demo_report.json
+data/demo/source/
+
+# Playwright + local verification artifacts
+.playwright-mcp/
+accessgate-*.png
+accessgate-*.jpeg
