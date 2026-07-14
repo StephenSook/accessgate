@@ -79,18 +79,37 @@ def test_result_is_pydantic_model():
     assert isinstance(result, NERScoreResult)
 
 
-def test_consecutive_word_errors_counted_per_word():
-    """Three consecutive dropped words out of 100 must count as ~3 errors, not 1.
-    Counting one-per-alignment-chunk under-reported and could wrongly clear the
-    98% FCC threshold on materially inaccurate captions."""
+def test_consecutive_recognition_errors_counted_per_word():
+    """Three consecutive low-confidence substitutions (serious recognition
+    errors) must count as ~3 errors, not 1. Counting one-per-alignment-chunk
+    under-reported serious ASR mishears and could wrongly clear the 98% FCC
+    threshold on materially inaccurate captions."""
+    base = ["alpha", "bravo", "charlie", "delta", "echo",
+            "foxtrot", "golf", "hotel", "india", "juliet"]
+    ref_words = base * 10  # 100 words
+    ref = " ".join(ref_words)
+    hyp_words = ref_words.copy()
+    hyp_words[10:13] = ["xray", "yankee", "zulu"]  # 3 consecutive substitutions
+    hyp = " ".join(hyp_words)
+    confs = [0.95] * 100
+    confs[10] = confs[11] = confs[12] = 0.2  # low confidence -> recognition errors
+    result = score_ner(ref, hyp, word_confidences=confs)
+    assert result.n_errors >= 3, f"expected >=3 errors, got {result.n_errors}"
+    assert result.recognition_errors >= 3, f"expected 3 recognition errors, got {result.recognition_errors}"
+    assert result.ner_score <= 0.98, f"3 serious errors must not clear 98%, got {result.ner_score}"
+
+
+def test_edition_errors_are_minor():
+    """Meaning-preserving omissions (edition errors) are minor under the NER
+    model and must NOT tank the score the way serious recognition errors do."""
     ref = " ".join(["word"] * 100)
-    # Drop three consecutive words (positions 10-12): a single deletion chunk.
     hyp_words = ["word"] * 100
-    del hyp_words[10:13]
+    del hyp_words[10:13]  # drop three words -> deletions -> edition (condensation)
     hyp = " ".join(hyp_words)
     result = score_ner(ref, hyp)
-    assert result.n_errors >= 3, f"expected >=3 errors for 3 dropped words, got {result.n_errors}"
-    assert result.ner_score <= 0.98, f"3/100 errors must not clear 98%, got {result.ner_score}"
+    assert result.edition_errors >= 3
+    # 3 minor editions at weight 0.25 barely move the score.
+    assert result.ner_score > 0.98
 
 
 def test_threshold_fields_are_serialized():

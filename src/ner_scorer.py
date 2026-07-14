@@ -113,20 +113,27 @@ def score_ner(
                 "chunk_type": chunk.type,
             })
 
-    # Point estimate: ambiguous errors split 50/50
-    E_point = edition_errors + ambiguous_errors * 0.5
-    R_point = recognition_errors + ambiguous_errors * 0.5
-    ner_point = max(0.0, (N - E_point - R_point) / N) if N > 0 else 1.0
+    # NER severity weighting (Romero-Fresco / Ofcom N-E-R model): recognition
+    # errors change meaning and are SERIOUS (weight 1.0); edition errors are
+    # meaning-preserving condensation/paraphrase/omission and are MINOR (weight
+    # 0.25); ambiguous sits between. Legitimate condensation must not tank the
+    # accuracy score — weighting editions the same as recognition errors (as an
+    # earlier version did) is a flat word-error rate, not the NER model this
+    # scorer claims to implement, and it penalised normal captioning.
+    W_REC, W_EDIT, W_AMB = 1.0, 0.25, 0.5
 
-    # Band: best-case = all ambiguous are edition (heavily down-weighted)
-    #       worst-case = all ambiguous are recognition
-    E_best = edition_errors + ambiguous_errors
-    R_best = recognition_errors
-    ner_best = max(0.0, (N - E_best * 0.5 - R_best) / N) if N > 0 else 1.0
+    weighted_point = (
+        recognition_errors * W_REC + edition_errors * W_EDIT + ambiguous_errors * W_AMB
+    )
+    ner_point = max(0.0, (N - weighted_point) / N) if N > 0 else 1.0
 
-    E_worst = edition_errors
-    R_worst = recognition_errors + ambiguous_errors
-    ner_worst = max(0.0, (N - E_worst - R_worst) / N) if N > 0 else 1.0
+    # Band brackets how the ambiguous errors could resolve:
+    #   best  = ambiguous all turn out to be minor editions
+    #   worst = ambiguous all turn out to be serious recognition errors
+    weighted_best = recognition_errors * W_REC + (edition_errors + ambiguous_errors) * W_EDIT
+    weighted_worst = (recognition_errors + ambiguous_errors) * W_REC + edition_errors * W_EDIT
+    ner_best = max(0.0, (N - weighted_best) / N) if N > 0 else 1.0
+    ner_worst = max(0.0, (N - weighted_worst) / N) if N > 0 else 1.0
 
     return NERScoreResult(
         ner_score=round(ner_point, 4),

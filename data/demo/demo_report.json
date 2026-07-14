@@ -7,11 +7,11 @@
     {
       "rule_id": "FCC-ACC-01",
       "status": "fail",
-      "message": "NER score 89.93% (band 89.93%\u201394.6%) is below the 98% threshold. Note: 2 low-confidence region(s) flagged for human review.",
+      "message": "NER score 77.79% (band 73.65%\u201379.86%) is below the 98% threshold. Note: 2 low-confidence region(s) flagged for human review.",
       "timecode": null,
       "citation": "ther information or text.\nThe NER (Net Error Rate) accuracy standard is: (total words - errors) / total words.\nPrograms with a score of 98 percent or higher are deemed accurate.",
       "sarif_level": "warning",
-      "confidence": 0.8993,
+      "confidence": 0.7779,
       "human_review_required": true
     },
     {
@@ -139,7 +139,7 @@
       "status": "pass",
       "message": "No unbracketed sound-effect captions detected.",
       "timecode": null,
-      "citation": "Minimum display time: Captions should appear on screen for a minimum of 2 seconds.\nSound effects: Use brackets to identify sound sources: [THUNDER], [DOG BARKING].\nNever describe sounds in the past tense; sounds are described as they occur.\nItalics and capitalization indicate vocal emphasis.",
+      "citation": "rg/learn/602-captioning-key---sound-effects-and-music) From about [captioning-key](/learn/tags/captioning-key)\nCaptioning Key - Sound Effects and Music\n\n<!-- image -->\n- [Captioning Key - Speaker Identification Establishing the identity of both onscreen and offscreen speakers is vital for clarity.](https://dcmp.org/learn/603-captioning-key---speaker-identification) From about [captioning-key](/lea",
       "sarif_level": "note",
       "confidence": null,
       "human_review_required": false
@@ -277,7 +277,7 @@
     {
       "rule_id": "NFLX-CPS-01",
       "status": "fail",
-      "message": "Caption at 168.60s exceeds 20.0 CPS (43.0 CPS, adult profile). Text: 'Look here comes one of them right now, come on hur'",
+      "message": "Caption at 168.60s exceeds 20.0 CPS (53.0 CPS, adult profile). Text: 'Look here comes one of them right now, come on hur'",
       "timecode": 168.6,
       "citation": "Netflix Timed Text Style Guide (TTSG) - English.\nReading speed: Maximum 20 characters per second (CPS) for adult content.\nMaximum 17 CPS for children's content.\nLine length: Maximum 42 characters per line.\nLine count: Maximum 2 lines per event.\nMinimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum",
       "sarif_level": "warning",
@@ -316,13 +316,13 @@
     }
   ],
   "ner": {
-    "ner_score": 0.8993,
-    "band_low": 0.8993,
-    "band_high": 0.946,
+    "ner_score": 0.7779,
+    "band_low": 0.7365,
+    "band_high": 0.7986,
     "n_words": 278,
-    "n_errors": 28,
-    "recognition_errors": 2,
-    "edition_errors": 17,
+    "n_errors": 197,
+    "recognition_errors": 9,
+    "edition_errors": 165,
     "asr_derived": true,
     "low_confidence_regions": [
       {
@@ -348,7 +348,9 @@
         "confidence": 0.3627079443540424,
         "chunk_type": "delete"
       }
-    ]
+    ],
+    "passes_98_threshold": false,
+    "straddles_threshold": false
   },
   "gaps": [
     {
