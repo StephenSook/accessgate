@@ -159,15 +159,26 @@ def eval_dcmp_desc_04(
     rule = get_rule("DCMP-DESC-04")
     results = []
 
+    # If VAD did not run there are no gaps to fit descriptions into. Skip
+    # honestly rather than emitting a pass ("all descriptions fit") that was
+    # never actually evaluated.
+    if ad_cues and not gaps:
+        return [RuleResult(
+            rule_id=rule.id,
+            status="skip",
+            message="Gap detection unavailable (VAD did not run); description-to-gap fit not evaluated.",
+            citation=rule.source,
+            sarif_level=rule.sarif_level,
+        )]
+
     for cue in ad_cues:
-        # Find the gap that contains this AD cue
+        # Find the gap that FULLY contains this AD cue. A cue that only partly
+        # overlaps a gap extends into speech and is caught by DCMP-DESC-05; it
+        # must not borrow the whole gap's word budget (which let over-long,
+        # mostly-outside descriptions pass).
         containing_gap = None
         for gap in gaps:
             if gap.start <= cue.start and gap.end >= cue.end:
-                containing_gap = gap
-                break
-            # Also accept if cue is mostly within gap
-            if gap.overlaps(cue.start, cue.end):
                 containing_gap = gap
                 break
 
@@ -208,6 +219,18 @@ def eval_dcmp_desc_05(
     """
     rule = get_rule("DCMP-DESC-05")
     results = []
+
+    # If VAD did not run there are no speech regions to check overlap against.
+    # Skip honestly rather than emitting a pass ("no AD overlaps speech") for the
+    # most severe AD rule when the analysis never ran.
+    if ad_cues and not speech_regions:
+        return [RuleResult(
+            rule_id=rule.id,
+            status="skip",
+            message="Speech detection unavailable (VAD did not run); AD-vs-speech overlap not evaluated.",
+            citation=rule.source,
+            sarif_level=rule.sarif_level,
+        )]
 
     for cue in ad_cues:
         if ad_overlaps_speech(cue.start, cue.end, speech_regions):

@@ -18,6 +18,7 @@ passage from the locally-stored index (TF-IDF fallback embeddings need no
 network or model download).
 """
 from __future__ import annotations
+import hashlib
 import json
 import logging
 import os
@@ -237,13 +238,19 @@ def build_index(force: bool = False) -> None:
 def _tfidf_encode(texts: list[str], n: int = 3, dim: int = 512) -> np.ndarray:
     """
     Minimal character n-gram hash embedding fallback.
-    No external dependencies. Deterministic.
+    No external dependencies. Deterministic across processes.
+
+    Uses a stable md5-based hash, NOT the builtin hash(): Python salts str
+    hashing per process (PYTHONHASHSEED), so the index is embedded in one process
+    and persisted, then queried in a later process (server restart, redeploy,
+    keepalive) whose query vectors would land in a different bucket space —
+    making the cosine scores meaningless. md5 is process-independent.
     """
     vectors = np.zeros((len(texts), dim), dtype=np.float32)
     for i, text in enumerate(texts):
         for j in range(len(text) - n + 1):
             gram = text[j:j + n]
-            h = hash(gram) % dim
+            h = int.from_bytes(hashlib.md5(gram.encode("utf-8")).digest()[:8], "big") % dim
             vectors[i, h] += 1.0
     return vectors
 

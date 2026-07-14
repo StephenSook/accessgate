@@ -6,8 +6,10 @@ Source: 47 CFR 79.1(j)(2)(i)-(iv), verbatim from eCFR.
 Citations are placeholders — replaced by RAG layer at runtime.
 """
 from __future__ import annotations
+import re
+from typing import Optional
 from src.models import CaptionCue, RuleResult, SpeechRegion, NERScoreResult
-from src.gap_engine import cue_overlaps_speech, ad_overlaps_speech
+from src.gap_engine import cue_overlaps_speech
 from src.registry import get_rule
 
 
@@ -99,6 +101,18 @@ def eval_fcc_syn_01(
     rule = get_rule("FCC-SYN-01")
     results = []
 
+    # If VAD did not run there are no speech regions to sync against. Skip
+    # honestly rather than reporting every cue as out-of-sync (a false fail);
+    # this mirrors FCC-CMP-01's skip-on-empty behaviour.
+    if cues and not speech_regions:
+        return [RuleResult(
+            rule_id=rule.id,
+            status="skip",
+            message="Speech detection unavailable (VAD did not run); caption-to-speech sync not evaluated.",
+            citation=rule.source,
+            sarif_level=rule.sarif_level,
+        )]
+
     for cue in cues:
         if not cue_overlaps_speech(cue, speech_regions, tolerance_ms):
             results.append(RuleResult(
@@ -177,10 +191,23 @@ def eval_fcc_cmp_01(
     )
 
 
+def _parse_percent(value: Optional[str]) -> Optional[float]:
+    """Parse a VTT position/line percentage like '150%' or 'line:90%'.
+
+    Returns the numeric percentage, or None if the value is absent or is not a
+    percentage (e.g. a bare line number or 'auto'), so those are left alone.
+    """
+    if not value or "%" not in value:
+        return None
+    m = re.search(r"(-?\d+(?:\.\d+)?)\s*%", value)
+    return float(m.group(1)) if m else None
+
+
 def eval_fcc_plc_01(cues: list[CaptionCue]) -> list[RuleResult]:
     """
     FCC-PLC-01: Captions must not overlap each other or run off-frame.
-    Checks for temporal overlap between consecutive cues.
+    Checks (a) temporal overlap between consecutive cues, and (b) off-frame VTT
+    position/line settings (a percentage outside 0-100%).
     """
     rule = get_rule("FCC-PLC-01")
     results = []
@@ -201,6 +228,24 @@ def eval_fcc_plc_01(cues: list[CaptionCue]) -> list[RuleResult]:
                 citation=rule.source,
                 sarif_level=rule.sarif_level,
             ))
+
+    # Off-frame placement: a VTT position/line percentage outside 0-100% draws
+    # the caption off the visible frame.
+    for cue in sorted_cues:
+        for label, raw in (("position", cue.position), ("line", cue.line_setting)):
+            pct = _parse_percent(raw)
+            if pct is not None and not (0.0 <= pct <= 100.0):
+                results.append(RuleResult(
+                    rule_id=rule.id,
+                    status="fail",
+                    message=(
+                        f"Caption at {cue.start:.2f}s has an off-frame {label} "
+                        f"setting {raw!r} ({pct:.0f}%, outside 0-100%)."
+                    ),
+                    timecode=cue.start,
+                    citation=rule.source,
+                    sarif_level=rule.sarif_level,
+                ))
 
     if not results:
         results.append(RuleResult(

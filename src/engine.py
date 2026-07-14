@@ -11,7 +11,7 @@ and writes JSON + SARIF + OSCAL outputs.
 
 API-deletion test: with all hosted AI APIs removed, this still produces
 a complete conformance report (VAD uses Silero + CPU; citations use the
-local FAISS index; classifier uses saved sklearn weights).
+local numpy cosine index; classifier uses saved sklearn weights).
 """
 from __future__ import annotations
 import argparse
@@ -165,10 +165,9 @@ def run_engine(
     # ---- Step 5: populate RAG citations ----
     logger.info("Retrieving citations from RAG index...")
     for result in all_results:
-        if result.citation and not result.citation.startswith("[Citation"):
-            # Already has a real citation from evaluator
-            pass
-        # Retrieve verbatim passage from the standard
+        # Retrieve the verbatim passage from the standard for every result. The
+        # evaluator-supplied citation is a registry placeholder; the RAG layer
+        # grounds it in the actual source text.
         query = f"{result.rule_id} {result.message[:80]}"
         retrieved = retrieve_citation(result.rule_id, query)
         if retrieved:

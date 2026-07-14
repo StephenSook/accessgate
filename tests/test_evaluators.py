@@ -629,3 +629,50 @@ class TestDegradationRecipeAllViolationsFire:
         ner = make_ner(0.94, 0.91, 0.96)
         result = eval_fcc_acc_01(ner)
         assert result.status == "fail"
+
+
+# ---------------------------------------------------------------------------
+# VAD-unavailable propagation: when speech/gap detection did not run, the
+# VAD-dependent rules must SKIP, never emit a false pass or false fail.
+# ---------------------------------------------------------------------------
+
+class TestVADUnavailableSkips:
+    def test_fcc_syn_skips_when_no_speech_regions(self):
+        cues = [CaptionCue(index=1, start=1.0, end=3.0, text="hello there", lines=["hello there"])]
+        results = eval_fcc_syn_01(cues, speech_regions=[])
+        assert len(results) == 1 and results[0].status == "skip"
+
+    def test_desc_04_skips_when_no_gaps(self):
+        ad = [CaptionCue(index=1, start=1.0, end=3.0, text="a man walks in", lines=["a man walks in"])]
+        results = eval_dcmp_desc_04(ad, gaps=[])
+        assert len(results) == 1 and results[0].status == "skip"
+
+    def test_desc_05_skips_when_no_speech_regions(self):
+        ad = [CaptionCue(index=1, start=1.0, end=3.0, text="a man walks in", lines=["a man walks in"])]
+        results = eval_dcmp_desc_05(ad, speech_regions=[])
+        assert len(results) == 1 and results[0].status == "skip"
+
+    def test_desc_05_still_fails_on_real_overlap(self):
+        # With real speech regions present, the rule must still fire, not skip.
+        ad = [CaptionCue(index=1, start=2.0, end=4.0, text="a man walks in", lines=["a man walks in"])]
+        speech = [SpeechRegion(start=2.5, end=3.5)]
+        results = eval_dcmp_desc_05(ad, speech_regions=speech)
+        assert any(r.status == "fail" for r in results)
+
+
+class TestFCCPlacementOffFrame:
+    def test_off_frame_position_flagged(self):
+        cues = [CaptionCue(index=1, start=1.0, end=3.0, text="hi", lines=["hi"], position="150%")]
+        results = eval_fcc_plc_01(cues)
+        assert any(r.status == "fail" and "off-frame" in r.message for r in results)
+
+    def test_in_frame_position_passes(self):
+        cues = [CaptionCue(index=1, start=1.0, end=3.0, text="hi", lines=["hi"], position="50%")]
+        results = eval_fcc_plc_01(cues)
+        assert all(r.status == "pass" for r in results)
+
+    def test_line_number_not_misparsed_as_percent(self):
+        # A bare line number (no %) must not be treated as an off-frame percentage.
+        cues = [CaptionCue(index=1, start=1.0, end=3.0, text="hi", lines=["hi"], line_setting="12")]
+        results = eval_fcc_plc_01(cues)
+        assert all(r.status == "pass" for r in results)
