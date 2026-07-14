@@ -5,7 +5,6 @@ import { ConformanceTimeline } from './components/ConformanceTimeline'
 import { RuleResultsTable } from './components/RuleResultsTable'
 import { GatedFixPanel } from './components/GatedFixPanel'
 import { AxeScoreBadge } from './components/AxeScoreBadge'
-import { LiveMonitor } from './components/LiveMonitor'
 import { JudgesPage } from './components/JudgesPage'
 import { VideoPlayer } from './components/VideoPlayer'
 import { WaveformDisplay } from './components/WaveformDisplay'
@@ -95,7 +94,6 @@ export default function App() {
               Engine online
             </span>
             <AxeScoreBadge />
-            <LiveMonitor />
             <button
               type="button"
               onClick={() => setShowJudges(v => !v)}

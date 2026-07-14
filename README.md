@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://lablab.ai)
-[![174 tests](https://img.shields.io/badge/tests-174%20passing-3fb950.svg)](tests/)
+[![184 tests](https://img.shields.io/badge/tests-184%20passing-3fb950.svg)](tests/)
 
 Built for the **IBM AI Builders Challenge July 2026**, **Reimagine Creative Industries with AI** track.
 
@@ -115,7 +115,6 @@ flowchart TB
         TBL["Rule Results Table\n(expandable citations)"]
         PANEL["Gated Fix Panel\n(Stage 1-2-3-4)"]
         AXE["axe-core A11Y badge\n(app audits itself)"]
-        LIVE["Live Caption Monitor\nWebSocket CPS/WPM"]
     end
 
     F --> TIMING
