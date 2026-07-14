@@ -19,7 +19,6 @@ from __future__ import annotations
 import logging
 import os
 import re
-from dataclasses import dataclass, field
 from jiwer import process_words, AlignmentChunk
 from src.models import NERScoreResult
 

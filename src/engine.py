@@ -21,9 +21,9 @@ import sys
 from pathlib import Path
 
 from src.models import ConformanceReport, NERScoreResult, RuleResult
-from src.registry import get_rule, all_rules
+from src.registry import all_rules
 from src.caption_parser import parse_captions
-from src.gap_engine import detect_gaps, detect_speech_regions
+from src.gap_engine import detect_gaps
 from src.ner_scorer import score_captions
 from src.rag import retrieve_citation, build_index
 from src.evaluators.fcc import (

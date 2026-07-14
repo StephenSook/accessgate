@@ -51,10 +51,15 @@ def summarize_report(
     flags = [r for r in results if r.get("status") == "flag"]
     top = "; ".join(r.get("message", "")[:100] for r in (fails + flags)[:6])
     ner = report.get("ner") or {}
-    ner_line = (
-        f"NER caption accuracy {ner['ner_score'] * 100:.1f}% (below the 98% broadcast threshold, "
-        f"flagged for human review not auto-failed)." if ner else "No caption-accuracy score."
-    )
+    ner_score = ner.get("ner_score")
+    if ner_score is None:
+        ner_line = "No caption-accuracy score."
+    else:
+        rel = "below" if ner_score < 0.98 else "at or above"
+        ner_line = (
+            f"NER caption accuracy {ner_score * 100:.1f}% ({rel} the 98% broadcast threshold; "
+            f"reference-relative and flagged for human review, never auto-failed)."
+        )
     brief = (
         f"Profile: {report.get('profile', 'netflix')}. "
         f"{report.get('error_count', 0)} errors, {report.get('warning_count', 0)} warnings, "

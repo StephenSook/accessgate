@@ -14,9 +14,6 @@ DCMP_MAX_LINES = 2
 DCMP_MIN_DISPLAY_S = 2.0
 DCMP_MAX_WPM = 225.0
 
-# Netflix profile limits (used by NFLX rules but referenced here for context)
-NETFLIX_MAX_CHARS_PER_LINE = 42
-
 
 def eval_dcmp_cap_01(cues: list[CaptionCue]) -> list[RuleResult]:
     """DCMP-CAP-01: No line exceeds 32 characters."""
@@ -114,8 +111,6 @@ def eval_dcmp_cap_04(cues: list[CaptionCue]) -> list[RuleResult]:
 
 # Regex pattern for bracketed sound-effect sources: [SOUND] or [Sound Source]
 _BRACKETED_SOURCE_RE = re.compile(r"\[.+?\]")
-# Pattern to identify sound-effect captions (non-speech description)
-_SOUND_EFFECT_RE = re.compile(r"[\[\(]", re.IGNORECASE)
 
 
 def eval_dcmp_cap_05(cues: list[CaptionCue]) -> list[RuleResult]:

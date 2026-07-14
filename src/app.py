@@ -32,10 +32,12 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS: allow the Vite dev server
+# CORS: this is an open, read-only demo API (Vercel frontend + mobile clients),
+# so a single wildcard is the honest configuration — the explicit localhosts
+# alongside "*" were redundant.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "*"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -78,9 +80,8 @@ def demo_report() -> JSONResponse:
     demo_path = Path(__file__).parent.parent / "data" / "demo" / "demo_report.json"
     if not demo_path.exists():
         raise HTTPException(status_code=404, detail="Demo report not found.")
-    import json as _json
     with open(demo_path) as f:
-        return JSONResponse(content=_json.load(f))
+        return JSONResponse(content=json.load(f))
 
 
 # ---------------------------------------------------------------------------
@@ -101,10 +102,10 @@ def judges_page() -> JSONResponse:
         "not_a": ["conformance certifier", "accessibility auditor", "legal compliance tool"],
         "tiers": {
             "wired_live": [
-                {"name": "23-rule evaluator engine", "evidence": "src/evaluators/", "test_count": 172},
+                {"name": "23-rule evaluator engine", "evidence": "src/evaluators/, tests/test_evaluators.py"},
                 {"name": "Silero VAD gap detection", "evidence": "src/gap_engine.py"},
                 {"name": "NER-style caption scorer", "evidence": "src/ner_scorer.py", "note": "Never auto-fails on ASR alone — Koenecke et al. PNAS 2020"},
-                {"name": "Caption error-type classifier", "evidence": "data/training/classifier.pkl", "f1": 0.94, "note": "on a synthetic weak-labeled held-out set", "note": "on a synthetic weak-labeled held-out set"},
+                {"name": "Caption error-type classifier (recognition vs edition)", "evidence": "src/ner_scorer.py (_classify_error, phonetic heuristic)", "note": "The live NER path classifies with a phonetic heuristic (jellyfish). A trained sklearn model (macro-F1 0.94 on a synthetic weak-labeled held-out set) is a separate, documented, reproducible artifact — see data/training/model_card.md — not the runtime classifier."},
                 {"name": "RAG citation engine (Granite Embedding r2)", "evidence": "src/rag.py"},
                 {"name": "SARIF 2.1.0 exporter", "evidence": "src/exporters/sarif.py"},
                 {"name": "OSCAL POA&M v1.1.2 exporter", "evidence": "src/exporters/oscal.py"},

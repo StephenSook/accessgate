@@ -8,10 +8,7 @@ fastapi
 uvicorn[standard]
 webvtt-py
 pysubs2
-spacy
-ibm-watsonx-ai
 python-dotenv
-faiss-cpu
 jellyfish
 scikit-learn
 numpy

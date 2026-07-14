@@ -5,7 +5,7 @@ Captions (Prerecorded) Level A and Audio Description (Prerecorded) Level AA.
 Citations are placeholders — replaced by RAG layer at runtime.
 """
 from __future__ import annotations
-from src.models import CaptionCue, GapRegion, RuleResult
+from src.models import CaptionCue, RuleResult
 from src.registry import get_rule
 
 
