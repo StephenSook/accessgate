@@ -84,11 +84,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install @microsoft/sarif-multitool
-        run: npm install -g @microsoft/sarif-multitool@4.3.0
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # npm wrapper ships a self-contained single-file exe whose Assembly.Location
+      # is empty, crashing FileVersionInfo on Linux. The dotnet tool build is
+      # framework-dependent and does not hit that path.
+      - name: Install Sarif.Multitool (dotnet tool)
+        run: dotnet tool install --global Sarif.Multitool --version 4.5.4
 
       - name: Validate review-audit-1.sarif
-        run: npx @microsoft/sarif-multitool validate security/review-audit-1.sarif
+        run: sarif validate security/review-audit-1.sarif
 
   check-secrets:
     name: Secret scan
