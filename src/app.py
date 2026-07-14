@@ -44,6 +44,12 @@ app.add_middleware(
 _report_cache: dict[str, dict] = {}
 
 
+def _safe_name(filename: Optional[str], default: str) -> str:
+    """Basename of an uploaded filename, preventing path traversal (../, /)."""
+    name = Path(filename or "").name
+    return name or default
+
+
 # ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
@@ -145,8 +151,8 @@ async def check_conformance(
     # Save uploads to temp files
     tmp_dir = Path(tempfile.mkdtemp())
     try:
-        film_path = tmp_dir / film.filename
-        cap_path = tmp_dir / captions.filename
+        film_path = tmp_dir / _safe_name(film.filename, "film.mp4")
+        cap_path = tmp_dir / _safe_name(captions.filename, "captions.srt")
 
         with open(film_path, "wb") as f:
             shutil.copyfileobj(film.file, f)
@@ -155,7 +161,7 @@ async def check_conformance(
 
         ad_path = None
         if ad and ad.filename:
-            ad_path = tmp_dir / ad.filename
+            ad_path = tmp_dir / _safe_name(ad.filename, "ad.vtt")
             with open(ad_path, "wb") as f:
                 shutil.copyfileobj(ad.file, f)
 
@@ -198,7 +204,7 @@ async def check_captions(
 
     tmp_dir = Path(tempfile.mkdtemp())
     try:
-        cap_path = tmp_dir / (captions.filename or "captions.srt")
+        cap_path = tmp_dir / _safe_name(captions.filename, "captions.srt")
         with open(cap_path, "wb") as f:
             shutil.copyfileobj(captions.file, f)
         no_film = tmp_dir / "none.mp4"
@@ -231,7 +237,7 @@ async def get_gaps(
 
     tmp_dir = Path(tempfile.mkdtemp())
     try:
-        film_path = tmp_dir / film.filename
+        film_path = tmp_dir / _safe_name(film.filename, "film.mp4")
         with open(film_path, "wb") as f:
             shutil.copyfileobj(film.file, f)
 
@@ -280,7 +286,7 @@ async def request_fix(
 
     tmp_dir = Path(tempfile.mkdtemp())
     try:
-        film_path = tmp_dir / film.filename
+        film_path = tmp_dir / _safe_name(film.filename, "film.mp4")
         with open(film_path, "wb") as f:
             shutil.copyfileobj(film.file, f)
 
