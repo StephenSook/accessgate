@@ -302,6 +302,25 @@ def retrieve_citation(rule_id: str, query: str, top_k: int = 1) -> str:
     if norm > 0:
         q_vec = q_vec / norm
 
+    # Self-heal: a committed index may have been built with a different encoder
+    # (768-dim Granite embeddings) than this environment can load (512-dim TF-IDF
+    # fallback when sentence-transformers is absent, e.g. the hosted deploy).
+    # Rebuild once with the current encoder so the dimensions match instead of
+    # crashing on the dot product.
+    if q_vec.shape[0] != embeddings.shape[1]:
+        logger.warning(
+            "RAG index dim %d != query dim %d — rebuilding index with the current encoder.",
+            embeddings.shape[1], q_vec.shape[0],
+        )
+        try:
+            build_index(force=True)
+            chunks, embeddings = _load_index()
+        except Exception as e:  # noqa: BLE001
+            logger.error("Index rebuild failed: %s", e)
+            return _fallback_citation(rule_id)
+        if q_vec.shape[0] != embeddings.shape[1]:
+            return _fallback_citation(rule_id)
+
     # Cosine similarity = dot product of normalized vectors
     scores = embeddings @ q_vec  # shape: (n_chunks,)
 
