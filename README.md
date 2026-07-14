@@ -22,10 +22,13 @@ The locked claim: **conformance pre-check: automatable checks plus human-judgmen
 | Surface | URL |
 |---|---|
 | Web app | https://accessgate-web.vercel.app |
+| Mobile app (Expo / React Native) | [`mobile/`](mobile/) — iOS via Expo Go, Android via EAS APK |
 | REST API | https://accessgate-api.onrender.com |
 | Health check | https://accessgate-api.onrender.com/health |
 | Pre-computed demo report | https://accessgate-api.onrender.com/demo |
 | GitHub | https://github.com/StephenSook/accessgate |
+
+**Two surfaces, one live engine.** The web app and a native mobile app (Expo/React Native, [`mobile/`](mobile/)) are both real clients of the same backend: load the demo report and Granite executive summary, review the flagged rules with their standard citations, and run the gated generative fix on a silent gap. Mobile also checks a caption file picked on-device. See [mobile/README.md](mobile/README.md) to run it.
 
 Open the web app and click **LOAD DEMO** to see the full conformance timeline, rule results table, NER score, and gap markers, no file upload needed. The demo runs on a Night of the Living Dead segment (United States public domain) whose caption and audio-description sidecars carry realistic conformance defects. Uploading your own caption file on the live site runs the same 23-rule engine on the hosted backend.
 
