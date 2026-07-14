@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import type { ConformanceReport } from './api/client'
 import { checkConformance, loadDemo } from './api/client'
 import { ConformanceTimeline } from './components/ConformanceTimeline'
@@ -146,7 +146,34 @@ export default function App() {
           {error && (
             <p role="alert" style={{ color: 'var(--ag-red)', marginTop: 12, fontSize: 13 }}>{error}</p>
           )}
+          <p className="ag-mode-note">
+            <b>Hosted demo</b> runs the 23-rule conformance engine live on your uploaded caption file.
+            {' '}ASR accuracy scoring (Granite Speech / faster-whisper), Silero VAD gap detection, and the
+            {' '}Granite Vision generative fix run in the <b>full local pipeline</b> — see the demo report for all of it.
+          </p>
         </section>
+
+        {/* Empty-state hero — one-loop explainer before a report loads */}
+        {!report && !loading && !showJudges && (
+          <section className="ag-hero" aria-label="What AccessGate does">
+            <div className="ag-hero__eyebrow">Reimagine Creative Industries with AI · one loop</div>
+            <p className="ag-hero__loop">
+              A film's caption file has a 44-character line, a sub-2-second cue, and a
+              {' '}240-wpm burst. Its audio-description file has a past-tense line and one that
+              {' '}overlaps dialogue. AccessGate scores all of it against <b>WCAG 2.2</b>,
+              {' '}<b>FCC 47 CFR 79.1</b>, <b>DCMP</b>, and <b>Netflix</b> standards, cites the exact
+              {' '}rule text behind every flag, and never auto-fails a caption on ASR evidence alone.
+              {' '}Click a failing gap and Granite Vision drafts a fix, the DCMP validator re-checks it,
+              {' '}Granite Guardian screens it, and the row flips green.
+            </p>
+            <div className="ag-hero__chips">
+              <span className="ag-chip ag-chip--live">Load demo to see it</span>
+              <span className="ag-chip">23 coded rules</span>
+              <span className="ag-chip">SARIF + OSCAL export</span>
+              <span className="ag-chip ag-chip--local">API-deletion-proof engine</span>
+            </div>
+          </section>
+        )}
 
         {/* Results */}
         {report && (
@@ -237,13 +264,48 @@ export default function App() {
 function FileField({ id, name, label, accept, required }: {
   id: string; name: string; label: string; accept?: string; required?: boolean
 }) {
+  const [fileName, setFileName] = useState<string | null>(null)
+  const [over, setOver] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function assign(files: FileList | null) {
+    const f = files?.[0]
+    if (!f || !inputRef.current) return
+    // Mirror the dropped file into the hidden input so the form's FormData sees it.
+    const dt = new DataTransfer()
+    dt.items.add(f)
+    inputRef.current.files = dt.files
+    setFileName(f.name)
+  }
+
   return (
     <div>
       <label htmlFor={id} style={{ display: 'block', fontSize: 12, color: 'var(--ag-text-muted)', marginBottom: 6, fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
         {label}{required && ' *'}
       </label>
-      <input id={id} name={name} type="file" accept={accept} required={required}
-        style={{ background: 'var(--ag-surface)', color: 'var(--ag-text)', border: '1px solid var(--ag-border)', padding: '6px 10px', fontSize: 12, width: '100%', cursor: 'pointer' }}
+      <div
+        className={`ag-dropzone${over ? ' ag-dropzone--over' : ''}${fileName ? ' ag-dropzone--filled' : ''}`}
+        role="button"
+        tabIndex={0}
+        aria-label={`${label}${required ? ' (required)' : ''} — drop a file or click to browse`}
+        onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click() } }}
+        onDragOver={(e) => { e.preventDefault(); setOver(true) }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(e) => { e.preventDefault(); setOver(false); assign(e.dataTransfer.files) }}
+      >
+        <span className="ag-dropzone__hint">{fileName ? '✓ Selected' : 'Drop or click'}</span>
+        <span className="ag-dropzone__name">{fileName ?? (accept ?? 'any file')}</span>
+      </div>
+      <input
+        ref={inputRef}
+        id={id}
+        name={name}
+        type="file"
+        accept={accept}
+        required={required}
+        onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)}
+        style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
       />
     </div>
   )
