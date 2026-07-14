@@ -105,7 +105,8 @@ def judges_page() -> JSONResponse:
                 {"name": "MCP server (self-referential loop)", "evidence": "src/mcp_server/server.py"}
             ],
             "integration": [
-                {"name": "Granite Vision 3.2:2b (local Ollama)", "evidence": "src/generative_fix.py", "note": "Local, not hosted — requires Ollama"},
+                {"name": "Granite Vision 3.2:2b (local Ollama)", "evidence": "src/generative_fix.py", "note": "Primary AD drafter in the local, API-deletion-proof pipeline"},
+                {"name": "watsonx-hosted vision (Llama 3.2 11B)", "evidence": "src/watsonx_vision.py", "note": "Drafts the gap fix live on the HOSTED demo (no Ollama on Render), via the /demo-fix endpoint; Granite Vision is the local model"},
                 {"name": "Granite Guardian 3:2b (local Ollama)", "evidence": "src/generative_fix.py"},
                 {"name": "Granite Speech 3.3-2b (local transformers)", "evidence": "src/granite_speech.py", "note": "High-accuracy NER reference, opt-in ACCESSGATE_GRANITE_SPEECH=1; faster-whisper is the default reference"},
                 {"name": "watsonx.ai (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_showcase.py", "note": "Hosted AD-line generation, side-by-side with the local Granite path; gracefully degrades if the key is absent"}

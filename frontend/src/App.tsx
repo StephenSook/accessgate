@@ -254,8 +254,8 @@ export default function App() {
                   demoMode={!filmFile}
                   onClose={() => setSelectedGap(null)}
                   onAccepted={() => {
-                    setSelectedGap(null)
-                    // Would ideally refresh just that row
+                    // Keep the panel open so the "row flipped green" confirmation
+                    // stays visible; the user dismisses it with the close button.
                   }}
                 />
               )}
