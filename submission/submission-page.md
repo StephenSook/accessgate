@@ -40,6 +40,10 @@ result carries a timecode, a confidence value where relevant, and a
 human-review flag. The output exports to SARIF 2.1.0 and OSCAL POA&M so it drops
 into existing security and compliance pipelines.
 
+AccessGate ships as three surfaces on one engine: a web app (React plus IBM
+Carbon), plus iOS and Android clients (Expo / React Native), all calling the same
+deployed conformance API.
+
 The result is a conformance pre-check (automatable checks plus human-judgment
 flags), not a certifier. That distinction is deliberate: it never auto-fails a
 caption on speech-recognition evidence alone, because ASR carries measured
@@ -61,8 +65,9 @@ The engine is self-built and runs with every hosted AI API removed (the
   regions and the dialogue-free gaps that audio description must fill.
 - NER-style caption scorer: the Romero-Fresco / Ofcom (N - E - R) / N method
   with a confidence band and low-confidence-region flags. Load-bearing artifact.
-- Error-type classifier: a scikit-learn model (macro-F1 0.95) that separates
-  recognition errors from edition errors.
+- Error-type classifier: a scikit-learn model (macro-F1 0.94 on a synthetic
+  weak-labeled held-out set) documenting the recognition-vs-edition error
+  taxonomy; the live NER path applies that taxonomy with a phonetic heuristic.
 - 23-rule evaluator engine across FCC, WCAG, DCMP, and Netflix.
 - RAG citation layer: standards embedded with Granite Embedding r2, retrieved at
   runtime so citations are grounded, never hardcoded.
@@ -96,8 +101,8 @@ rule-authoring Skill, produced Plan-mode specifications, and ran two /review
 passes that emitted a SARIF audit and an OSCAL audit. Bob also consumed the
 project's own MCP server during development, a self-referential loop. Deployment,
 the Granite Speech wiring, and later honesty and UI refinements were finished
-with other tooling after Bob credits ran out. Evidence lives in `.bob/`,
-`security/review-audit-*.{sarif,oscal.json}`, and the `plan/` specs.
+with other tooling after Bob credits ran out. Evidence lives in `.bob/` and
+`security/review-audit-*.{sarif,oscal.json}`.
 
 ## Real-world impact
 
