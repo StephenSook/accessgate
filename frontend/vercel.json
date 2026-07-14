@@ -7,6 +7,8 @@
     { "source": "/check", "destination": "https://accessgate-api.onrender.com/check" },
     { "source": "/fix",   "destination": "https://accessgate-api.onrender.com/fix" },
     { "source": "/demo-fix", "destination": "https://accessgate-api.onrender.com/demo-fix" },
+    { "source": "/demo-summary", "destination": "https://accessgate-api.onrender.com/demo-summary" },
+    { "source": "/summary", "destination": "https://accessgate-api.onrender.com/summary" },
     { "source": "/gaps",  "destination": "https://accessgate-api.onrender.com/gaps" },
     { "source": "/demo",  "destination": "https://accessgate-api.onrender.com/demo" },
     { "source": "/judges","destination": "https://accessgate-api.onrender.com/judges" },
