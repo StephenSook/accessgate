@@ -1,0 +1,105 @@
+name: AccessGate CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-python:
+    name: Python tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: pip-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pytest (no model/audio tests)
+        run: |
+          pytest tests/ \
+            --ignore=tests/test_generative_fix_mcp_monitor.py \
+            -v --tb=short \
+            -k "not test_generate_ad and not test_granite and not test_guardian and not test_gap_engine and not test_rag" \
+            2>&1
+        env:
+          # Ensure no Ollama connection attempt in CI (no Ollama in CI)
+          OLLAMA_BASE_URL: http://localhost:11434
+
+      - name: Run registry, caption, classifier, evaluator, exporter tests
+        run: |
+          pytest \
+            tests/test_registry.py \
+            tests/test_caption_parser.py \
+            tests/test_classifier.py \
+            tests/test_evaluators.py \
+            tests/test_rag_and_exporters.py \
+            -v --tb=short 2>&1
+
+  test-frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: TypeScript check + Vite build
+        working-directory: frontend
+        run: npm run build
+
+  lint-sarif:
+    name: Lint SARIF export
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install @microsoft/sarif-multitool
+        run: npm install -g @microsoft/sarif-multitool@4.5.4
+
+      - name: Validate review-audit-1.sarif
+        run: npx @microsoft/sarif-multitool validate security/review-audit-1.sarif
+
+  check-secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for hardcoded secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
