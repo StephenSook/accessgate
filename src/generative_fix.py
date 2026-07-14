@@ -87,11 +87,14 @@ def draft_description(
     keyframe_paths: list[str],
     gap: GapRegion,
     model: str = VISION_MODEL,
-) -> str:
+) -> tuple[str, str]:
     """
     Send keyframes to Granite Vision via Ollama and get a draft AD description.
     Prompt enforces: present tense, active voice, third-person, no jargon,
     sized to fit the gap at AD_WPM.
+
+    Returns (draft_text, source) so callers can report which model actually
+    produced the draft (local Granite Vision, watsonx vision, or the fallback).
     """
     max_words = gap.max_words(wpm=AD_WPM)
     prompt = (
@@ -111,8 +114,8 @@ def draft_description(
         try:
             with open(path, "rb") as f:
                 images.append(base64.b64encode(f.read()).decode())
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("keyframe %s unreadable: %s", path, e)
 
     payload = {
         "model": model,
@@ -123,6 +126,10 @@ def draft_description(
     }
 
     try:
+        # Never call a vision model with zero images — it would hallucinate a
+        # description it never "saw" and return it as vision-grounded.
+        if not images:
+            raise RuntimeError("no readable keyframes to send to the vision model")
         import urllib.request
         data = json.dumps(payload).encode()
         req = urllib.request.Request(
@@ -136,7 +143,7 @@ def draft_description(
             body = json.loads(resp.read())
             text = body.get("response", "").strip()
             if text:
-                return text
+                return text, "Granite Vision 3.2 2b (Ollama)"
             raise RuntimeError("empty Granite Vision response")
     except Exception as e:
         # Local Granite Vision (Ollama) unavailable, e.g. on the hosted deploy.
@@ -147,11 +154,11 @@ def draft_description(
             from src.watsonx_vision import draft_from_keyframes
             wx = draft_from_keyframes(keyframe_paths, gap.start, gap.end)
             if wx.get("generated_text"):
-                return wx["generated_text"]
+                return wx["generated_text"], wx.get("source", "watsonx-hosted vision")
             logger.warning("watsonx vision unavailable (%s). Using fallback draft.", wx.get("error"))
         except Exception as e2:  # noqa: BLE001
             logger.warning("watsonx vision error (%s). Using fallback draft.", e2)
-        return _fallback_draft(gap)
+        return _fallback_draft(gap), "fallback (no vision model available)"
 
 
 def _fallback_draft(gap: GapRegion) -> str:
@@ -208,13 +215,19 @@ def validate_dcmp_structure(
 # Granite Guardian screening
 # ---------------------------------------------------------------------------
 
-def screen_guardian(draft: str, model: str = GUARDIAN_MODEL) -> tuple[bool, str]:
+def screen_guardian(draft: str, model: str = GUARDIAN_MODEL) -> tuple[bool, bool, str, Optional[str]]:
     """
-    Send the draft to Granite Guardian via Ollama.
-    Returns (cleared: bool, reason: str).
+    Screen the draft for content safety. Returns (cleared, ran, reason, source).
 
-    Guardian prompt: ask if the text is safe, objective, and non-harmful.
-    Parse "safe"/"unsafe" from response.
+      cleared — True only if a Guardian actually ran AND found the text safe.
+      ran     — True only if a Guardian produced a verdict.
+      source  — which Guardian ran, or None if none did.
+
+    The gate FAILS CLOSED: a screen that could not run is never reported as
+    "passed" (the old code returned cleared=True on any error, so a safety gate
+    that never executed showed as cleared). Local Granite Guardian (Ollama) is
+    primary; on the hosted deploy (no Ollama) the screen runs on watsonx Granite
+    Guardian so the gate stays genuinely wired for judges.
     """
     prompt = (
         "You are a content safety reviewer. "
@@ -245,10 +258,22 @@ def screen_guardian(draft: str, model: str = GUARDIAN_MODEL) -> tuple[bool, str]
             response = body.get("response", "").strip()
             cleared = response.upper().startswith("SAFE")
             reason = response if not cleared else ""
-            return cleared, reason
+            return cleared, True, reason, "Granite Guardian 3 2b (Ollama)"
     except Exception as e:
-        logger.warning("Granite Guardian call failed: %s. Assuming cleared.", e)
-        return True, f"Guardian unavailable: {e}"
+        logger.info("Granite Guardian (Ollama) unavailable: %s. Trying watsonx Guardian.", e)
+
+    # Hosted path: real Granite Guardian on watsonx.
+    try:
+        from src.watsonx_guardian import screen_guardian_watsonx
+        wx = screen_guardian_watsonx(draft)
+        if wx["ran"]:
+            return wx["cleared"], True, wx["reason"], wx["source"]
+        logger.warning("watsonx Guardian did not run: %s", wx.get("reason") or wx.get("error"))
+    except Exception as e2:  # noqa: BLE001
+        logger.warning("watsonx Guardian error: %s", e2)
+
+    # Both unavailable — FAIL CLOSED: not cleared, did not run.
+    return False, False, "Guardian could not run (Ollama and watsonx both unavailable)", None
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +302,8 @@ def generate_fix(
     keyframes = extract_keyframes(film_path, gap)
 
     # Step 2: draft
-    draft = draft_description(keyframes, gap, model=vision_model)
+    draft, draft_source = draft_description(keyframes, gap, model=vision_model)
+    is_fallback = draft_source.startswith("fallback")
     word_count = len(draft.split())
     max_words = gap.max_words(wpm=AD_WPM)
     fits_gap = word_count <= max_words
@@ -285,27 +311,33 @@ def generate_fix(
     # Step 3: DCMP validation
     dcmp_valid, dcmp_issues = validate_dcmp_structure(draft, gap, speech_regions)
 
-    # Step 4: Guardian screening
-    guardian_cleared, guardian_reason = screen_guardian(draft, model=guardian_model)
+    # Step 4: Guardian screening (fails closed)
+    guardian_cleared, guardian_ran, guardian_reason, guardian_source = screen_guardian(
+        draft, model=guardian_model
+    )
 
-    # Accept only if all gates pass
-    accepted = dcmp_valid and guardian_cleared and fits_gap
+    # Accept only if every gate genuinely ran and passed. A canned fallback
+    # draft, or a Guardian that could not run, must never be accepted.
+    accepted = dcmp_valid and guardian_cleared and guardian_ran and fits_gap and not is_fallback
 
     result = FixResult(
         gap=gap,
         draft_text=draft,
+        draft_source=draft_source,
         dcmp_valid=dcmp_valid,
         dcmp_issues=dcmp_issues,
         guardian_cleared=guardian_cleared,
-        guardian_reason=guardian_reason if not guardian_cleared else None,
+        guardian_ran=guardian_ran,
+        guardian_source=guardian_source,
+        guardian_reason=guardian_reason if (not guardian_cleared or not guardian_ran) else None,
         accepted=accepted,
         word_count=word_count,
         fits_gap=fits_gap,
     )
 
     logger.info(
-        "Fix result: dcmp_valid=%s, guardian_cleared=%s, fits_gap=%s, accepted=%s",
-        dcmp_valid, guardian_cleared, fits_gap, accepted,
+        "Fix result: source=%s, dcmp_valid=%s, guardian_ran=%s, guardian_cleared=%s, fits_gap=%s, accepted=%s",
+        draft_source, dcmp_valid, guardian_ran, guardian_cleared, fits_gap, accepted,
     )
     return result
 
@@ -331,23 +363,28 @@ def generate_demo_fix(
     if wx.get("generated_text"):
         draft = wx["generated_text"]
         source = wx["source"]
+        is_fallback = False
     else:
         draft = _fallback_draft(gap)
         source = "fallback (watsonx unavailable)"
+        is_fallback = True
 
     word_count = len(draft.split())
     fits_gap = word_count <= gap.max_words(wpm=AD_WPM)
     dcmp_valid, dcmp_issues = validate_dcmp_structure(draft, gap, speech_regions)
-    guardian_cleared, guardian_reason = screen_guardian(draft)
-    accepted = dcmp_valid and guardian_cleared and fits_gap
+    guardian_cleared, guardian_ran, guardian_reason, guardian_source = screen_guardian(draft)
+    accepted = dcmp_valid and guardian_cleared and guardian_ran and fits_gap and not is_fallback
 
     result = FixResult(
         gap=gap,
         draft_text=draft,
+        draft_source=source,
         dcmp_valid=dcmp_valid,
         dcmp_issues=dcmp_issues,
         guardian_cleared=guardian_cleared,
-        guardian_reason=guardian_reason if not guardian_cleared else None,
+        guardian_ran=guardian_ran,
+        guardian_source=guardian_source,
+        guardian_reason=guardian_reason if (not guardian_cleared or not guardian_ran) else None,
         accepted=accepted,
         word_count=word_count,
         fits_gap=fits_gap,

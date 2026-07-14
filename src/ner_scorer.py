@@ -92,12 +92,19 @@ def score_ner(
             ref_slice, hyp_slice, chunk.type, conf
         )
 
+        # Count the number of WORDS affected by this alignment chunk, not the
+        # chunk itself. A substitution/deletion/insertion spanning 3 words is 3
+        # errors, not 1 — counting per chunk under-reports (three consecutive
+        # dropped words out of 100 would score 0.99 and wrongly clear the 98%
+        # FCC threshold). This mirrors word-level WER accounting.
+        chunk_errors = max(len(ref_slice), len(hyp_slice))
+
         if error_type == "recognition":
-            recognition_errors += 1
+            recognition_errors += chunk_errors
         elif error_type == "edition":
-            edition_errors += 1
+            edition_errors += chunk_errors
         else:  # ambiguous
-            ambiguous_errors += 1
+            ambiguous_errors += chunk_errors
 
         if conf is not None and conf < LOW_CONFIDENCE_THRESHOLD:
             low_confidence_regions.append({

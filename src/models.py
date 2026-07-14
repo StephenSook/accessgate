@@ -40,8 +40,14 @@ class CaptionCue(BaseModel):
 
     @property
     def cps(self) -> float:
-        """Characters per second (Netflix metric)."""
-        char_count = len(self.text.replace("\n", "").replace(" ", ""))
+        """Characters per second (Netflix Timed Text Style Guide metric).
+
+        Netflix reading speed counts all displayed characters including spaces
+        and punctuation; only the line-break marker is excluded. Stripping
+        spaces (as an earlier version did) undercounts CPS and lets over-speed
+        captions pass, so we keep them.
+        """
+        char_count = len(self.text.replace("\n", ""))
         if self.duration <= 0:
             return 0.0
         return char_count / self.duration
@@ -95,15 +101,22 @@ class NERScoreResult(BaseModel):
     asr_derived: bool = True               # True = reference came from ASR, not human gold
     low_confidence_regions: list[dict] = Field(default_factory=list)
 
+    @computed_field
     @property
     def passes_98_threshold(self) -> bool:
         """
         True only if the ENTIRE confidence band is above 98%.
         Per the hard rule: never auto-fail on ASR evidence alone.
         Returns False (flag for review) if band straddles 98%.
+
+        Must be @computed_field, not a bare @property: the frontend reads
+        report.ner.passes_98_threshold to colour the NER metric, so it has to
+        be serialized. As a plain property it was absent from the JSON and the
+        indicator was pinned to amber even when the band cleared 98%.
         """
         return self.band_low >= 0.98
 
+    @computed_field
     @property
     def straddles_threshold(self) -> bool:
         return self.band_low < 0.98 <= self.band_high
@@ -140,9 +153,12 @@ class FixResult(BaseModel):
     """Result of the gated generative AD fix loop."""
     gap: GapRegion
     draft_text: str
+    draft_source: Optional[str] = None     # which model drafted (Granite Vision / watsonx / fallback)
     dcmp_valid: bool
     dcmp_issues: list[str] = Field(default_factory=list)
     guardian_cleared: bool
+    guardian_ran: bool = True               # False = the safety screen could not run; never claim "passed"
+    guardian_source: Optional[str] = None   # which Guardian ran (Ollama / watsonx), or None if it did not
     guardian_reason: Optional[str] = None
     accepted: bool
     word_count: int

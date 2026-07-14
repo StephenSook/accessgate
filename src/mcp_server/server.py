@@ -90,7 +90,8 @@ def detect_gaps(
     """
     from src.gap_engine import detect_gaps as _detect_gaps
 
-    gaps = _detect_gaps(film_path, min_gap_duration=min_duration)
+    # detect_gaps returns (gaps, speech_regions) and its keyword is min_gap.
+    gaps, _speech = _detect_gaps(film_path, min_gap=min_duration)
     return [
         {
             "start": g.start,

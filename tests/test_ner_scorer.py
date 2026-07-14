@@ -77,3 +77,28 @@ def test_clean_text_normalisation():
 def test_result_is_pydantic_model():
     result = score_ner("hello world", "hello world")
     assert isinstance(result, NERScoreResult)
+
+
+def test_consecutive_word_errors_counted_per_word():
+    """Three consecutive dropped words out of 100 must count as ~3 errors, not 1.
+    Counting one-per-alignment-chunk under-reported and could wrongly clear the
+    98% FCC threshold on materially inaccurate captions."""
+    ref = " ".join(["word"] * 100)
+    # Drop three consecutive words (positions 10-12): a single deletion chunk.
+    hyp_words = ["word"] * 100
+    del hyp_words[10:13]
+    hyp = " ".join(hyp_words)
+    result = score_ner(ref, hyp)
+    assert result.n_errors >= 3, f"expected >=3 errors for 3 dropped words, got {result.n_errors}"
+    assert result.ner_score <= 0.98, f"3/100 errors must not clear 98%, got {result.ner_score}"
+
+
+def test_threshold_fields_are_serialized():
+    """passes_98_threshold / straddles_threshold must be @computed_field so they
+    appear in the JSON the frontend reads; as bare @property they were absent and
+    the NER indicator was pinned to amber."""
+    result = score_ner("hello world this is a test", "hello world this is a test")
+    dumped = result.model_dump()
+    assert "passes_98_threshold" in dumped
+    assert "straddles_threshold" in dumped
+    assert dumped["passes_98_threshold"] is True  # perfect score clears 98%

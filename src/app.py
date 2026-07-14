@@ -241,7 +241,8 @@ async def get_gaps(
         with open(film_path, "wb") as f:
             shutil.copyfileobj(film.file, f)
 
-        gaps = detect_gaps(str(film_path), min_gap_duration=min_duration)
+        # detect_gaps returns (gaps, speech_regions) and its keyword is min_gap.
+        gaps, _speech = detect_gaps(str(film_path), min_gap=min_duration)
         return JSONResponse(content=[
             {"start": g.start, "end": g.end, "duration": g.duration,
              "max_words": g.max_words(wpm=150.0)}

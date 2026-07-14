@@ -106,19 +106,30 @@ class TestGenerativeFix:
         assert isinstance(draft, str)
         assert len(draft) > 0
 
-    def test_guardian_screen_ollama_unavailable(self):
-        """When Ollama is unavailable, Guardian should return cleared=True (safe default)."""
+    def test_guardian_fails_closed_when_unavailable(self):
+        """When neither Ollama nor watsonx Guardian can run, the gate must FAIL
+        CLOSED: cleared=False and ran=False. A safety screen that never executed
+        must never be reported as passed."""
         from src.generative_fix import screen_guardian
 
-        with patch("urllib.request.urlopen", side_effect=Exception("connection refused")):
-            cleared, reason = screen_guardian("He walks into the room.")
-        assert cleared is True  # safe default when unavailable
+        with patch("urllib.request.urlopen", side_effect=Exception("connection refused")), \
+             patch("src.watsonx_guardian.screen_guardian_watsonx",
+                   return_value={"cleared": False, "ran": False, "reason": "not configured",
+                                 "source": None, "error": "no key"}):
+            cleared, ran, reason, source = screen_guardian("He walks into the room.")
+        assert cleared is False
+        assert ran is False
+        assert source is None
+        assert reason  # a non-empty explanation is preserved
 
-    @patch("src.generative_fix.extract_keyframes", return_value=[])
-    @patch("src.generative_fix.draft_description", return_value="He walks into the room.")
-    @patch("src.generative_fix.screen_guardian", return_value=(True, ""))
+    @patch("src.generative_fix.extract_keyframes", return_value=["frame0.jpg"])
+    @patch("src.generative_fix.draft_description",
+           return_value=("He walks into the room.", "Granite Vision 3.2 2b (Ollama)"))
+    @patch("src.generative_fix.screen_guardian",
+           return_value=(True, True, "", "Granite Guardian 3 2b (Ollama)"))
     def test_generate_fix_full_pipeline(self, mock_guardian, mock_draft, mock_kf):
-        """Full pipeline: accepted when DCMP passes and Guardian clears."""
+        """Full pipeline: accepted when the draft is real, DCMP passes, and a
+        Guardian actually ran and cleared."""
         from src.generative_fix import generate_fix
 
         gap = GapRegion(start=12.0, end=19.5)
@@ -126,9 +137,26 @@ class TestGenerativeFix:
 
         assert isinstance(result, FixResult)
         assert result.draft_text == "He walks into the room."
+        assert result.draft_source == "Granite Vision 3.2 2b (Ollama)"
         assert result.guardian_cleared is True
-        # DCMP result depends on the draft; just verify it ran
+        assert result.guardian_ran is True
         assert isinstance(result.dcmp_valid, bool)
+
+    @patch("src.generative_fix.extract_keyframes", return_value=["frame0.jpg"])
+    @patch("src.generative_fix.draft_description",
+           return_value=("The character moves through the scene.", "fallback (no vision model available)"))
+    @patch("src.generative_fix.screen_guardian",
+           return_value=(False, False, "Guardian could not run", None))
+    def test_fallback_draft_is_never_accepted(self, mock_guardian, mock_draft, mock_kf):
+        """A canned fallback draft with no Guardian must never be accepted, even
+        if it happens to fit the gap and pass structure checks."""
+        from src.generative_fix import generate_fix
+
+        gap = GapRegion(start=12.0, end=19.5)
+        result = generate_fix(gap=gap, film_path="fake_film.mp4", speech_regions=[])
+        assert result.accepted is False
+        assert result.guardian_ran is False
+        assert result.draft_source.startswith("fallback")
 
 
 # ---------------------------------------------------------------------------
@@ -155,12 +183,20 @@ class TestMCPServer:
         assert hasattr(server, "score_captions")
 
     def test_detect_gaps_tool_callable(self):
-        """detect_gaps tool should be callable with a non-existent path (returns empty list)."""
+        """detect_gaps tool must unpack the real (gaps, speech_regions) tuple and
+        pass the real min_gap keyword. The mock returns the true 2-tuple shape so
+        this test would fail if the tool reverts to the old min_gap_duration= /
+        list-iteration bug."""
         from src.mcp_server.server import detect_gaps
+        from src.models import GapRegion
 
-        with patch("src.gap_engine.detect_gaps", return_value=[]):
-            result = detect_gaps(film_path="nonexistent.mp4")
+        with patch("src.gap_engine.detect_gaps",
+                   return_value=([GapRegion(start=1.0, end=4.0)], [])) as m:
+            result = detect_gaps(film_path="nonexistent.mp4", min_duration=2.5)
+        # The real keyword is min_gap, not min_gap_duration.
+        assert m.call_args.kwargs.get("min_gap") == 2.5
         assert isinstance(result, list)
+        assert result[0]["start"] == 1.0 and result[0]["max_words"] == 7
 
     def test_score_captions_tool_callable(self):
         """score_captions tool should work with a valid srt file."""
