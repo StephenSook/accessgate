@@ -178,6 +178,46 @@ async def check_conformance(
 
 
 # ---------------------------------------------------------------------------
+# Caption-only check (mobile): structural rules on a caption file, no film
+# ---------------------------------------------------------------------------
+
+@app.post("/check-captions")
+async def check_captions(
+    captions: UploadFile = File(...),
+    profile: str = Form("netflix"),
+) -> JSONResponse:
+    """
+    Run the conformance engine on a caption file alone (no film upload).
+
+    Without a film, VAD gap detection and ASR accuracy scoring skip gracefully;
+    the structural caption rules (DCMP line/duration/reading-speed, Netflix
+    length/CPS/duration, FCC placement) still run. Built for the mobile app,
+    where uploading a full video is impractical.
+    """
+    from src.engine import run_engine
+
+    tmp_dir = Path(tempfile.mkdtemp())
+    try:
+        cap_path = tmp_dir / (captions.filename or "captions.srt")
+        with open(cap_path, "wb") as f:
+            shutil.copyfileobj(captions.file, f)
+        no_film = tmp_dir / "none.mp4"
+        no_film.write_bytes(b"")  # absent film -> VAD + NER skip gracefully
+
+        report = run_engine(
+            film_path=str(no_film),
+            caption_path=str(cap_path),
+            ad_path=None,
+            profile=profile,
+        )
+        d = json.loads(report.model_dump_json())
+        d["report_id"] = str(uuid.uuid4())
+        return JSONResponse(content=d)
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
+# ---------------------------------------------------------------------------
 # Gap detection
 # ---------------------------------------------------------------------------
 
