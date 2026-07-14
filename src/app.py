@@ -104,7 +104,7 @@ def judges_page() -> JSONResponse:
                 {"name": "23-rule evaluator engine", "evidence": "src/evaluators/", "test_count": 172},
                 {"name": "Silero VAD gap detection", "evidence": "src/gap_engine.py"},
                 {"name": "NER-style caption scorer", "evidence": "src/ner_scorer.py", "note": "Never auto-fails on ASR alone — Koenecke et al. PNAS 2020"},
-                {"name": "Caption error-type classifier", "evidence": "data/training/classifier.pkl", "f1": 0.952},
+                {"name": "Caption error-type classifier", "evidence": "data/training/classifier.pkl", "f1": 0.94, "note": "on a synthetic weak-labeled held-out set", "note": "on a synthetic weak-labeled held-out set"},
                 {"name": "RAG citation engine (Granite Embedding r2)", "evidence": "src/rag.py"},
                 {"name": "SARIF 2.1.0 exporter", "evidence": "src/exporters/sarif.py"},
                 {"name": "OSCAL POA&M v1.1.2 exporter", "evidence": "src/exporters/oscal.py"},

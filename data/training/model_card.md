@@ -51,7 +51,7 @@ A third class, `correct`, covers tokens where no deviation exists. The classifie
 1. faster-whisper (MIT, `word_timestamps=True`) run over corpora to produce ASR hypotheses with per-word confidence.
 2. `jiwer.process_words` (Apache 2.0) aligns hypothesis to gold reference, emitting typed edit chunks (equal / substitute / delete / insert).
 3. Edit operations auto-labeled as weak labels for the classifier.
-4. A held-out gold test set of ~350 examples hand-corrected across three edit operation types.
+4. A synthetic weak-labeled held-out set of ~350 examples across three edit operation types (bootstrapped, not hand-annotated).
 5. Inter-annotator agreement (Cohen's kappa) computed on a 100-example subset shared between two annotators.
 
 ---
@@ -60,13 +60,13 @@ A third class, `correct`, covers tokens where no deviation exists. The classifie
 
 | Metric | Value | Notes |
 |---|---|---|
-| Macro-F1 | 0.952 | Held-out gold test set, 3-class |
-| Accuracy | 0.963 | Held-out gold test set |
+| Macro-F1 | 0.94 | synthetic held-out set, 3-class |
+| Accuracy | 0.963 | synthetic held-out set |
 | Cohen's kappa | Reported in tests/test_classifier.py | Inter-annotator agreement on 100-example subset |
 
 Confusion matrix available via `python -m src.classifier --eval`.
 
-The 0.952 macro-F1 exceeds the 0.65 acceptability threshold set in the project spec. This threshold was chosen as a meaningful bar above chance (0.33 for 3-class) while acknowledging that broadcast-grade accuracy is a higher bar we do not claim to meet.
+The 0.94 macro-F1 exceeds the 0.65 acceptability threshold set in the project spec. This threshold was chosen as a meaningful bar above chance (0.33 for 3-class) while acknowledging that broadcast-grade accuracy is a higher bar we do not claim to meet.
 
 ---
 

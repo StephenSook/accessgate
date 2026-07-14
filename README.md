@@ -81,7 +81,7 @@ flowchart TB
         direction LR
         GS["Granite Speech 3.3-2b\nreference transcript"]
         NER["NER Scorer\n(N-E-R)/N + confidence band"]
-        CLS["Error-Type Classifier\nmacro-F1 0.952"]
+        CLS["Error-Type Classifier\nmacro-F1 0.94"]
         GS --> NER
         CLS --> NER
     end
@@ -157,7 +157,7 @@ Each passes the **API-deletion test** — remove every hosted AI API and each st
 1. **Conformance rule engine** — NER scorer (`(N-E-R)/N`, Romero-Fresco/Ofcom broadcast model), 98% threshold, confidence bands, never auto-fails on ASR alone per Koenecke et al. PNAS 2020
 2. **Dialogue-gap detection and timing engine** — Silero VAD + silence detection, gap complement above 2.5s minimum, merged across sub-300ms blips
 3. **Audio-description structure validator** — DCMP rules: word-count-fits-gap, no-overlap-with-dialogue, present-tense, active-voice, third-person, objectivity flags
-4. **Caption error-type classifier** — supervised logistic regression on hand-labeled data, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.952**
+4. **Caption error-type classifier** — supervised logistic regression on a synthetic weak-labeled set, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.94**
 
 ---
 
@@ -165,7 +165,7 @@ Each passes the **API-deletion test** — remove every hosted AI API and each st
 
 | Metric | Value | Source |
 |---|---|---|
-| Classifier macro-F1 | **0.952** | Held-out gold test set, 3-class |
+| Classifier macro-F1 | **0.94** | synthetic held-out set, 3-class |
 | Rule engine: violations detected | **10 / 10** | `data/demo/notld_broken.srt` + `notld_broken_ad.vtt` degradation recipe |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
@@ -233,7 +233,7 @@ accessgate/
 │   ├── caption_parser.py      # SRT/VTT parser
 │   ├── gap_engine.py          # Silero VAD gap detector
 │   ├── ner_scorer.py          # NER-style caption scorer
-│   ├── classifier.py          # Error-type classifier (macro-F1 0.952)
+│   ├── classifier.py          # Error-type classifier (macro-F1 0.94)
 │   ├── rag.py                 # Granite Embedding RAG layer
 │   ├── generative_fix.py      # Granite Vision -> DCMP -> Guardian fix loop
 │   ├── app.py                 # FastAPI REST server + /demo endpoint

@@ -12,7 +12,8 @@ Labels:
 
 Training data:
   - Weak labels built from faster-whisper over LibriSpeech (CC BY 4.0)
-  - Gold test set: 300-500 manually annotated examples in data/training/gold_test_300.jsonl
+  - Training/eval: synthetic weak-labeled bootstrap set (_build_synthetic_training_data).
+    A hand-annotated gold set (data/training/gold_test_300.jsonl) is a future swap-in and is NOT shipped.
   - See data/training/label_schema.md for the two-class annotation schema
 
 API-deletion test: this module uses only sklearn, jellyfish, and sentence-transformers.
