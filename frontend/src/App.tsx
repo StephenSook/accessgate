@@ -245,11 +245,13 @@ export default function App() {
                 onRequestFix={(gap) => setSelectedGap(gap)}
               />
 
-              {/* Gated Fix Panel */}
-              {selectedGap && filmFile && (
+              {/* Gated Fix Panel — works for uploads (local Granite Vision) and
+                  for the demo (live watsonx vision from committed keyframes) */}
+              {selectedGap && (
                 <GatedFixPanel
                   gap={selectedGap}
                   filmFile={filmFile}
+                  demoMode={!filmFile}
                   onClose={() => setSelectedGap(null)}
                   onAccepted={() => {
                     setSelectedGap(null)

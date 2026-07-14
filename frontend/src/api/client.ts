@@ -61,6 +61,7 @@ export interface FixResult {
   accepted: boolean
   word_count: number
   fits_gap: boolean
+  draft_source?: string
 }
 
 // In production (Vercel), VITE_API_URL is set to the Render backend URL.
@@ -96,6 +97,17 @@ export async function requestFix(
 
   const resp = await fetch(`${BASE}/fix`, { method: 'POST', body: fd })
   if (!resp.ok) throw new Error(`/fix failed: ${resp.status}`)
+  return resp.json()
+}
+
+// Demo generative fix: runs live on the deployed backend from committed
+// keyframes (no film upload). Vision drafts on watsonx; DCMP validates live.
+export async function loadDemoFix(gapStart: number, gapEnd: number): Promise<FixResult> {
+  const fd = new FormData()
+  fd.append('gap_start', String(gapStart))
+  fd.append('gap_end', String(gapEnd))
+  const resp = await fetch(`${BASE}/demo-fix`, { method: 'POST', body: fd })
+  if (!resp.ok) throw new Error(`/demo-fix failed: ${resp.status}`)
   return resp.json()
 }
 

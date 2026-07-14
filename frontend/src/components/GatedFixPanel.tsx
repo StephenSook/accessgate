@@ -8,16 +8,17 @@
  */
 import React, { useState } from 'react'
 import type { FixResult } from '../api/client'
-import { requestFix } from '../api/client'
+import { requestFix, loadDemoFix } from '../api/client'
 
 interface Props {
   gap: { start: number; end: number }
-  filmFile: File
+  filmFile: File | null
+  demoMode?: boolean
   onClose: () => void
   onAccepted: () => void
 }
 
-export function GatedFixPanel({ gap, filmFile, onClose, onAccepted }: Props) {
+export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: Props) {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<FixResult | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +29,9 @@ export function GatedFixPanel({ gap, filmFile, onClose, onAccepted }: Props) {
     setError(null)
     setResult(null)
     try {
-      const fix = await requestFix(filmFile, gap.start, gap.end)
+      const fix = (demoMode || !filmFile)
+        ? await loadDemoFix(gap.start, gap.end)
+        : await requestFix(filmFile, gap.start, gap.end)
       setResult(fix)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Fix request failed')
@@ -84,13 +87,13 @@ export function GatedFixPanel({ gap, filmFile, onClose, onAccepted }: Props) {
       {!result && !loading && (
         <button onClick={runFix}
           style={{ width: '100%', background: 'var(--ag-blue)', color: 'white', border: 'none', padding: '10px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}>
-          GENERATE FIX (Granite Vision)
+          GENERATE AUDIO DESCRIPTION
         </button>
       )}
 
       {loading && (
         <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--ag-text-muted)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-          <div style={{ marginBottom: 8 }}>GRANITE VISION DRAFTING...</div>
+          <div style={{ marginBottom: 8 }}>VISION MODEL DRAFTING...</div>
           <div style={{ width: '100%', height: 2, background: 'var(--ag-surface2)', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', left: '-40%', width: '40%', height: '100%', background: 'var(--ag-blue)', animation: 'none' }} />
           </div>
@@ -106,13 +109,18 @@ export function GatedFixPanel({ gap, filmFile, onClose, onAccepted }: Props) {
       {result && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Draft text */}
-          <Stage label="1. Granite Vision Draft" status="done">
+          <Stage label="1. Vision Draft" status="done">
             <p style={{ margin: 0, fontSize: 13, color: 'var(--ag-text)', fontStyle: 'italic', lineHeight: 1.5 }}>
               "{result.draft_text}"
             </p>
             <div style={{ marginTop: 6, fontFamily: 'var(--font-mono)', fontSize: 11, color: result.fits_gap ? 'var(--ag-green)' : 'var(--ag-red)' }}>
               {result.word_count} words · {result.fits_gap ? '✓ fits gap' : '✗ too long for gap'}
             </div>
+            {result.draft_source && (
+              <div style={{ marginTop: 4, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ag-text-muted)' }}>
+                drafted by {result.draft_source}
+              </div>
+            )}
           </Stage>
 
           {/* DCMP validation */}
