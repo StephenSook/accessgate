@@ -1,0 +1,23 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/check", "destination": "https://accessgate-api.onrender.com/check" },
+    { "source": "/fix",   "destination": "https://accessgate-api.onrender.com/fix" },
+    { "source": "/gaps",  "destination": "https://accessgate-api.onrender.com/gaps" },
+    { "source": "/health","destination": "https://accessgate-api.onrender.com/health" },
+    { "source": "/report/:id", "destination": "https://accessgate-api.onrender.com/report/:id" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options",        "value": "DENY" },
+        { "key": "X-XSS-Protection",       "value": "1; mode=block" }
+      ]
+    }
+  ]
+}
