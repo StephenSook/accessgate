@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import type { ConformanceReport } from './api/client'
-import { checkConformance } from './api/client'
+import { checkConformance, loadDemo } from './api/client'
 import { ConformanceTimeline } from './components/ConformanceTimeline'
 import { RuleResultsTable } from './components/RuleResultsTable'
 import { GatedFixPanel } from './components/GatedFixPanel'
@@ -15,6 +15,20 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [selectedGap, setSelectedGap] = useState<{ start: number; end: number } | null>(null)
   const [activeTimecode, setActiveTimecode] = useState<number>(0)
+
+  async function handleDemo() {
+    setError(null)
+    setLoading(true)
+    setFilmFile(null)
+    try {
+      const result = await loadDemo()
+      setReport(result)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -95,6 +109,10 @@ export default function App() {
               <button type="submit" disabled={loading}
                 style={{ background: loading ? 'var(--ag-surface2)' : 'var(--ag-blue)', color: 'var(--ag-text)', border: 'none', padding: '10px 24px', fontSize: 13, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', height: 38, whiteSpace: 'nowrap', letterSpacing: 0.5 }}>
                 {loading ? 'CHECKING...' : 'RUN CHECK'}
+              </button>
+              <button type="button" disabled={loading} onClick={handleDemo}
+                style={{ background: 'none', color: 'var(--ag-text-muted)', border: '1px solid var(--ag-border)', padding: '10px 18px', fontSize: 12, fontFamily: 'var(--font-mono)', cursor: loading ? 'not-allowed' : 'pointer', height: 38, whiteSpace: 'nowrap', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                LOAD DEMO
               </button>
             </div>
             {loading && <div className="ag-loading-bar" role="progressbar" aria-label="Running conformance check" />}
