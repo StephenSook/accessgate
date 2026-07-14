@@ -37,3 +37,6 @@ bob_sessions/*.json
 !bob_sessions/.gitkeep
 !standards/parsed/.gitkeep
 !standards/index/.gitkeep
+
+# Trained model weights
+data/training/classifier.pkl
