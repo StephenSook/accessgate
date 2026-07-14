@@ -78,6 +78,52 @@ def demo_report() -> JSONResponse:
 
 
 # ---------------------------------------------------------------------------
+# Judges transparency endpoint — honesty tier breakdown
+# ---------------------------------------------------------------------------
+
+@app.get("/judges")
+def judges_page() -> JSONResponse:
+    """
+    Transparency page for judges — honesty tier breakdown.
+
+    Shows exactly what is: wired-live (runs locally without any hosted API),
+    integration (calls a hosted API but gracefully degrades),
+    accelerator (IBM Bob tooling, not runtime product code).
+    """
+    return JSONResponse(content={
+        "claim": "conformance pre-check: automatable checks plus human-judgment flags",
+        "not_a": ["conformance certifier", "accessibility auditor", "legal compliance tool"],
+        "tiers": {
+            "wired_live": [
+                {"name": "23-rule evaluator engine", "evidence": "src/evaluators/", "test_count": 172},
+                {"name": "Silero VAD gap detection", "evidence": "src/gap_engine.py"},
+                {"name": "NER-style caption scorer", "evidence": "src/ner_scorer.py", "note": "Never auto-fails on ASR alone — Koenecke et al. PNAS 2020"},
+                {"name": "Caption error-type classifier", "evidence": "data/training/classifier.pkl", "f1": 0.952},
+                {"name": "RAG citation engine (Granite Embedding r2)", "evidence": "src/rag.py"},
+                {"name": "SARIF 2.1.0 exporter", "evidence": "src/exporters/sarif.py"},
+                {"name": "OSCAL POA&M v1.1.2 exporter", "evidence": "src/exporters/oscal.py"},
+                {"name": "MCP server (self-referential loop)", "evidence": "src/mcp_server/server.py"}
+            ],
+            "integration": [
+                {"name": "Granite Vision 3.2:2b (local Ollama)", "evidence": "src/generative_fix.py", "note": "Local, not hosted — requires Ollama"},
+                {"name": "Granite Guardian 3:2b (local Ollama)", "evidence": "src/generative_fix.py"},
+                {"name": "Granite Speech 4.1 2B (local transformers)", "evidence": "src/ner_scorer.py"},
+                {"name": "watsonx.ai Lite (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_showcase.py", "note": "Showcase comparison — gracefully degrades if API key absent"}
+            ],
+            "accelerator": [
+                {"name": "IBM Bob custom mode (accessibility-compliance-engineer)", "evidence": ".bob/custom_modes.yaml"},
+                {"name": "IBM Bob DCMP/FCC/Netflix rule-authoring skill", "evidence": ".bob/skills/conformance/SKILL.md"},
+                {"name": "IBM Bob /review SARIF audit", "evidence": "security/review-audit-1.sarif"},
+                {"name": "IBM Bob /review OSCAL audit", "evidence": "security/review-audit-2.oscal.json"},
+                {"name": "Self-referential MCP loop (Bob consumed its own tool during dev)", "evidence": ".bob/mcp.json"}
+            ]
+        },
+        "api_deletion_test": "Remove every hosted AI API. The engine still runs. The gap detector, caption scorer, classifier, rule evaluators, RAG citations, and SARIF/OSCAL exporters are all self-built and API-deletion-proof.",
+        "github": "https://github.com/StephenSook/accessgate"
+    })
+
+
+# ---------------------------------------------------------------------------
 # Full conformance check
 # ---------------------------------------------------------------------------
 

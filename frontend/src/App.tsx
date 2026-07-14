@@ -91,7 +91,7 @@ export default function App() {
         {/* Upload form */}
         <section aria-label="Upload files for conformance check" style={{ marginBottom: 40 }}>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto auto', gap: 16, alignItems: 'end' }}>
+            <div className="ag-upload-grid">
               <FileField id="film" name="film" label="Film / Video" accept="video/*,audio/*" required />
               <FileField id="captions" name="captions" label="Captions (.srt / .vtt)" accept=".srt,.vtt" required />
               <FileField id="ad" name="ad" label="Audio Description (.vtt)" accept=".vtt" />
@@ -126,25 +126,34 @@ export default function App() {
         {report && (
           <>
             {/* Summary bar */}
-            <section aria-label="Conformance summary" style={{ display: 'flex', gap: 24, marginBottom: 32, padding: '16px 20px', background: 'var(--ag-surface)', border: '1px solid var(--ag-border)' }}>
-              <Metric label="ERRORS" value={report.error_count} color="var(--ag-red)" />
-              <Metric label="WARNINGS" value={report.warning_count} color="var(--ag-amber)" />
-              <Metric label="FLAGS" value={report.flag_count} color="var(--ag-blue-light)" />
-              {report.ner && (
-                <Metric
-                  label="NER SCORE"
-                  value={`${(report.ner.ner_score * 100).toFixed(1)}%`}
-                  color={report.ner.passes_98_threshold ? 'var(--ag-green)' : 'var(--ag-amber)'}
-                  sub={`band ${(report.ner.band_low * 100).toFixed(1)}%–${(report.ner.band_high * 100).toFixed(1)}%`}
-                />
-              )}
-              <Metric label="GAPS" value={report.gaps.length} color="var(--ag-text-muted)" />
-              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ag-text-muted)', textTransform: 'uppercase' }}>
-                  Profile: {report.profile.toUpperCase()}
-                </span>
-              </div>
-            </section>
+            {(() => {
+              const metricsData = [
+                { label: 'ERRORS', value: report.error_count, color: 'var(--ag-red)' },
+                { label: 'WARNINGS', value: report.warning_count, color: 'var(--ag-amber)' },
+                { label: 'FLAGS', value: report.flag_count, color: 'var(--ag-blue-light)' },
+                ...(report.ner ? [{
+                  label: 'NER SCORE',
+                  value: `${(report.ner.ner_score * 100).toFixed(1)}%`,
+                  color: report.ner.passes_98_threshold ? 'var(--ag-green)' : 'var(--ag-amber)',
+                  sub: `band ${(report.ner.band_low * 100).toFixed(1)}%–${(report.ner.band_high * 100).toFixed(1)}%`,
+                }] : []),
+                { label: 'GAPS', value: report.gaps.length, color: 'var(--ag-text-muted)' },
+              ]
+              return (
+                <section aria-label="Conformance summary" style={{ display: 'flex', gap: 24, marginBottom: 32, padding: '16px 20px', background: 'var(--ag-surface)', border: '1px solid var(--ag-border)' }}>
+                  {metricsData.map((m, i) => (
+                    <div key={m.label} className="ag-metric-appear" style={{ animationDelay: `${i * 60}ms` }}>
+                      <Metric label={m.label} value={m.value} color={m.color} sub={m.sub} />
+                    </div>
+                  ))}
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ag-text-muted)', textTransform: 'uppercase' }}>
+                      Profile: {report.profile.toUpperCase()}
+                    </span>
+                  </div>
+                </section>
+              )
+            })()}
 
             {/* Conformance Timeline — the killer visual */}
             <ConformanceTimeline

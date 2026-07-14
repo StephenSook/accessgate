@@ -222,3 +222,31 @@ html, body {
   border-left: 2px solid var(--ag-border);
   padding-left: 12px;
 }
+
+/* ────────────────────────────────────────────────────────── */
+/* Metric card stagger fade-in animation                     */
+/* ────────────────────────────────────────────────────────── */
+@keyframes ag-metric-appear {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ag-metric-appear {
+  animation: ag-metric-appear 0.35s ease-out forwards;
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* Responsive upload grid                                    */
+/* ────────────────────────────────────────────────────────── */
+.ag-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto auto;
+  gap: 16px;
+  align-items: end;
+}
+
+@media (max-width: 768px) {
+  .ag-upload-grid {
+    grid-template-columns: 1fr;
+  }
+}
