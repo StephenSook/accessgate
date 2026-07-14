@@ -1,5 +1,10 @@
 # AccessGate
 
+[![CI](https://github.com/StephenSook/accessgate/actions/workflows/test.yml/badge.svg)](https://github.com/StephenSook/accessgate/actions/workflows/test.yml)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://lablab.ai)
+
 > **"Only 16 of 90 Sundance 2026 films were watchable if you are blind. We fix the rest before they ship."**
 
 AccessGate is a local, explainable **conformance pre-check engine** for film accessibility. It scores a film's caption (.srt/.vtt) and audio-description (.vtt) sidecar files against coded rules from WCAG 2.2, FCC 47 CFR 79.1(j)(2), the DCMP Captioning and Description Keys, and the Netflix delivery profile — then offers a gated generative fix for failing audio-description gaps.
@@ -136,6 +141,51 @@ AccessGate is local, open, and API-deletion-proof. The accessibility tool passes
 - **Big Buck Bunny** — CC BY 3.0. Attribution: (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org. AD-gap visual asset.
 
 See [NOTICE](NOTICE) for full third-party attribution.
+
+---
+
+## Repository Structure
+
+```
+accessgate/
+├── src/
+│   ├── engine.py              # Main CLI entry point
+│   ├── models.py              # Pydantic data models
+│   ├── registry.py            # Rule registry loader
+│   ├── caption_parser.py      # SRT/VTT parser
+│   ├── gap_engine.py          # Silero VAD gap detector
+│   ├── ner_scorer.py          # NER-style caption scorer
+│   ├── classifier.py          # Error-type classifier (macro-F1 0.952)
+│   ├── rag.py                 # Granite Embedding RAG layer
+│   ├── generative_fix.py      # Granite Vision -> DCMP -> Guardian fix
+│   ├── app.py                 # FastAPI REST server
+│   ├── live_monitor.py        # Sliding-window live caption monitor
+│   ├── watsonx_showcase.py    # watsonx.ai Lite hosted showcase call
+│   ├── evaluators/            # One file per rule family
+│   ├── exporters/             # SARIF 2.1.0 + OSCAL POA&M v1.1.2
+│   └── mcp_server/            # FastMCP server (self-referential Bob loop)
+├── rules/rules_registry.yaml  # 23 rules: FCC / WCAG / DCMP / Netflix
+├── standards/                 # Docling-parsed source documents
+├── data/
+│   ├── demo/                  # notld_broken.srt + notld_broken_ad.vtt
+│   └── training/
+│       ├── model_card.md      # AI FactSheet for the classifier
+│       └── label_schema.md    # Annotation schema
+├── frontend/                  # Vite + React + IBM Carbon SPA
+├── plan/                      # Bob Plan-mode specs
+├── security/                  # SARIF + OSCAL /review audit outputs
+├── bob_sessions/              # Exported Bob sessions + Bobalytics
+├── tests/                     # 172 passing tests
+├── AGENTS.md                  # Project policy spine (read every session)
+└── .bob/                      # Custom mode, conformance skill, MCP config
+```
+
+---
+
+## SkillsBuild
+
+Every team member has completed an IBM SkillsBuild learning activity.
+Certificate documentation is available in `submission/skillsbuild-certificates.pdf`.
 
 ---
 
