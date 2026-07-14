@@ -133,7 +133,7 @@ flowchart TB
 
 | IBM Tool | Load-Bearing Role | What Breaks Without It |
 |---|---|---|
-| **IBM Bob** | Writes ALL product code; parallel subagents; custom mode; conformance Skill; Plan specs; two /review audits (SARIF + OSCAL); Bobalytics; self-referential MCP loop | The entry itself; both Bob-named awards |
+| **IBM Bob** | Wrote all engine and frontend product code; parallel subagents; custom mode; conformance Skill; Plan specs; two /review audits (SARIF + OSCAL); Bobalytics; self-referential MCP loop | The entry itself; the required primary development tool |
 | **Granite Speech 4.1 2B** | High-accuracy reference transcript feeding the NER scorer | No ASR ground truth for caption accuracy |
 | **Granite Vision** | Drafts the AD fix on a failing gap | No generative-fix moment |
 | **Granite 4.x language** | Plain-English rule rationales, DCMP language heuristics | Rationales become hardcoded |
@@ -168,7 +168,7 @@ Each passes the **API-deletion test** — remove every hosted AI API and each st
 
 ---
 
-## IBM Bob Evidence
+## How IBM Bob Was Used
 
 | Evidence | Location |
 |---|---|
