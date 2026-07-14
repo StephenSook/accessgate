@@ -20,7 +20,7 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, File, Form, UploadFile, WebSocket, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, WebSocket, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -261,6 +261,30 @@ async def request_fix(
         return JSONResponse(content=result_dict)
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
+# ---------------------------------------------------------------------------
+# Granite report summary — plain-English executive brief via watsonx Granite
+# ---------------------------------------------------------------------------
+
+@app.get("/demo-summary")
+def demo_summary() -> JSONResponse:
+    """Granite-generated plain-English summary of the demo conformance report."""
+    from src.report_summary import summarize_report
+
+    demo_path = Path(__file__).parent.parent / "data" / "demo" / "demo_report.json"
+    if not demo_path.exists():
+        raise HTTPException(status_code=404, detail="Demo report not found.")
+    with open(demo_path) as f:
+        report = json.load(f)
+    return JSONResponse(content=summarize_report(report))
+
+
+@app.post("/summary")
+async def summary(report: dict = Body(...)) -> JSONResponse:
+    """Granite-generated plain-English summary of a posted conformance report."""
+    from src.report_summary import summarize_report
+    return JSONResponse(content=summarize_report(report))
 
 
 # ---------------------------------------------------------------------------

@@ -111,6 +111,31 @@ export async function loadDemoFix(gapStart: number, gapEnd: number): Promise<Fix
   return resp.json()
 }
 
+export interface ReportSummary {
+  summary: string
+  model_id: string
+  source: string
+  error: string | null
+}
+
+// Granite plain-English summary of the demo report (loaded via LOAD DEMO).
+export async function loadDemoSummary(): Promise<ReportSummary> {
+  const resp = await fetch(`${BASE}/demo-summary`)
+  if (!resp.ok) throw new Error(`/demo-summary failed: ${resp.status}`)
+  return resp.json()
+}
+
+// Granite summary of an uploaded report.
+export async function summarizeReport(report: ConformanceReport): Promise<ReportSummary> {
+  const resp = await fetch(`${BASE}/summary`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(report),
+  })
+  if (!resp.ok) throw new Error(`/summary failed: ${resp.status}`)
+  return resp.json()
+}
+
 export async function healthCheck(): Promise<{ status: string }> {
   const resp = await fetch(`${BASE}/health`)
   return resp.json()

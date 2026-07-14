@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
-import type { ConformanceReport } from './api/client'
-import { checkConformance, loadDemo } from './api/client'
+import type { ConformanceReport, ReportSummary } from './api/client'
+import { checkConformance, loadDemo, loadDemoSummary, summarizeReport } from './api/client'
 import { ConformanceTimeline } from './components/ConformanceTimeline'
 import { RuleResultsTable } from './components/RuleResultsTable'
 import { GatedFixPanel } from './components/GatedFixPanel'
@@ -19,14 +19,17 @@ export default function App() {
   const [selectedGap, setSelectedGap] = useState<{ start: number; end: number } | null>(null)
   const [activeTimecode, setActiveTimecode] = useState<number>(0)
   const [showJudges, setShowJudges] = useState(false)
+  const [summary, setSummary] = useState<ReportSummary | null>(null)
 
   async function handleDemo() {
     setError(null)
     setLoading(true)
     setFilmFile(null)
+    setSummary(null)
     try {
       const result = await loadDemo()
       setReport(result)
+      loadDemoSummary().then(setSummary).catch(() => {})
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
@@ -49,9 +52,11 @@ export default function App() {
     setError(null)
     setLoading(true)
     setFilmFile(film)
+    setSummary(null)
     try {
       const result = await checkConformance(film, captions, ad?.size ? ad : null, profile)
       setReport(result)
+      summarizeReport(result).then(setSummary).catch(() => {})
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
@@ -211,6 +216,14 @@ export default function App() {
                 </section>
               )
             })()}
+
+            {/* Granite plain-English summary */}
+            {summary && summary.summary && (
+              <section aria-label="Report summary" className="ag-summary-card">
+                <div className="ag-summary-card__label">Executive summary · {summary.source}</div>
+                <p className="ag-summary-card__text">{summary.summary}</p>
+              </section>
+            )}
 
             {/* Conformance Timeline — the killer visual */}
             <ConformanceTimeline

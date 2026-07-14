@@ -420,5 +420,30 @@ body {
   .ag-status__dot,
   .ag-reveal,
   .ag-metric-appear,
-  .ag-hero { animation: none; }
+  .ag-hero,
+  .ag-summary-card { animation: none; }
+}
+
+/* Granite executive-summary card */
+.ag-summary-card {
+  border: 1px solid var(--ag-border);
+  border-left: 2px solid var(--ag-blue-light);
+  background: linear-gradient(180deg, rgba(69, 137, 255, 0.05), transparent);
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  animation: ag-metric-appear 0.4s ease-out forwards;
+}
+.ag-summary-card__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ag-blue-light);
+  margin-bottom: 8px;
+}
+.ag-summary-card__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ag-text);
 }
