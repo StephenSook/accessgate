@@ -52,6 +52,7 @@ class GapRegion(BaseModel):
     start: float   # seconds
     end: float     # seconds
 
+    @computed_field
     @property
     def duration(self) -> float:
         return self.end - self.start
