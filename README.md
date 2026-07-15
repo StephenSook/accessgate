@@ -22,7 +22,8 @@ The locked claim: **conformance pre-check: automatable checks plus human-judgmen
 | Surface | URL |
 |---|---|
 | Web app | https://accessgate-web.vercel.app |
-| Mobile app (Android APK) | [Direct download](https://expo.dev/artifacts/eas/H9la7B8YzJAZaxVoGGWxbvSNrmAO5jhDY60LTc_RS9s.apk), install on any Android phone (source in [`mobile/`](mobile/), iOS via Expo Go / TestFlight) |
+| Mobile app (Android) | [APK direct download](https://expo.dev/artifacts/eas/H9la7B8YzJAZaxVoGGWxbvSNrmAO5jhDY60LTc_RS9s.apk), install on any Android phone |
+| Mobile app (iOS) | [TestFlight](https://testflight.apple.com/join/vAGsWSVz) (public link, in Apple beta review; source in [`mobile/`](mobile/)) |
 | REST API | https://accessgate-api.onrender.com |
 | Health check | https://accessgate-api.onrender.com/health |
 | Pre-computed demo report | https://accessgate-api.onrender.com/demo |
@@ -33,8 +34,8 @@ The locked claim: **conformance pre-check: automatable checks plus human-judgmen
 Open the web app and click **LOAD DEMO** to see the full conformance timeline, rule results table, NER score, and gap markers, no file upload needed. The demo runs on a Night of the Living Dead segment (United States public domain) whose caption and audio-description sidecars carry realistic conformance defects. Uploading your own caption file on the live site runs the same 23-rule engine on the hosted backend.
 
 <table><tr>
-<td><img src="docs/android-apk-qr.png" width="150" alt="QR code to download the AccessGate Android APK"></td>
-<td><b>Android APK.</b> Scan to install on any Android phone, or use the <a href="https://expo.dev/artifacts/eas/H9la7B8YzJAZaxVoGGWxbvSNrmAO5jhDY60LTc_RS9s.apk">direct download</a>. iOS via Expo Go / TestFlight.</td>
+<td align="center"><img src="docs/android-apk-qr.png" width="140" alt="QR code to download the AccessGate Android APK"><br><b>Android APK</b><br><sub>scan or <a href="https://expo.dev/artifacts/eas/H9la7B8YzJAZaxVoGGWxbvSNrmAO5jhDY60LTc_RS9s.apk">direct download</a></sub></td>
+<td align="center"><img src="docs/ios-testflight-qr.png" width="140" alt="QR code to join the AccessGate iOS TestFlight"><br><b>iOS TestFlight</b><br><sub>scan or <a href="https://testflight.apple.com/join/vAGsWSVz">join link</a></sub></td>
 </tr></table>
 
 To run the full live engine with Ollama models locally, see [Build and Run](#build-and-run).
