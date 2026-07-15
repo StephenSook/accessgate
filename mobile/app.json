@@ -9,12 +9,15 @@
     "backgroundColor": "#161616",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.stephensook.accessgate"
+      "bundleIdentifier": "com.stephensook.accessgate",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.stephensook.accessgate",
       "adaptiveIcon": {
-        "backgroundColor": "#161616",
+        "backgroundColor": "#f2efea",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
