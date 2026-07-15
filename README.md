@@ -23,7 +23,7 @@ The locked claim: **conformance pre-check: automatable checks plus human-judgmen
 |---|---|
 | Web app | https://accessgate-web.vercel.app |
 | Mobile app (Android) | [APK direct download](https://expo.dev/artifacts/eas/H9la7B8YzJAZaxVoGGWxbvSNrmAO5jhDY60LTc_RS9s.apk), install on any Android phone |
-| Mobile app (iOS) | [TestFlight](https://testflight.apple.com/join/vAGsWSVz) (public link, in Apple beta review; source in [`mobile/`](mobile/)) |
+| Mobile app (iOS) | [TestFlight](https://testflight.apple.com/join/vAGsWSVz) (public link, install on any iPhone; source in [`mobile/`](mobile/)) |
 | REST API | https://accessgate-api.onrender.com |
 | Health check | https://accessgate-api.onrender.com/health |
 | Pre-computed demo report | https://accessgate-api.onrender.com/demo |
