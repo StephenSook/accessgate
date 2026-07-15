@@ -1,6 +1,6 @@
 # ACCESSGATE
 
-**A local, explainable conformance pre-check engine for film accessibility — click a failing audio-description gap, and Granite Vision drafts a fix, the DCMP validator re-checks it, Granite Guardian screens it, and the row flips green live on an interactive timeline.**
+**A local, explainable conformance pre-check engine for film accessibility: click a failing audio-description gap, and Granite Vision drafts a fix, the DCMP validator re-checks it, Granite Guardian screens it, and the row flips green live on an interactive timeline.**
 
 [![CI](https://github.com/StephenSook/accessgate/actions/workflows/test.yml/badge.svg)](https://github.com/StephenSook/accessgate/actions/workflows/test.yml)
 [![Live demo](https://img.shields.io/badge/live%20demo-online-3fb950.svg)](https://accessgate-web.vercel.app)
@@ -22,7 +22,7 @@ The locked claim: **conformance pre-check: automatable checks plus human-judgmen
 | Surface | URL |
 |---|---|
 | Web app | https://accessgate-web.vercel.app |
-| Mobile app (Expo / React Native) | [`mobile/`](mobile/) — iOS via Expo Go, Android via EAS APK |
+| Mobile app (Android APK) | [Direct download](https://expo.dev/artifacts/eas/H9la7B8YzJAZaxVoGGWxbvSNrmAO5jhDY60LTc_RS9s.apk), install on any Android phone (source in [`mobile/`](mobile/), iOS via Expo Go / TestFlight) |
 | REST API | https://accessgate-api.onrender.com |
 | Health check | https://accessgate-api.onrender.com/health |
 | Pre-computed demo report | https://accessgate-api.onrender.com/demo |
@@ -32,19 +32,24 @@ The locked claim: **conformance pre-check: automatable checks plus human-judgmen
 
 Open the web app and click **LOAD DEMO** to see the full conformance timeline, rule results table, NER score, and gap markers, no file upload needed. The demo runs on a Night of the Living Dead segment (United States public domain) whose caption and audio-description sidecars carry realistic conformance defects. Uploading your own caption file on the live site runs the same 23-rule engine on the hosted backend.
 
+<table><tr>
+<td><img src="docs/android-apk-qr.png" width="150" alt="QR code to download the AccessGate Android APK"></td>
+<td><b>Android APK.</b> Scan to install on any Android phone, or use the <a href="https://expo.dev/artifacts/eas/H9la7B8YzJAZaxVoGGWxbvSNrmAO5jhDY60LTc_RS9s.apk">direct download</a>. iOS via Expo Go / TestFlight.</td>
+</tr></table>
+
 To run the full live engine with Ollama models locally, see [Build and Run](#build-and-run).
 
 ---
 
 ## The Problem
 
-At Sundance 2026, only 16 of 90 feature films offered audio description — down from 26 in 2024. Festivals, distributors, and streaming platforms reject non-compliant caption and audio-description files using automated QC pipelines. Manual QC costs $9–$14/min for audio description. No open-source tool checks both caption and audio-description conformance against WCAG 2.2, FCC 47 CFR 79.1(j)(2), DCMP, and Netflix standards simultaneously. ADA Title II compliance deadlines arrive April 2027 and April 2028.
+At Sundance 2026, only 16 of 90 feature films offered audio description, down from 26 in 2024. Festivals, distributors, and streaming platforms reject non-compliant caption and audio-description files using automated QC pipelines. Manual QC costs $9-$14/min for audio description. No open-source tool checks both caption and audio-description conformance against WCAG 2.2, FCC 47 CFR 79.1(j)(2), DCMP, and Netflix standards simultaneously. ADA Title II compliance deadlines arrive April 2027 and April 2028.
 
 ---
 
 ## What It Does
 
-AccessGate ingests a film plus its caption (.srt/.vtt) and audio-description (.vtt) sidecar files, scores them against **23 coded rules** across four standards families, and returns a per-rule pass/fail report where every flag cites the exact standard text it came from — retrieved at runtime from a Granite Embedding index, never hardcoded.
+AccessGate ingests a film plus its caption (.srt/.vtt) and audio-description (.vtt) sidecar files, scores them against **23 coded rules** across four standards families, and returns a per-rule pass/fail report where every flag cites the exact standard text it came from, retrieved at runtime from a Granite Embedding index, never hardcoded.
 
 Click a failing audio-description gap on the conformance timeline and the gated fix loop runs: Granite Vision drafts a description sized to fit the silent window, the DCMP structure validator re-checks it, Granite Guardian screens it for content safety, and the row flips green live.
 
@@ -54,7 +59,7 @@ Click a failing audio-description gap on the conformance timeline and the gated 
 
 ## AccessGate in One Loop
 
-> A film's caption file has a 44-character line, a 1.2-second cue, a 240-wpm burst, a sound effect without a source bracket, and a 2.1-second sync drift. Its audio-description file has a past-tense line, a jargon term, and an AD line overlapping dialogue. The NER caption score lands at 94.1% — below 98%, but ASR carries measured racial disparity (Koenecke et al., PNAS 2020: WER 0.35 for Black speakers vs 0.19 for white), so the band is flagged for human review, never auto-failed. Every flag cites the exact standard section that governs it. Click the failing AD gap at 67.2s — Granite Vision drafts a present-tense, active-voice, third-person description that fits the 6.6-second window. The DCMP validator passes it. Guardian clears it. The row flips green.
+> A film's caption file has a 44-character line, a 1.2-second cue, a 240-wpm burst, a sound effect without a source bracket, and a 2.1-second sync drift. Its audio-description file has a past-tense line, a jargon term, and an AD line overlapping dialogue. The NER caption score lands at 94.1%, below 98%, but ASR carries measured racial disparity (Koenecke et al., PNAS 2020: WER 0.35 for Black speakers vs 0.19 for white), so the band is flagged for human review, never auto-failed. Every flag cites the exact standard section that governs it. Click the failing AD gap at 67.2s. Granite Vision drafts a present-tense, active-voice, third-person description that fits the 6.6-second window. The DCMP validator passes it. Guardian clears it. The row flips green.
 
 ---
 
@@ -151,12 +156,12 @@ Every row below is wired in the shipped code, not aspirational. The wiring colum
 
 ## Four Self-Built Load-Bearing Artifacts
 
-Each passes the **API-deletion test** — remove every hosted AI API and each still runs.
+Each passes the **API-deletion test**: remove every hosted AI API and each still runs.
 
-1. **Conformance rule engine** — NER scorer (`(N-E-R)/N`, Romero-Fresco/Ofcom broadcast model), 98% threshold, confidence bands, never auto-fails on ASR alone per Koenecke et al. PNAS 2020
-2. **Dialogue-gap detection and timing engine** — Silero VAD + silence detection, gap complement above 2.5s minimum, merged across sub-300ms blips
-3. **Audio-description structure validator** — DCMP rules: word-count-fits-gap, no-overlap-with-dialogue, present-tense, active-voice, third-person, objectivity flags
-4. **Caption error-type classifier** — supervised logistic regression on a synthetic weak-labeled set, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.94**
+1. **Conformance rule engine**: NER scorer (`(N-E-R)/N`, Romero-Fresco/Ofcom broadcast model), 98% threshold, confidence bands, never auto-fails on ASR alone per Koenecke et al. PNAS 2020
+2. **Dialogue-gap detection and timing engine**: Silero VAD + silence detection, gap complement above 2.5s minimum, merged across sub-300ms blips
+3. **Audio-description structure validator**: DCMP rules: word-count-fits-gap, no-overlap-with-dialogue, present-tense, active-voice, third-person, objectivity flags
+4. **Caption error-type classifier**: supervised logistic regression on a synthetic weak-labeled set, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.94**
 
 ---
 
@@ -262,7 +267,7 @@ accessgate/
 
 ## Selected Challenge Theme
 
-**Reimagine Creative Industries with AI** — AccessGate reimagines the post-production accessibility step that determines whether blind and Deaf audiences can experience a film at all. It removes the manual QC bottleneck between a finished film and its full audience.
+**Reimagine Creative Industries with AI**: AccessGate reimagines the post-production accessibility step that determines whether blind and Deaf audiences can experience a film at all. It removes the manual QC bottleneck between a finished film and its full audience.
 
 The same rule-engine-plus-gated-fix architecture generalizes to music rights conformance and dubbing QA.
 
@@ -273,15 +278,15 @@ The same rule-engine-plus-gated-fix architecture generalizes to music rights con
 - ADA Title II compliance deadlines: April 26, 2027 (population 50,000+) and April 26, 2028 (smaller entities)
 - India MIB mandated audio description and closed captions for theatrical films (O.M. 15.03.2024) and OTT platforms (06.02.2026)
 - Netflix auto-QC rejects non-compliant timed-text files before human review
-- Manual AD QC costs $9–$14/min — AccessGate reduces the pre-check step to seconds
+- Manual AD QC costs $9-$14/min, AccessGate reduces the pre-check step to seconds
 - The accessibility tool passes its own accessibility audit (axe-core, A11Y 100%)
 
 ---
 
 ## Demo Assets
 
-- **Night of the Living Dead (1968)** — US public domain (published without valid copyright notice). Source: archive.org/details/night-of-the-living-dead_1968
-- **Big Buck Bunny** — CC BY 3.0. Attribution: (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org
+- **Night of the Living Dead (1968)**: US public domain (published without valid copyright notice). Source: archive.org/details/night-of-the-living-dead_1968
+- **Big Buck Bunny**: CC BY 3.0. Attribution: (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org
 
 See [NOTICE](NOTICE) for full third-party attribution.
 
@@ -295,4 +300,4 @@ Every team member has completed an IBM SkillsBuild learning activity. Certificat
 
 ## License
 
-MIT — see [LICENSE](LICENSE). See [NOTICE](NOTICE) for third-party media and training-data attribution.
+MIT. See [LICENSE](LICENSE). See [NOTICE](NOTICE) for third-party media and training-data attribution.
