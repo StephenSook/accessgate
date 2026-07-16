@@ -59,6 +59,8 @@ Click a failing audio-description gap on the conformance timeline and the gated 
 
 **Delete every hosted AI API. The engine still runs and still produces a report.** That property, plus a deep and genuinely load-bearing IBM stack built through IBM Bob, is the differentiator.
 
+To our knowledge, AccessGate is the first tool that is all of these at once: open, explainable, covering both captions and audio description, citing the exact standard clause behind every flag, and drafting a gated generative fix. Commercial timed-text QC tools exist, but none are open, cover both surfaces, cite the standard text, and fix the gap. The novelty is the intersection, not any single feature.
+
 ---
 
 ## AccessGate in One Loop
@@ -277,6 +279,8 @@ accessgate/
 **Reimagine Creative Industries with AI**: AccessGate reimagines the post-production accessibility step that determines whether blind and Deaf audiences can experience a film at all. It removes the manual QC bottleneck between a finished film and its full audience.
 
 The same rule-engine-plus-gated-fix architecture generalizes to music rights conformance and dubbing QA.
+
+**Who deploys it.** A studio, streamer, festival, or post-production house runs AccessGate as the caption-and-audio-description QC gate between a finished film and its release, and the live [`/judges`](https://accessgate-api.onrender.com/judges) page doubles as that operator's transparency console: every claim traces to a live endpoint. It is a product a QC team could drop into their pipeline on Monday, not a concept.
 
 ---
 
