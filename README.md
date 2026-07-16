@@ -208,8 +208,10 @@ ollama pull granite3.2:8b
 # 3. Copy env template
 cp .env.example .env  # fill in WATSONX_API_KEY + WATSONX_PROJECT if you have them
 
-# 4. Run the conformance engine (CLI)
-python -m src.engine data/demo/notld_broken.srt data/demo/notld_broken_ad.vtt
+# 4. Run the conformance engine (CLI): <film/audio> <caption> [audio-description]
+# Writes JSON + SARIF + OSCAL to outputs/. Exits non-zero when conformance fails.
+# The 3 dialogue-free gaps come from VAD on the audio track.
+python -m src.engine data/demo/notld_segment_16k.wav data/demo/notld_broken.srt data/demo/notld_broken_ad.vtt
 
 # 5. Run tests
 pytest
