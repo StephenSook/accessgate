@@ -69,3 +69,4 @@ submission/*.pdf
 
 # Internal build/strategy plan — scaffolding, not product docs (kept local only)
 plan/
+submission/*.md

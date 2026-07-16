@@ -53,6 +53,8 @@ At Sundance 2026, only 16 of 90 feature films offered audio description, down fr
 
 AccessGate ingests a film plus its caption (.srt/.vtt) and audio-description (.vtt) sidecar files, scores them against **23 coded rules** across four standards families, and returns a per-rule pass/fail report where every flag cites the exact standard text it came from, retrieved at runtime from a Granite Embedding index, never hardcoded.
 
+**Every flag is verifiable, not guessed.** Run it on a real broadcast-defective caption file and each finding traces to the exact FCC, WCAG, DCMP, or Netflix text a human reviewer can open and check, not a black-box score. The same report speaks to two audiences: the rule-by-rule citations for compliance engineers, and a plain-English watsonx executive summary for producers and other non-technical stakeholders.
+
 Click a failing audio-description gap on the conformance timeline and the gated fix loop runs: Granite Vision drafts a description sized to fit the silent window, the DCMP structure validator re-checks it, Granite Guardian screens it for content safety, and the row flips green live.
 
 **Delete every hosted AI API. The engine still runs and still produces a report.** That property, plus a deep and genuinely load-bearing IBM stack built through IBM Bob, is the differentiator.
@@ -181,6 +183,8 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 
 ## How IBM Bob Was Used
 
+IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 195-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
+
 | Evidence | Location |
 |---|---|
 | Custom mode (`accessibility-compliance-engineer`) | `.bob/custom_modes.yaml` |
@@ -188,7 +192,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 | /review audit 1 (SARIF) | `security/review-audit-1.sarif` |
 | /review audit 2 (OSCAL POA&M) | `security/review-audit-2.oscal.json` |
 | Self-referential MCP config | `.bob/mcp.json` |
-| Bobalytics screenshots | `bob_sessions/` |
+| Bobalytics usage screenshot | `bob_sessions/bobalytics-usage.png` |
 
 ---
 
@@ -259,8 +263,7 @@ accessgate/
 ├── frontend/                  # Vite + React + IBM Carbon SPA
 ├── mobile/                    # Expo / React Native (iOS + Android) client
 ├── security/                  # SARIF + OSCAL /review audit outputs
-├── bob_sessions/              # IBM Bob session exports + Bobalytics screenshots
-├── submission/                # Demo video beat sheet, SkillsBuild cert instructions
+├── bob_sessions/              # IBM Bob usage screenshot (Bobalytics)
 ├── tests/                     # 195 passing tests
 ├── render.yaml                # Render deployment config (FastAPI backend)
 ├── AGENTS.md                  # Project policy spine (read every session)
@@ -298,7 +301,7 @@ See [NOTICE](NOTICE) for full third-party attribution.
 
 ## SkillsBuild
 
-Every team member has completed an IBM SkillsBuild learning activity. Certificate documentation is in `submission/`.
+Every team member has completed an IBM SkillsBuild learning activity. The completion certificate is submitted on the BeMyApp project page.
 
 ---
 
