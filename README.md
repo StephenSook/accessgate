@@ -5,7 +5,7 @@
 [![CI](https://github.com/StephenSook/accessgate/actions/workflows/test.yml/badge.svg)](https://github.com/StephenSook/accessgate/actions/workflows/test.yml)
 [![Live demo](https://img.shields.io/badge/live%20demo-online-3fb950.svg)](https://accessgate-web.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://lablab.ai)
 [![195 tests](https://img.shields.io/badge/tests-195%20passing-3fb950.svg)](tests/)
 
@@ -175,7 +175,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 | Rule engine: violations detected | **10 / 10** | `data/demo/notld_broken.srt` + `notld_broken_ad.vtt` degradation recipe |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
-| Tests passing | **195** | `pytest` on Python 3.11 |
+| Tests passing | **195** | `pytest` on Python 3.11 and 3.12 |
 
 ---
 
