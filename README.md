@@ -17,6 +17,20 @@ The locked claim: **conformance pre-check: automatable checks plus human-judgmen
 
 ---
 
+## Judge Quick Access
+
+Fastest path to check each thing that matters. No account, no keys.
+
+| To verify... | Go here |
+|---|---|
+| **Try it, zero setup** | [Live web app](https://accessgate-web.vercel.app), click **LOAD DEMO** (no upload, no keys) |
+| **Claims are wired, not aspirational** | [IBM Stack](#ibm-stack-what-is-actually-wired), then grep any row in the shipped code |
+| **Honesty, live** | [`/judges`](https://accessgate-api.onrender.com/judges) transparency endpoint |
+| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (195 passing), `python -m src.engine` |
+| **Results measured, not asserted** | [Evaluation](#evaluation-measured-not-asserted) |
+
+---
+
 ## Live Demo
 
 | Surface | URL |
