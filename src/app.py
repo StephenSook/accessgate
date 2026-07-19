@@ -100,6 +100,12 @@ def judges_page() -> JSONResponse:
     return JSONResponse(content={
         "claim": "conformance pre-check: automatable checks plus human-judgment flags",
         "not_a": ["conformance certifier", "accessibility auditor", "legal compliance tool"],
+        "scope_boundaries": [
+            {"not_checked": "Audio-description final-mix loudness",
+             "why": "AccessGate scores the audio-description sidecar file for structure, timing, and gap-fit, not the delivered audio mix level. Surfaced by a real audio-description user who described AD mixed too quietly under the soundtrack in one release."},
+            {"not_checked": "Semantic sufficiency of a description or caption",
+             "why": "Whether a present, well-timed description actually conveys the needed meaning is a human-judgment flag, not an automated pass or fail."},
+        ],
         "tiers": {
             "wired_live": [
                 {"name": "23-rule evaluator engine", "evidence": "src/evaluators/, tests/test_evaluators.py"},
