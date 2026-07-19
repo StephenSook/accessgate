@@ -61,6 +61,12 @@ To run the full live engine with Ollama models locally, see [Build and Run](#bui
 
 At Sundance 2026, only 16 of 90 feature films offered audio description, down from 26 in 2024. Festivals, distributors, and streaming platforms reject non-compliant caption and audio-description files using automated QC pipelines. Manual QC costs $9-$14/min for audio description. No open-source tool checks both caption and audio-description conformance against WCAG 2.2, FCC 47 CFR 79.1(j)(2), DCMP, and Netflix standards simultaneously. ADA Title II compliance deadlines arrive April 2027 and April 2028.
 
+**A real audio-description user on what bad AD feels like** (recruited via the ACB Audio Description Project community; name withheld for privacy, consent on file):
+
+> "Really bad audio description gives me too much info, and sometimes too little info."
+
+That balance, never too sparse, never overcrowded, sized to the gap, is exactly the DCMP Description Key rule AccessGate scores. The same user also flagged audio description mixed too quietly under the soundtrack, a final-mix issue AccessGate does not check: it scores the audio-description sidecar's structure, timing, and gap-fit, not the delivered mix loudness. That boundary is stated on the [`/judges`](https://accessgate-api.onrender.com/judges) page.
+
 ---
 
 ## What It Does
