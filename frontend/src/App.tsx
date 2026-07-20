@@ -87,6 +87,9 @@ export default function App() {
 
   return (
     <>
+      {/* Skip link: first focusable element, jumps past the header to main. */}
+      <a href="#main-content" className="ag-skip-link">Skip to main content</a>
+
       {/* Corner bracket frame decoration (21hrs.space motif) */}
       <div className="ag-frame" aria-hidden="true">
         <div className="ag-frame-corner" />
@@ -143,13 +146,14 @@ export default function App() {
 
         <div className="ag-divider" style={{ marginBottom: 32 }} />
 
-        <main>
+        <main id="main-content" tabIndex={-1}>
 
         {/* Judges transparency panel */}
         {showJudges && <JudgesPage />}
 
         {/* Upload form */}
         <section aria-label="Upload files for conformance check" style={{ marginBottom: 40 }}>
+          <h2 className="ag-sr-only">Upload a film to check</h2>
           <form onSubmit={handleSubmit}>
             <div className="ag-upload-grid">
               <FileField id="film" name="film" label="Film / Video" accept="video/*,audio/*" required />
@@ -252,6 +256,7 @@ export default function App() {
             )}
 
             {/* Conformance Timeline — the killer visual */}
+            <h3 className="ag-sr-only">Conformance timeline</h3>
             <ConformanceTimeline
               report={report}
               activeTimecode={activeTimecode}
@@ -286,6 +291,7 @@ export default function App() {
 
             <div style={{ marginTop: 32, display: 'grid', gridTemplateColumns: selectedGap ? '1fr 380px' : '1fr', gap: 24 }}>
               {/* Rule Results Table */}
+              <h3 className="ag-sr-only">Rule results</h3>
               <RuleResultsTable
                 results={report.results}
                 onTimecodeClick={setActiveTimecode}

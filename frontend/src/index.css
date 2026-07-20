@@ -35,6 +35,23 @@
   border: 0;
 }
 
+/* Skip link: off-screen until focused, then visible at the top-left. */
+.ag-skip-link {
+  position: absolute;
+  left: 8px;
+  top: -48px;
+  z-index: 1000;
+  background: var(--ag-blue);
+  color: #fff;
+  padding: 8px 14px;
+  font-size: 13px;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.ag-skip-link:focus {
+  top: 8px;
+}
+
 html, body {
   margin: 0;
   padding: 0;
