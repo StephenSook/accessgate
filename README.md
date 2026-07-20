@@ -311,6 +311,7 @@ The same rule-engine-plus-gated-fix architecture generalizes to music rights con
 - Netflix auto-QC rejects non-compliant timed-text files before human review
 - Manual AD QC costs $9-$14/min, AccessGate reduces the pre-check step to seconds
 - The accessibility tool passes its own accessibility audit (axe-core, A11Y 100%)
+- **Validated by a real screen-reader user.** An audio-description user tested the live app with the JAWS screen reader and reported it "very accessible," with "all labels read correctly" (film, captions, audio description, and the controls). Two of their suggestions, a heading outline and a skip-to-content link, shipped the same day. Consent on file.
 
 ---
 
