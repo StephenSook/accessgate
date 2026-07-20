@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import type { ConformanceReport, ReportSummary } from './api/client'
 import { checkConformance, loadDemo, loadDemoSummary, summarizeReport } from './api/client'
 import { ConformanceTimeline } from './components/ConformanceTimeline'
@@ -19,18 +19,37 @@ export default function App() {
   const [activeTimecode, setActiveTimecode] = useState<number>(0)
   const [showJudges, setShowJudges] = useState(false)
   const [summary, setSummary] = useState<ReportSummary | null>(null)
+  const [statusMsg, setStatusMsg] = useState('')
+  const resultsHeadingRef = useRef<HTMLHeadingElement>(null)
+
+  // Move focus to the results heading after a run so a screen-reader user
+  // lands on the results. The aria-live region below reads out the summary.
+  useEffect(() => {
+    if (report) resultsHeadingRef.current?.focus()
+  }, [report])
+
+  function announceReport(r: ConformanceReport) {
+    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`
+    const parts = [plural(r.error_count, 'error'), plural(r.warning_count, 'warning'), plural(r.flag_count, 'flag')]
+    if (r.ner) parts.push(`NER score ${(r.ner.ner_score * 100).toFixed(1)} percent`)
+    parts.push(plural(r.gaps.length, 'gap'))
+    setStatusMsg(`Conformance check complete. ${parts.join(', ')}. Results follow below.`)
+  }
 
   async function handleDemo() {
     setError(null)
     setLoading(true)
     setFilmFile(null)
     setSummary(null)
+    setStatusMsg('Running conformance check, please wait.')
     try {
       const result = await loadDemo()
       setReport(result)
+      announceReport(result)
       loadDemoSummary().then(setSummary).catch(() => {})
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error')
+      setStatusMsg('')
     } finally {
       setLoading(false)
     }
@@ -52,12 +71,15 @@ export default function App() {
     setLoading(true)
     setFilmFile(film)
     setSummary(null)
+    setStatusMsg('Running conformance check, please wait.')
     try {
       const result = await checkConformance(film, captions, ad?.size ? ad : null, profile)
       setReport(result)
+      announceReport(result)
       summarizeReport(result).then(setSummary).catch(() => {})
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error')
+      setStatusMsg('')
     } finally {
       setLoading(false)
     }
@@ -74,6 +96,9 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px 80px' }}>
+
+        {/* Live region: announces run start and completion to assistive tech. */}
+        <div role="status" aria-live="polite" className="ag-sr-only">{statusMsg}</div>
 
         {/* Header */}
         <header style={{ marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -117,6 +142,8 @@ export default function App() {
         </header>
 
         <div className="ag-divider" style={{ marginBottom: 32 }} />
+
+        <main>
 
         {/* Judges transparency panel */}
         {showJudges && <JudgesPage />}
@@ -185,6 +212,7 @@ export default function App() {
         {/* Results */}
         {report && (
           <div className="ag-reveal">
+            <h2 ref={resultsHeadingRef} tabIndex={-1} className="ag-sr-only">Conformance results</h2>
             {/* Summary bar */}
             {(() => {
               const metricsData = [
@@ -285,6 +313,8 @@ export default function App() {
             </div>
           </div>
         )}
+
+        </main>
       </div>
     </>
   )
