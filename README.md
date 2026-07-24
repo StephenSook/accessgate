@@ -166,7 +166,7 @@ flowchart TB
 
 ## IBM Stack (what is actually wired)
 
-Every row below is wired in the shipped code, not aspirational. The wiring column states exactly how, because honest labeling is the point: a judge can grep any claim. See the live `/judges` endpoint for the same breakdown.
+AccessGate runs on **five IBM Granite models** (Vision, Guardian, Speech, Embedding, and Granite 3 8B via watsonx.ai), plus watsonx-hosted vision and Docling, every one wired in the shipped code, not a badge. Every row below states exactly how, because honest labeling is the point: a judge can grep any claim. See the live `/judges` endpoint for the same breakdown.
 
 | IBM Tool | Role | Wiring |
 |---|---|---|
@@ -208,6 +208,8 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 ## How IBM Bob Was Used
 
 IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 195-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
+
+The most distinctive use is a self-referential loop: AccessGate's own MCP server (exposing `check_conformance`, `detect_gaps`, and `score_captions`) was registered in Bob and consumed by Bob during development, so Bob checked the tool's conformance output using the tool itself. The engine became its own test harness, inside the primary development tool.
 
 | Evidence | Location |
 |---|---|
