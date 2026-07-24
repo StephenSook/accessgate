@@ -71,6 +71,8 @@ That balance, never too sparse, never overcrowded, sized to the gap, is exactly 
 
 ## What It Does
 
+Two accessibility surfaces, two audiences. Captions are what make a film usable for **Deaf and hard-of-hearing** viewers; audio description is what makes it usable for **blind and low-vision** viewers. AccessGate checks both, against the same coded standards.
+
 AccessGate ingests a film plus its caption (.srt/.vtt) and audio-description (.vtt) sidecar files, scores them against **23 coded rules** across four standards families, and returns a per-rule pass/fail report where every flag cites the exact standard text it came from, retrieved at runtime from a Granite Embedding index, never hardcoded.
 
 **Every flag is verifiable, not guessed.** Run it on a real broadcast-defective caption file and each finding traces to the exact FCC, WCAG, DCMP, or Netflix text a human reviewer can open and check, not a black-box score. The same report speaks to two audiences: the rule-by-rule citations for compliance engineers, and a plain-English watsonx executive summary for producers and other non-technical stakeholders.
@@ -296,7 +298,7 @@ accessgate/
 
 ## Selected Challenge Theme
 
-**Reimagine Creative Industries with AI**: AccessGate reimagines the post-production accessibility step that determines whether blind and Deaf audiences can experience a film at all. It removes the manual QC bottleneck between a finished film and its full audience.
+**Reimagine Creative Industries with AI**: AccessGate reimagines the post-production accessibility step that determines whether blind, low-vision, Deaf, and hard-of-hearing audiences can experience a film at all. It removes the manual QC bottleneck between a finished film and its full audience.
 
 The same rule-engine-plus-gated-fix architecture generalizes to music rights conformance and dubbing QA.
 
