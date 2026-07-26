@@ -13,7 +13,9 @@
     { "source": "/demo",  "destination": "https://accessgate-api.onrender.com/demo" },
     { "source": "/judges","destination": "https://accessgate-api.onrender.com/judges" },
     { "source": "/health","destination": "https://accessgate-api.onrender.com/health" },
-    { "source": "/report/:id", "destination": "https://accessgate-api.onrender.com/report/:id" }
+    { "source": "/report/:id", "destination": "https://accessgate-api.onrender.com/report/:id" },
+    { "source": "/review/:path*", "destination": "https://accessgate-api.onrender.com/review/:path*" },
+    { "source": "/export/:path*", "destination": "https://accessgate-api.onrender.com/export/:path*" }
   ],
   "headers": [
     {
