@@ -1,0 +1,73 @@
+WEBVTT - AccessGate conformance findings
+
+1
+00:00:37.800 --> 00:00:39.800
+[FCC-CMP-01] 150 speech region(s) have no caption coverage. First uncovered region: 37.80s–37.83s.
+
+2
+00:00:31.500 --> 00:00:33.500
+[DCMP-CAP-01] Line exceeds 32 chars (45 chars) at 31.50s: 'I already lost a whole hour of sleep on this.'
+
+3
+00:02:48.600 --> 00:02:50.600
+[DCMP-CAP-01] Line exceeds 32 chars (53 chars) at 168.60s: 'Look here comes one of them right now, come on hurry.'
+
+4
+00:02:48.600 --> 00:02:50.600
+[DCMP-CAP-03] Caption at 168.60s exceeds 225 wpm (660 wpm). Text: 'Look here comes one of them right now, come on hur'
+
+5
+00:00:36.900 --> 00:00:38.900
+[DCMP-CAP-04] Caption at 36.90s displayed for 0.80s (minimum 2.0s). Text: 'There it is.'
+
+6
+00:02:48.600 --> 00:02:50.600
+[DCMP-CAP-04] Caption at 168.60s displayed for 1.00s (minimum 2.0s). Text: 'Look here comes one of them right now, come on hur'
+
+7
+00:00:46.000 --> 00:00:48.000
+[DCMP-DESC-04] AD at 46.00s has 10 words but gap (3.93s) fits only 9 words at 150 wpm.
+
+8
+00:02:37.900 --> 00:02:39.900
+[DCMP-DESC-04] AD at 157.90s has 8 words but gap (2.58s) fits only 6 words at 150 wpm.
+
+9
+00:00:39.600 --> 00:00:41.600
+[DCMP-DESC-05] AD at 39.60s–44.40s overlaps a detected speech region. Text: 'A sedan drove slowly along the cemetery road.'
+
+10
+00:00:46.000 --> 00:00:48.000
+[DCMP-DESC-05] AD at 46.00s–49.20s overlaps a detected speech region. Text: 'In a dolly shot, the camera creeps toward the graves.'
+
+11
+00:02:37.900 --> 00:02:39.900
+[DCMP-DESC-05] AD at 157.90s–160.10s overlaps a detected speech region. Text: 'A figure lurches out from behind the trees.'
+
+12
+00:00:39.600 --> 00:00:41.600
+[DCMP-DESC-06] AD at 39.60s may be a sentence fragment (no verb detected). Text: 'A sedan drove slowly along the cemetery road.'
+
+13
+00:00:46.000 --> 00:00:48.000
+[DCMP-DESC-06] AD at 46.00s may be a sentence fragment (no verb detected). Text: 'In a dolly shot, the camera creeps toward the graves.'
+
+14
+00:02:37.900 --> 00:02:39.900
+[DCMP-DESC-06] AD at 157.90s may be a sentence fragment (no verb detected). Text: 'A figure lurches out from behind the trees.'
+
+15
+00:02:48.600 --> 00:02:50.600
+[NFLX-CPS-01] Caption at 168.60s exceeds 20.0 CPS (53.0 CPS, adult profile). Text: 'Look here comes one of them right now, come on hur'
+
+16
+00:00:31.500 --> 00:00:33.500
+[NFLX-LEN-01] Caption at 31.50s: line 45 chars: 'I already lost a whole hour of sleep on this.'
+
+17
+00:02:48.600 --> 00:02:50.600
+[NFLX-LEN-01] Caption at 168.60s: line 53 chars: 'Look here comes one of them right now, come on hurry.'
+
+18
+00:00:36.900 --> 00:00:38.900
+[NFLX-DUR-01] Caption at 36.90s: duration 0.800s below minimum 0.833s

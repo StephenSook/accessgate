@@ -45,6 +45,7 @@ from src.evaluators.netflix import (
 )
 from src.exporters.sarif import export_sarif
 from src.exporters.oscal import export_oscal
+from src.exporters.editor import export_editor_bundle
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -237,10 +238,16 @@ def main() -> None:
     export_sarif(report, sarif_path)
     export_oscal(report, oscal_path)
 
+    # Editor-native exports: a file a captioner/AD writer can open and use,
+    # not just a compliance document. CSV triage + navigable WebVTT markers.
+    editor_files = export_editor_bundle(report, output_dir, f"{stem}_report")
+
     logger.info("Outputs written:")
     logger.info("  JSON:  %s", json_path)
     logger.info("  SARIF: %s", sarif_path)
     logger.info("  OSCAL: %s", oscal_path)
+    logger.info("  CSV (findings): %s", editor_files["findings_csv"])
+    logger.info("  VTT (markers):  %s", editor_files["markers_vtt"])
 
     # Summary
     fail_count = sum(1 for r in report.results if r.status == "fail")

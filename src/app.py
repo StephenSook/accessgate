@@ -115,6 +115,7 @@ def judges_page() -> JSONResponse:
                 {"name": "RAG citation engine (Granite Embedding r2)", "evidence": "src/rag.py"},
                 {"name": "SARIF 2.1.0 exporter", "evidence": "src/exporters/sarif.py"},
                 {"name": "OSCAL POA&M v1.1.2 exporter", "evidence": "src/exporters/oscal.py"},
+                {"name": "Editor-native exports (WebVTT AD track, findings CSV, WebVTT markers)", "evidence": "src/exporters/editor.py", "note": "A file a captioner or AD writer can open and use, not just a compliance document; the CSV is formula-injection hardened. Example artifacts: data/demo/editor_exports/"},
                 {"name": "MCP server (self-referential loop)", "evidence": "src/mcp_server/server.py"}
             ],
             "integration": [
@@ -132,7 +133,8 @@ def judges_page() -> JSONResponse:
                 {"name": "Self-referential MCP loop (Bob consumed its own tool during dev)", "evidence": ".bob/mcp.json"}
             ]
         },
-        "api_deletion_test": "Remove every hosted AI API. The engine still runs. The gap detector, caption scorer, classifier, rule evaluators, RAG citations, and SARIF/OSCAL exporters are all self-built and API-deletion-proof.",
+        "api_deletion_test": "Remove every hosted AI API. The engine still runs. The gap detector, caption scorer, classifier, rule evaluators, RAG citations, and the SARIF/OSCAL/editor exporters are all self-built and API-deletion-proof.",
+        "demo_transparency": "Nothing in the demo is synthetic: the report is the real engine's output on the real public-domain Night of the Living Dead audio and captions, and any uploaded file is analyzed and drafted live end to end. On the hosted site the /demo-fix endpoint drafts the gated AD fix live via watsonx-hosted vision. For the recorded video's fix beat, the AD draft was pre-generated for take reliability (the local 2b vision model over-describes the short window on camera); the DCMP structure validator and the Granite Guardian safety screen still ran live on it, and the same fix drafts live on the hosted site.",
         "github": "https://github.com/StephenSook/accessgate"
     })
 

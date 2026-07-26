@@ -79,6 +79,8 @@ AccessGate ingests a film plus its caption (.srt/.vtt) and audio-description (.v
 
 Click a failing audio-description gap on the conformance timeline and the gated fix loop runs: Granite Vision drafts a description sized to fit the silent window, the DCMP structure validator re-checks it, Granite Guardian screens it for content safety, and the row flips green live.
 
+**Each of the 23 rules is a contract, not a guess, and the output is a file you can use.** A deterministic evaluator either holds or it names the exact clause it broke, so a finding is a guarantee a human can verify, never an LLM's opinion. And AccessGate exports into the tools that actually fix the file: the flagged cues and the gated AD fix write to editor-native formats (a WebVTT audio-description track, a findings CSV, navigable WebVTT markers, `src/exporters/editor.py`, example artifacts in `data/demo/editor_exports/`) alongside the SARIF 2.1.0 and OSCAL POA&M compliance documents. A captioner or AD writer opens the result in their own workflow instead of reading a report.
+
 **Delete every hosted AI API. The engine still runs and still produces a report.** That property, plus a deep and genuinely load-bearing IBM stack built through IBM Bob, is the differentiator.
 
 To our knowledge, AccessGate is the first tool that is all of these at once: open, explainable, covering both captions and audio description, citing the exact standard clause behind every flag, and drafting a gated generative fix. Commercial timed-text QC tools exist, but none are open, cover both surfaces, cite the standard text, and fix the gap. The novelty is the intersection, not any single feature.

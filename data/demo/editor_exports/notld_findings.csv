@@ -1,0 +1,127 @@
+timecode_seconds,timecode,rule_id,status,level,standard,message,human_review_required,citation
+,,FCC-ACC-01,fail,warning,47 CFR 79.1(j)(2)(i) accuracy,NER score 77.79% (band 73.65%–79.86%) is below the 98% threshold. Note: 2 low-confidence region(s) flagged for human review.,True,"ther information or text.
+The NER (Net Error Rate) accuracy standard is: (total words - errors) / total words.
+Programs with a score of 98 percent or higher are deemed accurate."
+37.800,00:00:37.800,FCC-CMP-01,fail,error,47 CFR 79.1(j)(2)(iii) completeness,150 speech region(s) have no caption coverage. First uncovered region: 37.80s–37.83s.,False,"47 CFR 79.1(j)(2) Caption quality standards.
+Captioning quality is defined by four factors:
+(i) Accuracy: Captions must match the spoken words in the dialogue and convey
+background noises and other sounds to the fullest extent possible.
+(ii) Synchronicity: Captions must be displayed to coincide with their
+corresponding spoken words and sounds to the greatest extent possible.
+(iii) Program complete"
+,,WCAG-125-02,flag,note,WCAG 2.2 SC 1.2.5 sufficiency,"Audio description semantic sufficiency requires human review. Automatable checks (presence, timing, structure) are covered by other rules. SC 1.2.5 sufficiency — whether descriptions convey important visual information — cannot be machine-verified per W3C ACT guidance.",True,"WCAG 2.2 Success Criterion 1.2.5 Audio Description (Prerecorded) - Level AA
+Audio description is provided for all prerecorded video content in synchronized media.
+The audio description provides information about actions, characters, scene changes,
+and on-screen text that are important to understanding the content."
+31.500,00:00:31.500,DCMP-CAP-01,fail,warning,DCMP Captioning Key line length,Line exceeds 32 chars (45 chars) at 31.50s: 'I already lost a whole hour of sleep on this.',False,"DCMP Captioning Key: Standards and Guidelines for Caption Quality.
+Character count: A maximum of 32 characters per line.
+Line count: No more than 2 lines per caption frame.
+Reading speed: Educational captions range from 130 to 160 wpm by grade level.
+Near-verbatim adult captions should not exceed 225 words per minute.
+Minimum display time: Captions should appear on screen for a minimum of 2 second"
+168.600,00:02:48.600,DCMP-CAP-01,fail,warning,DCMP Captioning Key line length,"Line exceeds 32 chars (53 chars) at 168.60s: 'Look here comes one of them right now, come on hurry.'",False,"DCMP Captioning Key: Standards and Guidelines for Caption Quality.
+Character count: A maximum of 32 characters per line.
+Line count: No more than 2 lines per caption frame.
+Reading speed: Educational captions range from 130 to 160 wpm by grade level.
+Near-verbatim adult captions should not exceed 225 words per minute.
+Minimum display time: Captions should appear on screen for a minimum of 2 second"
+168.600,00:02:48.600,DCMP-CAP-03,fail,warning,DCMP Captioning Key reading-speed tiers and 225 wpm cap,"Caption at 168.60s exceeds 225 wpm (660 wpm). Text: 'Look here comes one of them right now, come on hur'",False,"DCMP Captioning Key: Standards and Guidelines for Caption Quality.
+Character count: A maximum of 32 characters per line.
+Line count: No more than 2 lines per caption frame.
+Reading speed: Educational captions range from 130 to 160 wpm by grade level.
+Near-verbatim adult captions should not exceed 225 words per minute.
+Minimum display time: Captions should appear on screen for a minimum of 2 second"
+36.900,00:00:36.900,DCMP-CAP-04,fail,warning,DCMP Captioning Key 2-second minimum display,Caption at 36.90s displayed for 0.80s (minimum 2.0s). Text: 'There it is.',False,"DCMP Captioning Key: Standards and Guidelines for Caption Quality.
+Character count: A maximum of 32 characters per line.
+Line count: No more than 2 lines per caption frame.
+Reading speed: Educational captions range from 130 to 160 wpm by grade level.
+Near-verbatim adult captions should not exceed 225 words per minute.
+Minimum display time: Captions should appear on screen for a minimum of 2 second"
+168.600,00:02:48.600,DCMP-CAP-04,fail,warning,DCMP Captioning Key 2-second minimum display,"Caption at 168.60s displayed for 1.00s (minimum 2.0s). Text: 'Look here comes one of them right now, come on hur'",False,"DCMP Captioning Key: Standards and Guidelines for Caption Quality.
+Character count: A maximum of 32 characters per line.
+Line count: No more than 2 lines per caption frame.
+Reading speed: Educational captions range from 130 to 160 wpm by grade level.
+Near-verbatim adult captions should not exceed 225 words per minute.
+Minimum display time: Captions should appear on screen for a minimum of 2 second"
+46.000,00:00:46.000,DCMP-DESC-04,fail,warning,DCMP Description Key conform description rate to the program,AD at 46.00s has 10 words but gap (3.93s) fits only 9 words at 150 wpm.,False,"DCMP Description Key: Standards and Guidelines for Audio Description.
+Tense: Describe action in the present tense, active voice.
+Point of view: Third-person narrative; never first or second person.
+Language: Use objective language; avoid subjective or interpretive terms.
+Sentences: Use complete sentences whenever possible.
+Timing: Descriptions must fit within the available dialogue-free time.
+Word"
+157.900,00:02:37.900,DCMP-DESC-04,fail,warning,DCMP Description Key conform description rate to the program,AD at 157.90s has 8 words but gap (2.58s) fits only 6 words at 150 wpm.,False,"DCMP Description Key: Standards and Guidelines for Audio Description.
+Tense: Describe action in the present tense, active voice.
+Point of view: Third-person narrative; never first or second person.
+Language: Use objective language; avoid subjective or interpretive terms.
+Sentences: Use complete sentences whenever possible.
+Timing: Descriptions must fit within the available dialogue-free time.
+Word"
+39.600,00:00:39.600,DCMP-DESC-05,fail,error,DCMP Description Key do not describe over essential audio,AD at 39.60s–44.40s overlaps a detected speech region. Text: 'A sedan drove slowly along the cemetery road.',False,"DCMP Description Key: Standards and Guidelines for Audio Description.
+Tense: Describe action in the present tense, active voice.
+Point of view: Third-person narrative; never first or second person.
+Language: Use objective language; avoid subjective or interpretive terms.
+Sentences: Use complete sentences whenever possible.
+Timing: Descriptions must fit within the available dialogue-free time.
+Word"
+46.000,00:00:46.000,DCMP-DESC-05,fail,error,DCMP Description Key do not describe over essential audio,"AD at 46.00s–49.20s overlaps a detected speech region. Text: 'In a dolly shot, the camera creeps toward the graves.'",False,"DCMP Description Key: Standards and Guidelines for Audio Description.
+Tense: Describe action in the present tense, active voice.
+Point of view: Third-person narrative; never first or second person.
+Language: Use objective language; avoid subjective or interpretive terms.
+Sentences: Use complete sentences whenever possible.
+Timing: Descriptions must fit within the available dialogue-free time.
+Word"
+157.900,00:02:37.900,DCMP-DESC-05,fail,error,DCMP Description Key do not describe over essential audio,AD at 157.90s–160.10s overlaps a detected speech region. Text: 'A figure lurches out from behind the trees.',False,"DCMP Description Key: Standards and Guidelines for Audio Description.
+Tense: Describe action in the present tense, active voice.
+Point of view: Third-person narrative; never first or second person.
+Language: Use objective language; avoid subjective or interpretive terms.
+Sentences: Use complete sentences whenever possible.
+Timing: Descriptions must fit within the available dialogue-free time.
+Word"
+39.600,00:00:39.600,DCMP-DESC-06,flag,note,DCMP Description Key complete sentences,AD at 39.60s may be a sentence fragment (no verb detected). Text: 'A sedan drove slowly along the cemetery road.',True,"DCMP Description Key: Standards and Guidelines for Audio Description.
+Tense: Describe action in the present tense, active voice.
+Point of view: Third-person narrative; never first or second person.
+Language: Use objective language; avoid subjective or interpretive terms.
+Sentences: Use complete sentences whenever possible.
+Timing: Descriptions must fit within the available dialogue-free time.
+Word"
+46.000,00:00:46.000,DCMP-DESC-06,flag,note,DCMP Description Key complete sentences,"AD at 46.00s may be a sentence fragment (no verb detected). Text: 'In a dolly shot, the camera creeps toward the graves.'",True,"DCMP Description Key: Standards and Guidelines for Audio Description.
+Tense: Describe action in the present tense, active voice.
+Point of view: Third-person narrative; never first or second person.
+Language: Use objective language; avoid subjective or interpretive terms.
+Sentences: Use complete sentences whenever possible.
+Timing: Descriptions must fit within the available dialogue-free time.
+Word"
+157.900,00:02:37.900,DCMP-DESC-06,flag,note,DCMP Description Key complete sentences,AD at 157.90s may be a sentence fragment (no verb detected). Text: 'A figure lurches out from behind the trees.',True,"DCMP Description Key: Standards and Guidelines for Audio Description.
+Tense: Describe action in the present tense, active voice.
+Point of view: Third-person narrative; never first or second person.
+Language: Use objective language; avoid subjective or interpretive terms.
+Sentences: Use complete sentences whenever possible.
+Timing: Descriptions must fit within the available dialogue-free time.
+Word"
+168.600,00:02:48.600,NFLX-CPS-01,fail,warning,Netflix TTSG reading speed 20 cps adult / 17 cps children,"Caption at 168.60s exceeds 20.0 CPS (53.0 CPS, adult profile). Text: 'Look here comes one of them right now, come on hur'",False,"Netflix Timed Text Style Guide (TTSG) - English.
+Reading speed: Maximum 20 characters per second (CPS) for adult content.
+Maximum 17 CPS for children's content.
+Line length: Maximum 42 characters per line.
+Line count: Maximum 2 lines per event.
+Minimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.
+Maximum duration: 7 seconds per subtitle event.
+Minimum gap: A minimum"
+31.500,00:00:31.500,NFLX-LEN-01,fail,warning,"Netflix TTSG 42 characters per line, 2 lines",Caption at 31.50s: line 45 chars: 'I already lost a whole hour of sleep on this.',False,"e event.
+Maximum duration: 7 seconds per subtitle event.
+Minimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.
+Frame rate: Typically 23.976, 24, or 25 fps depending on the content locale.
+Character encoding: UTF-8."
+168.600,00:02:48.600,NFLX-LEN-01,fail,warning,"Netflix TTSG 42 characters per line, 2 lines","Caption at 168.60s: line 53 chars: 'Look here comes one of them right now, come on hurry.'",False,"Netflix Timed Text Style Guide (TTSG) - English.
+Reading speed: Maximum 20 characters per second (CPS) for adult content.
+Maximum 17 CPS for children's content.
+Line length: Maximum 42 characters per line.
+Line count: Maximum 2 lines per event.
+Minimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.
+Maximum duration: 7 seconds per subtitle event.
+Minimum gap: A minimum"
+36.900,00:00:36.900,NFLX-DUR-01,fail,warning,Netflix TTSG minimum five-sixths second to 7 seconds,Caption at 36.90s: duration 0.800s below minimum 0.833s,False,"e event.
+Maximum duration: 7 seconds per subtitle event.
+Minimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.
+Frame rate: Typically 23.976, 24, or 25 fps depending on the content locale.
+Character encoding: UTF-8."
