@@ -35,7 +35,7 @@ Fastest path to check each thing that matters. No account, no keys.
 
 | Surface | URL |
 |---|---|
-| Demo video (2 min) | https://youtu.be/ViZv4So01vw |
+| Demo video (2:38) | https://youtu.be/Zx2-7E4scjw |
 | Web app | https://accessgate-web.vercel.app |
 | Mobile app (Android) | [APK direct download](https://expo.dev/artifacts/eas/H9la7B8YzJAZaxVoGGWxbvSNrmAO5jhDY60LTc_RS9s.apk), install on any Android phone |
 | Mobile app (iOS) | [TestFlight](https://testflight.apple.com/join/vAGsWSVz) (public link, install on any iPhone; source in [`mobile/`](mobile/)) |
