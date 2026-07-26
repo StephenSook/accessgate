@@ -110,8 +110,8 @@ def judges_page() -> JSONResponse:
             "wired_live": [
                 {"name": "23-rule evaluator engine", "evidence": "src/evaluators/, tests/test_evaluators.py"},
                 {"name": "Silero VAD gap detection", "evidence": "src/gap_engine.py"},
-                {"name": "NER-style caption scorer", "evidence": "src/ner_scorer.py", "note": "Never auto-fails on ASR alone — Koenecke et al. PNAS 2020"},
-                {"name": "Caption error-type classifier (recognition vs edition)", "evidence": "src/ner_scorer.py (_classify_error, phonetic heuristic)", "note": "The live NER path classifies with a phonetic heuristic (jellyfish). A trained sklearn model (macro-F1 0.94 on a synthetic weak-labeled held-out set) is a separate, documented, reproducible artifact — see data/training/model_card.md — not the runtime classifier."},
+                {"name": "NER-style caption scorer", "evidence": "src/ner_scorer.py", "note": "Never auto-fails on ASR alone (Koenecke et al. PNAS 2020)"},
+                {"name": "Caption error-type classifier (recognition vs edition)", "evidence": "src/ner_scorer.py (_classify_error, phonetic heuristic)", "note": "The live NER path classifies with a phonetic heuristic (jellyfish). A trained sklearn model (macro-F1 0.94 on a synthetic weak-labeled held-out set) is a separate, documented, reproducible artifact (see data/training/model_card.md), not the runtime classifier."},
                 {"name": "RAG citation engine (Granite Embedding r2)", "evidence": "src/rag.py"},
                 {"name": "SARIF 2.1.0 exporter", "evidence": "src/exporters/sarif.py"},
                 {"name": "OSCAL POA&M v1.1.2 exporter", "evidence": "src/exporters/oscal.py"},

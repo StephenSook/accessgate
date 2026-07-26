@@ -16,12 +16,12 @@ same breakdown is served live at the `/judges` endpoint (accelerator tier).
 
 ## Bob features used (not just chat)
 
-- **Custom mode** `accessibility-compliance-engineer` — `.bob/custom_modes.yaml`
-- **Rule-authoring Skill** for DCMP / FCC / WCAG / Netflix conformance rules — `.bob/skills/conformance/SKILL.md`
-- **Plan mode** — specs written before implementation for the engine and the gated fix loop
-- **Parallel subagents** — used to build and review independent rule families concurrently
-- **Two `/review` audits**, exported as machine-readable artifacts — `security/review-audit-1.sarif`, `security/review-audit-2.oscal.json`
-- **Self-referential MCP loop** — Bob consumed AccessGate's own MCP server (`check_conformance`, `detect_gaps`, `score_captions`) during development, so the tool was dogfooded through Bob itself — `.bob/mcp.json`, `src/mcp_server/server.py`
+- **Custom mode** `accessibility-compliance-engineer`, in `.bob/custom_modes.yaml`
+- **Rule-authoring Skill** for DCMP / FCC / WCAG / Netflix conformance rules, in `.bob/skills/conformance/SKILL.md`
+- **Plan mode**: specs written before implementation for the engine and the gated fix loop
+- **Parallel subagents**: used to build and review independent rule families concurrently
+- **Two `/review` audits**, exported as machine-readable artifacts (`security/review-audit-1.sarif`, `security/review-audit-2.oscal.json`)
+- **Self-referential MCP loop**: Bob consumed AccessGate's own MCP server (`check_conformance`, `detect_gaps`, `score_captions`) during development, so the tool was dogfooded through Bob itself (`.bob/mcp.json`, `src/mcp_server/server.py`)
 
 ## Honest boundary (finished with other tooling)
 
