@@ -116,14 +116,16 @@ def judges_page() -> JSONResponse:
                 {"name": "SARIF 2.1.0 exporter", "evidence": "src/exporters/sarif.py"},
                 {"name": "OSCAL POA&M v1.1.2 exporter", "evidence": "src/exporters/oscal.py"},
                 {"name": "Editor-native exports (WebVTT AD track, findings CSV, WebVTT markers)", "evidence": "src/exporters/editor.py", "note": "A file a captioner or AD writer can open and use, not just a compliance document; the CSV is formula-injection hardened. Example artifacts: data/demo/editor_exports/"},
-                {"name": "MCP server (self-referential loop)", "evidence": "src/mcp_server/server.py"}
+                {"name": "MCP server (self-referential loop)", "evidence": "src/mcp_server/server.py"},
+                {"name": "Event-sourced conformance review session (reversible typed ops, server-computed inverses, deterministic replay + undo, append-only audit trail, grounded so an instruction can only target findings the engine actually produced)", "evidence": "src/review_session.py + /review/* endpoints", "note": "The deterministic natural-language compiler runs with no keys; the watsonx NL path (below) is the optional IBM-runtime upgrade"}
             ],
             "integration": [
                 {"name": "Granite Vision 3.2:2b (local Ollama)", "evidence": "src/generative_fix.py", "note": "Primary AD drafter in the local, API-deletion-proof pipeline"},
                 {"name": "watsonx-hosted vision (Llama 3.2 11B)", "evidence": "src/watsonx_vision.py", "note": "Drafts the gap fix live on the HOSTED demo (no Ollama on Render), via the /demo-fix endpoint; Granite Vision is the local model"},
                 {"name": "Granite Guardian 3:2b (local Ollama)", "evidence": "src/generative_fix.py"},
                 {"name": "Granite Speech 3.3-2b (local transformers)", "evidence": "src/granite_speech.py", "note": "High-accuracy NER reference, opt-in ACCESSGATE_GRANITE_SPEECH=1; faster-whisper is the default reference"},
-                {"name": "watsonx.ai (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_showcase.py", "note": "Hosted AD-line generation, side-by-side with the local Granite path; gracefully degrades if the key is absent"}
+                {"name": "watsonx.ai (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_showcase.py", "note": "Hosted AD-line generation, side-by-side with the local Granite path; gracefully degrades if the key is absent"},
+                {"name": "watsonx NL review compiler (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_nl.py", "note": "Compiles a plain-English review instruction to a structured intent, then re-grounds it against the report's real findings through the same deterministic selector, so the model can only ever narrow to real findings; falls back to the keyword compiler with no key"}
             ],
             "accelerator": [
                 {"name": "IBM Bob custom mode (accessibility-compliance-engineer)", "evidence": ".bob/custom_modes.yaml"},
@@ -133,7 +135,7 @@ def judges_page() -> JSONResponse:
                 {"name": "Self-referential MCP loop (Bob consumed its own tool during dev)", "evidence": ".bob/mcp.json"}
             ]
         },
-        "api_deletion_test": "Remove every hosted AI API. The engine still runs. The gap detector, caption scorer, classifier, rule evaluators, RAG citations, and the SARIF/OSCAL/editor exporters are all self-built and API-deletion-proof.",
+        "api_deletion_test": "Remove every hosted AI API. The engine still runs. The gap detector, caption scorer, classifier, rule evaluators, RAG citations, the SARIF/OSCAL/editor exporters, and the event-sourced review session (with its deterministic NL compiler) are all self-built and API-deletion-proof.",
         "demo_transparency": "Nothing in the demo is synthetic: the report is the real engine's output on the real public-domain Night of the Living Dead audio and captions, and any uploaded file is analyzed and drafted live end to end. On the hosted site the /demo-fix endpoint drafts the gated AD fix live via watsonx-hosted vision. For the recorded video's fix beat, the AD draft was pre-generated for take reliability (the local 2b vision model over-describes the short window on camera); the DCMP structure validator and the Granite Guardian safety screen still ran live on it, and the same fix drafts live on the hosted site.",
         "github": "https://github.com/StephenSook/accessgate"
     })
@@ -408,3 +410,120 @@ async def live_monitor(websocket: WebSocket) -> None:
             await websocket.send_text(json.dumps(metrics))
     except Exception as e:
         logger.info("WebSocket closed: %s", e)
+
+
+# ---------------------------------------------------------------------------
+# Conformance review session (event-sourced, natural-language drivable)
+# ---------------------------------------------------------------------------
+from src.review_session import ReviewSession, ReviewOp, compile_nl, GroundingError
+from src.models import ConformanceReport
+
+# In-memory review sessions (keyed by session_id), like the report cache.
+_review_sessions: dict[str, ReviewSession] = {}
+
+
+def _load_report_for_review(report_id: str) -> ConformanceReport:
+    """Resolve a report_id to a ConformanceReport (cache, or the bundled demo)."""
+    if report_id in ("demo", "notld"):
+        demo_path = Path(__file__).parent.parent / "data" / "demo" / "demo_report.json"
+        if not demo_path.exists():
+            raise HTTPException(status_code=404, detail="Demo report not found.")
+        return ConformanceReport(**json.loads(demo_path.read_text()))
+    if report_id in _report_cache:
+        return ConformanceReport(**_report_cache[report_id])
+    raise HTTPException(status_code=404, detail=f"report_id '{report_id}' not found")
+
+
+def _session_view(s: ReviewSession) -> dict:
+    st = s.state
+    summary = {"open": 0, "accepted": 0, "dismissed": 0, "flagged": 0}
+    for n in st.findings.values():
+        summary[n.review_status] = summary.get(n.review_status, 0) + 1
+    return {
+        "session_id": st.session_id,
+        "report_id": st.report_id,
+        "version": st.version,
+        "summary": summary,
+        "findings": {k: n.model_dump() for k, n in st.findings.items()},
+        "fixes": st.fixes,
+        "audit_log": s.audit_log(),
+    }
+
+
+@app.post("/review/session")
+def review_create(report_id: str = Body(..., embed=True)) -> JSONResponse:
+    """Open an event-sourced review session over a report (or 'demo')."""
+    report = _load_report_for_review(report_id)
+    s = ReviewSession(report, report_id=report_id)
+    _review_sessions[s.state.session_id] = s
+    return JSONResponse(content=_session_view(s))
+
+
+@app.post("/review/op")
+def review_op(
+    session_id: str = Body(...),
+    kind: str = Body(...),
+    target: str = Body(...),
+    payload: dict = Body(default={}),
+) -> JSONResponse:
+    """Apply one typed, reversible op. Grounded: a bad target is rejected 422."""
+    s = _review_sessions.get(session_id)
+    if s is None:
+        raise HTTPException(status_code=404, detail="review session not found")
+    try:
+        s.apply(ReviewOp(kind=kind, target=target, payload=payload))  # type: ignore[arg-type]
+    except GroundingError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    return JSONResponse(content=_session_view(s))
+
+
+@app.post("/review/nl")
+def review_nl(
+    session_id: str = Body(...),
+    phrase: str = Body(...),
+    apply: bool = Body(default=True),
+) -> JSONResponse:
+    """Compile a plain-English instruction into grounded typed ops (watsonx/Granite
+    at runtime, deterministic fallback) and optionally apply them."""
+    s = _review_sessions.get(session_id)
+    if s is None:
+        raise HTTPException(status_code=404, detail="review session not found")
+    result = compile_nl(phrase, s)
+    applied = 0
+    if apply and result.intent == "mutate":
+        for op in result.ops:
+            try:
+                s.apply(op)
+                applied += 1
+            except GroundingError:
+                pass  # ungrounded ops are silently skipped, never applied
+    view = _session_view(s)
+    view["nl"] = {
+        "intent": result.intent,
+        "engine": result.engine,
+        "reasoning": result.reasoning,
+        "matched": result.matched,
+        "compiled_ops": [o.model_dump(exclude={"restore_state"}) for o in result.ops],
+        "query": result.query.model_dump() if result.query else None,
+        "applied": applied,
+    }
+    return JSONResponse(content=view)
+
+
+@app.post("/review/undo")
+def review_undo(session_id: str = Body(..., embed=True)) -> JSONResponse:
+    """Deterministically undo the last op (its server-computed inverse)."""
+    s = _review_sessions.get(session_id)
+    if s is None:
+        raise HTTPException(status_code=404, detail="review session not found")
+    s.undo()
+    return JSONResponse(content=_session_view(s))
+
+
+@app.get("/review/{session_id}")
+def review_get(session_id: str) -> JSONResponse:
+    """Current review state + the full append-only audit trail."""
+    s = _review_sessions.get(session_id)
+    if s is None:
+        raise HTTPException(status_code=404, detail="review session not found")
+    return JSONResponse(content=_session_view(s))
