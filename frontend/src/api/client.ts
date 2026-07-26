@@ -154,3 +154,79 @@ export async function loadJudges(): Promise<unknown> {
   if (!resp.ok) throw new Error(`/judges failed: ${resp.status}`)
   return resp.json()
 }
+
+// ---------------------------------------------------------------------------
+// Conformance review session (event-sourced, natural-language drivable)
+// ---------------------------------------------------------------------------
+export type ReviewStatus = 'open' | 'accepted' | 'dismissed' | 'flagged'
+
+export interface ReviewFindingNode {
+  key: string
+  rule_id: string
+  status_source: string
+  level: string
+  timecode: number | null
+  message: string
+  review_status: ReviewStatus
+  note: string | null
+  reason: string | null
+}
+
+export interface ReviewAuditEntry {
+  seq: number
+  kind: string
+  target: string
+  source: string
+  actor: string
+  payload: Record<string, unknown>
+  undo_of: string | null
+}
+
+export interface NLView {
+  intent: 'mutate' | 'query' | 'unknown'
+  engine: string
+  reasoning: string
+  matched: string[]
+  compiled_ops: { kind: string; target: string; payload: Record<string, unknown> }[]
+  query: Record<string, unknown> | null
+  applied: number
+}
+
+export interface ReviewSessionView {
+  session_id: string
+  report_id: string | null
+  version: number
+  summary: Record<string, number>
+  findings: Record<string, ReviewFindingNode>
+  fixes: Record<string, string>
+  audit_log: ReviewAuditEntry[]
+  nl?: NLView
+}
+
+async function reviewPost(path: string, body: unknown): Promise<ReviewSessionView> {
+  const resp = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!resp.ok) throw new Error(`${path} failed: ${resp.status}`)
+  return resp.json()
+}
+
+export const createReviewSession = (reportId: string) =>
+  reviewPost('/review/session', { report_id: reportId })
+
+export const reviewNL = (sessionId: string, phrase: string, apply = true) =>
+  reviewPost('/review/nl', { session_id: sessionId, phrase, apply })
+
+export const applyReviewOp = (
+  sessionId: string, kind: string, target: string,
+  payload: Record<string, unknown> = {},
+) => reviewPost('/review/op', { session_id: sessionId, kind, target, payload })
+
+export const reviewUndo = (sessionId: string) =>
+  reviewPost('/review/undo', { session_id: sessionId })
+
+// Editor-native export download URLs (a file a captioner/AD writer can use).
+export const exportUrl = (reportId: string, file: 'findings.csv' | 'markers.vtt') =>
+  `${BASE}/export/${encodeURIComponent(reportId)}/${file}`

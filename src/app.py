@@ -424,7 +424,7 @@ _review_sessions: dict[str, ReviewSession] = {}
 
 def _load_report_for_review(report_id: str) -> ConformanceReport:
     """Resolve a report_id to a ConformanceReport (cache, or the bundled demo)."""
-    if report_id in ("demo", "notld"):
+    if report_id in ("demo", "notld", "demo-notld-2026"):
         demo_path = Path(__file__).parent.parent / "data" / "demo" / "demo_report.json"
         if not demo_path.exists():
             raise HTTPException(status_code=404, detail="Demo report not found.")
@@ -527,3 +527,32 @@ def review_get(session_id: str) -> JSONResponse:
     if s is None:
         raise HTTPException(status_code=404, detail="review session not found")
     return JSONResponse(content=_session_view(s))
+
+
+# ---------------------------------------------------------------------------
+# Editor-native export downloads (a file a captioner/AD writer can open + use)
+# ---------------------------------------------------------------------------
+from fastapi.responses import PlainTextResponse
+from src.exporters.editor import export_findings_csv, export_findings_markers_vtt
+
+
+@app.get("/export/{report_id}/findings.csv")
+def export_findings(report_id: str) -> PlainTextResponse:
+    """Findings as a triage CSV (formula-injection hardened)."""
+    report = _load_report_for_review(report_id)
+    return PlainTextResponse(
+        content=export_findings_csv(report),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{report_id}_findings.csv"'},
+    )
+
+
+@app.get("/export/{report_id}/markers.vtt")
+def export_markers(report_id: str) -> PlainTextResponse:
+    """Findings as a navigable WebVTT marker track for an editor timeline."""
+    report = _load_report_for_review(report_id)
+    return PlainTextResponse(
+        content=export_findings_markers_vtt(report),
+        media_type="text/vtt",
+        headers={"Content-Disposition": f'attachment; filename="{report_id}_markers.vtt"'},
+    )

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import type { ConformanceReport, ReportSummary } from './api/client'
-import { checkConformance, loadDemo, loadDemoSummary, summarizeReport } from './api/client'
+import { checkConformance, loadDemo, loadDemoSummary, summarizeReport, healthCheck } from './api/client'
 import { ConformanceTimeline } from './components/ConformanceTimeline'
 import { RuleResultsTable } from './components/RuleResultsTable'
 import { GatedFixPanel } from './components/GatedFixPanel'
@@ -8,6 +8,7 @@ import { AxeScoreBadge } from './components/AxeScoreBadge'
 import { JudgesPage } from './components/JudgesPage'
 import { VideoPlayer } from './components/VideoPlayer'
 import { WaveformDisplay } from './components/WaveformDisplay'
+import { ReviewWorkbench } from './components/ReviewWorkbench'
 import './index.css'
 
 export default function App() {
@@ -27,6 +28,10 @@ export default function App() {
   useEffect(() => {
     if (report) resultsHeadingRef.current?.focus()
   }, [report])
+
+  // Warm the Render free-tier backend on first paint so a judge's first click
+  // does not eat a cold start (best-effort; failure is ignored).
+  useEffect(() => { healthCheck().catch(() => {}) }, [])
 
   function announceReport(r: ConformanceReport) {
     const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`
@@ -317,6 +322,9 @@ export default function App() {
                 />
               )}
             </div>
+
+            {/* Conformance review workbench — event-sourced, NL-drivable, auditable */}
+            {report.report_id && <ReviewWorkbench reportId={report.report_id} />}
           </div>
         )}
 
