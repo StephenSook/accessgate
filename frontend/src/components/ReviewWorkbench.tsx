@@ -42,14 +42,25 @@ export function ReviewWorkbench({ reportId }: Props) {
     return () => { cancelled = true }
   }, [reportId])
 
-  async function run(fn: () => Promise<ReviewSessionView>) {
+  // Run a review action, resilient to Render free-tier evicting the in-memory
+  // session: on a 404 (session not found) we recreate the session and retry once.
+  async function perform(fn: (sid: string) => Promise<ReviewSessionView>) {
     setBusy(true); setError(null)
-    try { setSession(await fn()) }
-    catch (e: unknown) { setError(e instanceof Error ? e.message : 'request failed') }
-    finally { setBusy(false) }
+    try {
+      const s = session ?? await createReviewSession(reportId)
+      try {
+        setSession(await fn(s.session_id))
+      } catch (e: unknown) {
+        if (e instanceof Error && e.message.includes('404')) {
+          const fresh = await createReviewSession(reportId)
+          setSession(await fn(fresh.session_id))
+        } else { throw e }
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'request failed')
+    } finally { setBusy(false) }
   }
 
-  const sid = session?.session_id
   const nl = session?.nl
 
   return (
@@ -77,7 +88,7 @@ export function ReviewWorkbench({ reportId }: Props) {
               </span>
             ))}
             <span style={{ flex: 1 }} />
-            <button onClick={() => sid && run(() => reviewUndo(sid))} disabled={busy || session.version === 0}
+            <button onClick={() => perform((s) => reviewUndo(s))} disabled={busy || session.version === 0}
               style={{ background: 'var(--ag-surface2)', color: 'var(--ag-text)', border: '1px solid var(--ag-border)', padding: '5px 12px', fontSize: 12, cursor: 'pointer' }}>
               ↶ Undo
             </button>
@@ -92,7 +103,7 @@ export function ReviewWorkbench({ reportId }: Props) {
           </div>
 
           {/* natural-language command bar */}
-          <form onSubmit={(e) => { e.preventDefault(); if (sid && phrase.trim()) run(() => reviewNL(sid, phrase.trim())) }}
+          <form onSubmit={(e) => { e.preventDefault(); if (phrase.trim()) perform((s) => reviewNL(s, phrase.trim())) }}
             style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
             <input value={phrase} onChange={(e) => setPhrase(e.target.value)}
               aria-label="Natural-language review command"
@@ -129,7 +140,7 @@ export function ReviewWorkbench({ reportId }: Props) {
                 </div>
                 {(['accept', 'dismiss', 'flag'] as const).map((act) => (
                   <button key={act} disabled={busy}
-                    onClick={() => sid && run(() => applyReviewOp(sid, `${act}_finding`, f.key))}
+                    onClick={() => perform((s) => applyReviewOp(s, `${act}_finding`, f.key))}
                     aria-label={`${act} ${f.rule_id}`}
                     title={act}
                     style={{ background: 'var(--ag-surface2)', color: 'var(--ag-text-muted)', border: '1px solid var(--ag-border)', padding: '3px 8px', fontSize: 11, cursor: 'pointer' }}>
