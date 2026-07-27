@@ -4,7 +4,9 @@ Every evaluator, scorer, and exporter uses these types.
 """
 from __future__ import annotations
 from typing import Literal, Optional
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, model_validator
+
+from src.standards_registry import delta_pct as _delta_pct
 
 
 class CaptionCue(BaseModel):
@@ -93,17 +95,26 @@ class RuleResult(BaseModel):
     confidence: Optional[float] = None    # for banded checks
     human_review_required: bool = False
 
+    @model_validator(mode="after")
+    def _measurement_all_or_none(self) -> "RuleResult":
+        """measured/limit/unit describe one measurement and must be set together
+        (or all absent). Codifies the invariant the evaluators maintain by hand,
+        so a partially-populated measurement becomes a construction-time error."""
+        present = [self.measured is not None, self.limit is not None, self.unit is not None]
+        if any(present) and not all(present):
+            raise ValueError("measured, limit, and unit must be set together or all omitted")
+        return self
+
     @computed_field
     @property
     def delta_pct(self) -> Optional[float]:
         """Signed percent the observed value is over (+) or under (-) the limit.
 
         Turns a finding into undeniable arithmetic ("22.5 vs 20 cps = +12.5%").
-        None unless both measured and a non-zero limit are present.
+        Uses the shared formula in standards_registry so a live report and the
+        served demo/cache dicts can never disagree.
         """
-        if self.measured is None or self.limit is None or self.limit == 0:
-            return None
-        return round((self.measured - self.limit) / self.limit * 100, 1)
+        return _delta_pct(self.measured, self.limit)
 
 
 class NERScoreResult(BaseModel):
@@ -173,6 +184,10 @@ class Provenance(BaseModel):
     model_id is set only where the code literally holds it (the local Ollama
     constants), never guessed for the hosted path; fallback marks a deterministic
     or canned path so the UI never presents it as a live model result.
+
+    Construct only via the _draft_provenance / _guardian_provenance factories in
+    generative_fix.py, which enforce the "model_id only when the label proves the
+    engine ran" rule. Do not build Provenance directly with a guessed model_id.
     """
     label: str
     model_id: Optional[str] = None

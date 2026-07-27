@@ -179,7 +179,10 @@ export function RuleResultsTable({ results, onTimecodeClick, onRequestFix }: Pro
                               vs {r.limit}{r.unit ? ` ${r.unit}` : ''} limit
                             </span>
                             {r.delta_pct != null && (
-                              <span style={{ color: r.delta_pct > 0 ? 'var(--ag-red)' : 'var(--ag-green)', fontWeight: 600 }}>
+                              // A measured/limit chip only appears on a failing rule, so the
+                              // delta is always a breach: over a max (red) or under a min
+                              // (amber). Never green, which would read as "good" on a fail.
+                              <span style={{ color: r.delta_pct > 0 ? 'var(--ag-red)' : 'var(--ag-amber)', fontWeight: 600 }}>
                                 {r.delta_pct > 0 ? '+' : ''}{r.delta_pct}%
                               </span>
                             )}

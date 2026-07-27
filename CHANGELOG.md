@@ -4,6 +4,19 @@ All notable changes to AccessGate are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/). This project was built for the
 IBM AI Builders Challenge (July 2026) with IBM Bob as the primary development tool.
 
+## 2026-07-26: Hardening from a four-model review of the evidence layer
+
+- Latency is now timed per attempt inside the gated fix, so a slow-but-failed
+  local Ollama cold-load is never attributed to the watsonx fallback that
+  actually produced the draft. The drafter also returns an explicit fallback flag
+  rather than reconstructing it from a label prefix.
+- Added an all-or-none validator so a finding's measured/limit/unit can never be
+  partially populated, and made delta_pct a single shared formula so a live report
+  and the served demo/cached reports can never disagree.
+- Fixed a fallback-badge border that appended hex-alpha to a CSS var (which does
+  not concatenate, so the border silently dropped), removed an em-dash from a UI
+  string, and stopped the failing-row delta from rendering green.
+
 ## 2026-07-26: Generative provenance on every gated fix
 
 - Each generated output on the gated AD fix now carries structured provenance:

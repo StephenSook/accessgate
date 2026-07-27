@@ -5,6 +5,8 @@ Tests for the judge-facing evidence layer:
 """
 from __future__ import annotations
 
+import pytest
+
 from src.models import CaptionCue, RuleResult
 from src.standards_registry import clause_ref, enrich_report_dict, _STANDARD_URLS
 from src.evaluators.netflix import eval_nflx_cps_01, eval_nflx_len_01, eval_nflx_dur_01
@@ -67,6 +69,16 @@ def test_delta_pct_computed_over_and_under():
     assert under.delta_pct == -50.0
     none = RuleResult(rule_id="WCAG-122-01", status="fail", message="")
     assert none.delta_pct is None
+
+
+def test_measurement_all_or_none_validator():
+    # all three set -> valid
+    RuleResult(rule_id="NFLX-CPS-01", status="fail", message="", measured=1.0, limit=2.0, unit="cps")
+    # all omitted -> valid
+    RuleResult(rule_id="WCAG-122-01", status="pass", message="")
+    # partial (measured without limit/unit) -> construction error
+    with pytest.raises(Exception):
+        RuleResult(rule_id="NFLX-CPS-01", status="fail", message="", measured=1.0)
 
 
 def test_cps_evaluator_sets_measured_limit():

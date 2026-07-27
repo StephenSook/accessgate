@@ -7,7 +7,7 @@
  * This is the demo centerpiece.
  */
 import React, { useState } from 'react'
-import type { FixResult } from '../api/client'
+import type { FixResult, Provenance } from '../api/client'
 import { requestFix, loadDemoFix } from '../api/client'
 import { fmtTime } from '../utils/format'
 
@@ -197,7 +197,7 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
 
           {accepted && (
             <div style={{ padding: '12px', background: 'rgba(36,161,72,0.15)', border: '1px solid var(--ag-green)', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ag-green)' }}>
-              <div>✓ FIX ACCEPTED — ROW FLIPPED GREEN</div>
+              <div>✓ FIX ACCEPTED. ROW FLIPPED GREEN</div>
               {result.resolves_rule_ids && result.resolves_rule_ids.length > 0 && (
                 <div style={{ marginTop: 6, fontSize: 10, color: 'var(--ag-text-muted)' }}>
                   satisfies {result.resolves_rule_ids.join(', ')} for this gap
@@ -213,7 +213,7 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
 
 function ProvenanceChip(
   { prov, fallbackLabel, verb }:
-  { prov?: import('../api/client').Provenance | null; fallbackLabel?: string | null; verb: string },
+  { prov?: Provenance | null; fallbackLabel?: string | null; verb: string },
 ) {
   const label = prov?.label ?? fallbackLabel
   if (!label) return null
@@ -224,7 +224,7 @@ function ProvenanceChip(
     <div style={{ marginTop: 4, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ag-text-muted)', display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
       <span>{verb} {label}{bits.length ? ` · ${bits.join(' · ')}` : ''}</span>
       {prov?.fallback && (
-        <span style={{ padding: '1px 5px', color: 'var(--ag-amber)', border: '1px solid var(--ag-amber)44', textTransform: 'uppercase' }}>
+        <span style={{ padding: '1px 5px', color: 'var(--ag-amber)', border: '1px solid rgba(241, 194, 27, 0.27)', textTransform: 'uppercase' }}>
           fallback
         </span>
       )}

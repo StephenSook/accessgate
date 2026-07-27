@@ -55,9 +55,14 @@ def clause_ref(rule_id: str) -> Optional[dict]:
     return {"clause_id": _CLAUSE_LABEL[fam], "clause_url": _STANDARD_URLS[fam]}
 
 
-def _delta_pct(measured, limit):
-    """Signed percent over(+)/under(-) the limit. Mirrors RuleResult.delta_pct
-    so served raw dicts (demo, cache) get the same number a live report would."""
+def delta_pct(measured, limit):
+    """Signed percent the observed value is over (+) or under (-) the limit.
+
+    Single source of truth: RuleResult.delta_pct (live reports) and
+    enrich_report_dict (served raw demo/cache dicts) both call this, so a demo
+    number can never drift from a live-report number. None unless measured is
+    present and limit is a non-zero number.
+    """
     if measured is None or limit in (None, 0):
         return None
     return round((measured - limit) / limit * 100, 1)
@@ -78,7 +83,7 @@ def enrich_report_dict(report: dict) -> dict:
             r.setdefault("clause_id", ref["clause_id"])
             r.setdefault("clause_url", ref["clause_url"])
         if r.get("delta_pct") is None:
-            d = _delta_pct(r.get("measured"), r.get("limit"))
+            d = delta_pct(r.get("measured"), r.get("limit"))
             if d is not None:
                 r["delta_pct"] = d
     return report

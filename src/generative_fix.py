@@ -109,14 +109,16 @@ def draft_description(
     keyframe_paths: list[str],
     gap: GapRegion,
     model: str = VISION_MODEL,
-) -> tuple[str, str]:
+) -> tuple[str, str, int, bool]:
     """
     Send keyframes to Granite Vision via Ollama and get a draft AD description.
     Prompt enforces: present tense, active voice, third-person, no jargon,
     sized to fit the gap at AD_WPM.
 
-    Returns (draft_text, source) so callers can report which model actually
-    produced the draft (local Granite Vision, watsonx vision, or the fallback).
+    Returns (draft_text, source, latency_ms, is_fallback). latency_ms is timed
+    around only the attempt that actually produced the draft (so a slow-but-
+    failed Ollama cold-load is never attributed to the watsonx fallback), and
+    is_fallback is set by the code path taken, not reconstructed from the label.
     """
     max_words = gap.max_words(wpm=AD_WPM)
     prompt = (
@@ -161,12 +163,14 @@ def draft_description(
         )
         # Generous timeout: the first call cold-loads the vision model into
         # memory (can take 60-90s on CPU); subsequent calls are fast.
+        _t = time.monotonic()
         with urllib.request.urlopen(req, timeout=180) as resp:
             body = json.loads(resp.read())
             text = body.get("response", "").strip()
-            if text:
-                return text, "Granite Vision 3.2 2b (Ollama)"
-            raise RuntimeError("empty Granite Vision response")
+        ollama_ms = int((time.monotonic() - _t) * 1000)
+        if text:
+            return text, "Granite Vision 3.2 2b (Ollama)", ollama_ms, False
+        raise RuntimeError("empty Granite Vision response")
     except Exception as e:
         # Local Granite Vision (Ollama) unavailable, e.g. on the hosted deploy.
         # Draft the vision step on watsonx so a judge can still trigger the fix
@@ -174,13 +178,15 @@ def draft_description(
         logger.info("Granite Vision (Ollama) unavailable: %s. Trying watsonx vision.", e)
         try:
             from src.watsonx_vision import draft_from_keyframes
+            _t = time.monotonic()
             wx = draft_from_keyframes(keyframe_paths, gap.start, gap.end)
+            wx_ms = int((time.monotonic() - _t) * 1000)
             if wx.get("generated_text"):
-                return wx["generated_text"], wx.get("source", "watsonx-hosted vision")
+                return wx["generated_text"], wx.get("source", "watsonx-hosted vision"), wx_ms, False
             logger.warning("watsonx vision unavailable (%s). Using fallback draft.", wx.get("error"))
         except Exception as e2:  # noqa: BLE001
             logger.warning("watsonx vision error (%s). Using fallback draft.", e2)
-        return _fallback_draft(gap), "fallback (no vision model available)"
+        return _fallback_draft(gap), "fallback (no vision model available)", 0, True
 
 
 def _fallback_draft(gap: GapRegion) -> str:
@@ -237,13 +243,14 @@ def validate_dcmp_structure(
 # Granite Guardian screening
 # ---------------------------------------------------------------------------
 
-def screen_guardian(draft: str, model: str = GUARDIAN_MODEL) -> tuple[bool, bool, str, Optional[str]]:
+def screen_guardian(draft: str, model: str = GUARDIAN_MODEL) -> tuple[bool, bool, str, Optional[str], int]:
     """
-    Screen the draft for content safety. Returns (cleared, ran, reason, source).
+    Screen the draft for content safety. Returns (cleared, ran, reason, source, latency_ms).
 
-      cleared — True only if a Guardian actually ran AND found the text safe.
-      ran     — True only if a Guardian produced a verdict.
-      source  — which Guardian ran, or None if none did.
+      cleared    — True only if a Guardian actually ran AND found the text safe.
+      ran        — True only if a Guardian produced a verdict.
+      source     — which Guardian ran, or None if none did.
+      latency_ms — timed around the attempt that produced the verdict (0 if none ran).
 
     The gate FAILS CLOSED: a screen that could not run is never reported as
     "passed" (the old code returned cleared=True on any error, so a safety gate
@@ -275,27 +282,31 @@ def screen_guardian(draft: str, model: str = GUARDIAN_MODEL) -> tuple[bool, bool
             data=data,
             headers={"Content-Type": "application/json"},
         )
+        _t = time.monotonic()
         with urllib.request.urlopen(req, timeout=120) as resp:
             body = json.loads(resp.read())
             response = body.get("response", "").strip()
-            cleared = response.upper().startswith("SAFE")
-            reason = response if not cleared else ""
-            return cleared, True, reason, "Granite Guardian 3 2b (Ollama)"
+        ollama_ms = int((time.monotonic() - _t) * 1000)
+        cleared = response.upper().startswith("SAFE")
+        reason = response if not cleared else ""
+        return cleared, True, reason, "Granite Guardian 3 2b (Ollama)", ollama_ms
     except Exception as e:
         logger.info("Granite Guardian (Ollama) unavailable: %s. Trying watsonx Guardian.", e)
 
     # Hosted path: real Granite Guardian on watsonx.
     try:
         from src.watsonx_guardian import screen_guardian_watsonx
+        _t = time.monotonic()
         wx = screen_guardian_watsonx(draft)
+        wx_ms = int((time.monotonic() - _t) * 1000)
         if wx["ran"]:
-            return wx["cleared"], True, wx["reason"], wx["source"]
+            return wx["cleared"], True, wx["reason"], wx["source"], wx_ms
         logger.warning("watsonx Guardian did not run: %s", wx.get("reason") or wx.get("error"))
     except Exception as e2:  # noqa: BLE001
         logger.warning("watsonx Guardian error: %s", e2)
 
     # Both unavailable — FAIL CLOSED: not cleared, did not run.
-    return False, False, "Guardian could not run (Ollama and watsonx both unavailable)", None
+    return False, False, "Guardian could not run (Ollama and watsonx both unavailable)", None, 0
 
 
 # ---------------------------------------------------------------------------
@@ -323,11 +334,8 @@ def generate_fix(
     # Step 1: keyframes
     keyframes = extract_keyframes(film_path, gap)
 
-    # Step 2: draft (timed for provenance)
-    _t = time.monotonic()
-    draft, draft_source = draft_description(keyframes, gap, model=vision_model)
-    draft_ms = int((time.monotonic() - _t) * 1000)
-    is_fallback = draft_source.startswith("fallback")
+    # Step 2: draft (per-attempt latency + explicit fallback come from the drafter)
+    draft, draft_source, draft_ms, is_fallback = draft_description(keyframes, gap, model=vision_model)
     word_count = len(draft.split())
     max_words = gap.max_words(wpm=AD_WPM)
     fits_gap = word_count <= max_words
@@ -335,12 +343,10 @@ def generate_fix(
     # Step 3: DCMP validation
     dcmp_valid, dcmp_issues = validate_dcmp_structure(draft, gap, speech_regions)
 
-    # Step 4: Guardian screening (fails closed, timed for provenance)
-    _t = time.monotonic()
-    guardian_cleared, guardian_ran, guardian_reason, guardian_source = screen_guardian(
+    # Step 4: Guardian screening (fails closed; latency is the attempt that ran)
+    guardian_cleared, guardian_ran, guardian_reason, guardian_source, guardian_ms = screen_guardian(
         draft, model=guardian_model
     )
-    guardian_ms = int((time.monotonic() - _t) * 1000)
 
     # Accept only if every gate genuinely ran and passed. A canned fallback
     # draft, or a Guardian that could not run, must never be accepted.
@@ -403,9 +409,7 @@ def generate_demo_fix(
     word_count = len(draft.split())
     fits_gap = word_count <= gap.max_words(wpm=AD_WPM)
     dcmp_valid, dcmp_issues = validate_dcmp_structure(draft, gap, speech_regions)
-    _t = time.monotonic()
-    guardian_cleared, guardian_ran, guardian_reason, guardian_source = screen_guardian(draft)
-    guardian_ms = int((time.monotonic() - _t) * 1000)
+    guardian_cleared, guardian_ran, guardian_reason, guardian_source, guardian_ms = screen_guardian(draft)
     accepted = dcmp_valid and guardian_cleared and guardian_ran and fits_gap and not is_fallback
 
     result = FixResult(

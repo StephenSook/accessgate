@@ -8,12 +8,12 @@ export interface RuleResult {
   message: string
   timecode: number | null
   citation: string
-  clause_id?: string | null       // short standard label, e.g. "WCAG 2.2 SC 1.2.2"
-  clause_url?: string | null       // canonical URL for the clause
-  measured?: number | null         // observed value (e.g. 22.5)
-  limit?: number | null            // the rule's threshold (e.g. 20)
-  unit?: string | null             // unit for measured/limit (e.g. "cps")
-  delta_pct?: number | null        // signed percent over/under the limit
+  clause_id: string | null         // short standard label, e.g. "WCAG 2.2 SC 1.2.2"
+  clause_url: string | null         // canonical URL for the clause
+  measured: number | null          // observed value (e.g. 22.5)
+  limit: number | null             // the rule's threshold (e.g. 20)
+  unit: string | null              // unit for measured/limit (e.g. "cps")
+  delta_pct: number | null         // signed percent over/under the limit (computed field, always present)
   sarif_level: 'error' | 'warning' | 'note'
   confidence: number | null
   human_review_required: boolean
@@ -68,18 +68,18 @@ export interface FixResult {
   gap: GapRegion
   draft_text: string
   draft_source?: string | null       // which model drafted (Granite Vision / watsonx / fallback)
-  draft_provenance?: Provenance | null
+  draft_provenance: Provenance | null
   dcmp_valid: boolean
   dcmp_issues: string[]
   guardian_cleared: boolean
   guardian_ran?: boolean             // false = the safety screen could not run
   guardian_source?: string | null    // which Guardian ran (Ollama / watsonx)
-  guardian_provenance?: Provenance | null
+  guardian_provenance: Provenance | null
   guardian_reason: string | null
   accepted: boolean
   word_count: number
   fits_gap: boolean
-  resolves_rule_ids?: string[]       // DESC rules an accepted fix satisfies for the gap
+  resolves_rule_ids: string[]        // DESC rules an accepted fix satisfies for the gap (always present)
 }
 
 // In production (Vercel), VITE_API_URL is set to the Render backend URL.

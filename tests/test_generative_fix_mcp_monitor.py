@@ -116,17 +116,18 @@ class TestGenerativeFix:
              patch("src.watsonx_guardian.screen_guardian_watsonx",
                    return_value={"cleared": False, "ran": False, "reason": "not configured",
                                  "source": None, "error": "no key"}):
-            cleared, ran, reason, source = screen_guardian("He walks into the room.")
+            cleared, ran, reason, source, latency_ms = screen_guardian("He walks into the room.")
         assert cleared is False
         assert ran is False
         assert source is None
         assert reason  # a non-empty explanation is preserved
+        assert latency_ms == 0  # a screen that did not run has no attributable latency
 
     @patch("src.generative_fix.extract_keyframes", return_value=["frame0.jpg"])
     @patch("src.generative_fix.draft_description",
-           return_value=("He walks into the room.", "Granite Vision 3.2 2b (Ollama)"))
+           return_value=("He walks into the room.", "Granite Vision 3.2 2b (Ollama)", 1200, False))
     @patch("src.generative_fix.screen_guardian",
-           return_value=(True, True, "", "Granite Guardian 3 2b (Ollama)"))
+           return_value=(True, True, "", "Granite Guardian 3 2b (Ollama)", 40))
     def test_generate_fix_full_pipeline(self, mock_guardian, mock_draft, mock_kf):
         """Full pipeline: accepted when the draft is real, DCMP passes, and a
         Guardian actually ran and cleared."""
@@ -144,9 +145,9 @@ class TestGenerativeFix:
 
     @patch("src.generative_fix.extract_keyframes", return_value=["frame0.jpg"])
     @patch("src.generative_fix.draft_description",
-           return_value=("The character moves through the scene.", "fallback (no vision model available)"))
+           return_value=("The character moves through the scene.", "fallback (no vision model available)", 0, True))
     @patch("src.generative_fix.screen_guardian",
-           return_value=(False, False, "Guardian could not run", None))
+           return_value=(False, False, "Guardian could not run", None, 0))
     def test_fallback_draft_is_never_accepted(self, mock_guardian, mock_draft, mock_kf):
         """A canned fallback draft with no Guardian must never be accepted, even
         if it happens to fit the gap and pass structure checks."""
