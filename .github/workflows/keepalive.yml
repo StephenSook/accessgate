@@ -16,10 +16,22 @@ jobs:
     steps:
       - name: Ping backend health endpoint
         run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 \
-            "https://accessgate-api.onrender.com/health")
-          echo "HTTP $code"
-          if [ "$code" != "200" ]; then
-            echo "Health check failed with HTTP $code" >&2
-            exit 1
-          fi
+          # A cold Render free-tier instance can take well over 90 s to answer
+          # the first request, and curl then exits 28 (timeout). Under `bash -e`
+          # that aborted the step before the HTTP check below could run, so a
+          # slow-but-healthy wake looked identical to an outage. Capture the
+          # exit code bare (no pipe on the exit path, `|| true` so -e cannot
+          # abort here) and retry, because waking the instance IS the job.
+          url="https://accessgate-api.onrender.com/health"
+          code=""
+          for attempt in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 180 "$url") || true
+            echo "attempt $attempt: HTTP ${code:-none}"
+            if [ "$code" = "200" ]; then
+              echo "Backend healthy on attempt $attempt."
+              exit 0
+            fi
+            [ "$attempt" -lt 3 ] && sleep 30
+          done
+          echo "Health check failed after 3 attempts; last HTTP ${code:-none}" >&2
+          exit 1
