@@ -166,17 +166,34 @@ class ConformanceReport(BaseModel):
         return sum(1 for r in self.results if r.status == "flag")
 
 
+class Provenance(BaseModel):
+    """Which engine produced one generated output, and whether it was live.
+
+    label is the human engine name (already truthful, carries the model name);
+    model_id is set only where the code literally holds it (the local Ollama
+    constants), never guessed for the hosted path; fallback marks a deterministic
+    or canned path so the UI never presents it as a live model result.
+    """
+    label: str
+    model_id: Optional[str] = None
+    latency_ms: Optional[int] = None
+    fallback: bool = False
+
+
 class FixResult(BaseModel):
     """Result of the gated generative AD fix loop."""
     gap: GapRegion
     draft_text: str
     draft_source: Optional[str] = None     # which model drafted (Granite Vision / watsonx / fallback)
+    draft_provenance: Optional[Provenance] = None
     dcmp_valid: bool
     dcmp_issues: list[str] = Field(default_factory=list)
     guardian_cleared: bool
     guardian_ran: bool = True               # False = the safety screen could not run; never claim "passed"
     guardian_source: Optional[str] = None   # which Guardian ran (Ollama / watsonx), or None if it did not
+    guardian_provenance: Optional[Provenance] = None
     guardian_reason: Optional[str] = None
     accepted: bool
     word_count: int
     fits_gap: bool
+    resolves_rule_ids: list[str] = Field(default_factory=list)  # DESC rules an accepted fix satisfies for the gap

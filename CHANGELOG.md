@@ -4,6 +4,20 @@ All notable changes to AccessGate are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/). This project was built for the
 IBM AI Builders Challenge (July 2026) with IBM Bob as the primary development tool.
 
+## 2026-07-26: Generative provenance on every gated fix
+
+- Each generated output on the gated AD fix now carries structured provenance:
+  the engine label, the model id where the code actually holds it (the local
+  Ollama constants only, never guessed for the hosted path so it cannot drift),
+  the measured call latency, and an explicit `fallback` flag. A canned fallback
+  draft or a safety screen that could not run is flagged and, as before, can never
+  be accepted. Surfaced on `draft_provenance`/`guardian_provenance`, in the fix
+  panel UI (an engine chip with a fallback badge), and in a new `/judges`
+  `generative_provenance` note.
+- An accepted fix now lists the DCMP DESC rules it satisfies for its gap
+  (`resolves_rule_ids`), shown under "row flipped green", so the fix's effect is
+  explicit rather than implied.
+
 ## 2026-07-26: Clause-cited findings and computed-number evidence
 
 - Every finding now carries a canonical clause reference: a short standard label

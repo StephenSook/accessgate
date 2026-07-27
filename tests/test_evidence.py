@@ -111,3 +111,39 @@ def test_csv_export_has_clause_and_measured_columns():
     for col in ("clause_url", "measured", "limit", "unit", "delta_pct"):
         assert col in header
     assert "25.0" in csv_text and "netflixstudios" in csv_text
+
+
+# ---- Steal C/D/E: generative provenance + resolves ---------------------------
+
+def test_provenance_model_id_only_for_local_ollama():
+    from src.generative_fix import _draft_provenance, _guardian_provenance, VISION_MODEL, GUARDIAN_MODEL
+    # Ollama label -> the code holds the model id, so it is reported.
+    local = _draft_provenance("Granite Vision 3.2 2b (Ollama)", 1200, False)
+    assert local.model_id == VISION_MODEL and local.fallback is False and local.latency_ms == 1200
+    # Hosted/watsonx label -> model id is NOT guessed (anti claim-drift).
+    hosted = _draft_provenance("watsonx-hosted vision", 800, False)
+    assert hosted.model_id is None and hosted.label == "watsonx-hosted vision"
+    # Fallback path is flagged.
+    fb = _draft_provenance("fallback (no vision model available)", 5, True)
+    assert fb.fallback is True and fb.model_id is None
+    # Guardian that did not run is a fallback with no model id.
+    g = _guardian_provenance(None, 0, ran=False)
+    assert g.fallback is True and g.model_id is None
+
+
+def test_generate_fix_fallback_path_marks_provenance_and_no_resolves(tmp_path):
+    """A nonexistent film yields zero keyframes, so the draft always falls back
+    (deterministic regardless of whether Ollama/watsonx are reachable). A fallback
+    draft can never be accepted, so resolves_rule_ids stays empty. Guardian
+    availability is environment-dependent, so we only assert its provenance exists."""
+    from src.generative_fix import generate_fix
+    from src.models import GapRegion
+    fake_film = str(tmp_path / "nope.mp4")  # does not exist -> no keyframes -> fallback draft
+    res = generate_fix(GapRegion(start=12.0, end=19.5), fake_film, speech_regions=[])
+    assert res.draft_provenance is not None and res.draft_provenance.fallback is True
+    assert res.draft_provenance.model_id is None
+    assert res.guardian_provenance is not None  # exists; fallback flag depends on env
+    assert res.accepted is False
+    assert res.resolves_rule_ids == []
+    # latency is measured (an int, non-negative), even on the fallback path.
+    assert isinstance(res.draft_provenance.latency_ms, int) and res.draft_provenance.latency_ms >= 0

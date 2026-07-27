@@ -115,11 +115,7 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
             <div style={{ marginTop: 6, fontFamily: 'var(--font-mono)', fontSize: 11, color: result.fits_gap ? 'var(--ag-green)' : 'var(--ag-red)' }}>
               {result.word_count} words · {result.fits_gap ? '✓ fits gap' : '✗ too long for gap'}
             </div>
-            {result.draft_source && (
-              <div style={{ marginTop: 4, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ag-text-muted)' }}>
-                drafted by {result.draft_source}
-              </div>
-            )}
+            <ProvenanceChip prov={result.draft_provenance} fallbackLabel={result.draft_source} verb="drafted by" />
           </Stage>
 
           {/* DCMP validation */}
@@ -150,6 +146,7 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
             ) : (
               <div style={{ color: 'var(--ag-red)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>✗ {result.guardian_reason}</div>
             )}
+            <ProvenanceChip prov={result.guardian_provenance} fallbackLabel={result.guardian_source} verb="screened by" />
           </Stage>
 
           {/* watsonx.ai Lite side-by-side (when WATSONX_API_KEY is set) */}
@@ -200,12 +197,38 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
 
           {accepted && (
             <div style={{ padding: '12px', background: 'rgba(36,161,72,0.15)', border: '1px solid var(--ag-green)', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ag-green)' }}>
-              ✓ FIX ACCEPTED — ROW FLIPPED GREEN
+              <div>✓ FIX ACCEPTED — ROW FLIPPED GREEN</div>
+              {result.resolves_rule_ids && result.resolves_rule_ids.length > 0 && (
+                <div style={{ marginTop: 6, fontSize: 10, color: 'var(--ag-text-muted)' }}>
+                  satisfies {result.resolves_rule_ids.join(', ')} for this gap
+                </div>
+              )}
             </div>
           )}
         </div>
       )}
     </aside>
+  )
+}
+
+function ProvenanceChip(
+  { prov, fallbackLabel, verb }:
+  { prov?: import('../api/client').Provenance | null; fallbackLabel?: string | null; verb: string },
+) {
+  const label = prov?.label ?? fallbackLabel
+  if (!label) return null
+  const bits: string[] = []
+  if (prov?.model_id) bits.push(prov.model_id)
+  if (prov?.latency_ms != null) bits.push(`${prov.latency_ms} ms`)
+  return (
+    <div style={{ marginTop: 4, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--ag-text-muted)', display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+      <span>{verb} {label}{bits.length ? ` · ${bits.join(' · ')}` : ''}</span>
+      {prov?.fallback && (
+        <span style={{ padding: '1px 5px', color: 'var(--ag-amber)', border: '1px solid var(--ag-amber)44', textTransform: 'uppercase' }}>
+          fallback
+        </span>
+      )}
+    </div>
   )
 }
 

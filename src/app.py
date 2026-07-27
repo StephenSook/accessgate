@@ -140,6 +140,7 @@ def judges_page() -> JSONResponse:
             ]
         },
         "api_deletion_test": "Remove every hosted AI API. The engine still runs. The gap detector, caption scorer, classifier, rule evaluators, RAG citations, the SARIF/OSCAL/editor exporters, and the event-sourced review session (with its deterministic NL compiler) are all self-built and API-deletion-proof.",
+        "generative_provenance": "Every generated output carries its provenance: which engine drafted it, the model id where the code holds it, the call latency, and an explicit fallback flag. A canned fallback draft or a safety screen that could not run is marked fallback and can never be accepted, so a judge always sees whether an output came from a live model or a deterministic path. Surfaced on the gated fix (draft_provenance, guardian_provenance) and in the fix panel UI.",
         "demo_transparency": "Nothing in the demo is synthetic: the report is the real engine's output on the real public-domain Night of the Living Dead audio and captions, and any uploaded file is analyzed and drafted live end to end. On the hosted site the /demo-fix endpoint drafts the gated AD fix live via watsonx-hosted vision. For the recorded video's fix beat, the AD draft was pre-generated for take reliability (the local 2b vision model over-describes the short window on camera); the DCMP structure validator and the Granite Guardian safety screen still ran live on it, and the same fix drafts live on the hosted site.",
         "github": "https://github.com/StephenSook/accessgate"
     })
