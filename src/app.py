@@ -16,8 +16,10 @@ import logging
 import os
 import shutil
 import tempfile
+import threading
 import uuid
 from pathlib import Path
+from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import FastAPI, File, Form, UploadFile, WebSocket, HTTPException, Body
@@ -28,10 +30,44 @@ from src.standards_registry import enrich_report_dict
 
 logger = logging.getLogger(__name__)
 
+
+def _warm_citation_index_async() -> None:
+    """
+    Build the RAG citation index off the request path, in the background.
+
+    On the hosted deploy the committed index was built with a different encoder
+    than this environment resolves, so the first query would otherwise pay for a
+    full rebuild (several sequential embedding calls) while a user waited. Render
+    free-tier instances have an ephemeral filesystem and spin down when idle, so
+    that cost recurs on every cold start.
+
+    Runs in a daemon thread so startup, and therefore /health which the keepalive
+    cron pings, stays immediate. Failures are logged and swallowed: rag.py already
+    degrades to the deterministic encoder on its own, and a warm-up that could
+    take the server down would be worse than a slow first query.
+    """
+    def _warm() -> None:
+        try:
+            from src.rag import _load_index, encoder_id
+            _load_index()
+            logger.info("Citation index warm, encoder %s.", encoder_id())
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Citation index warm-up failed: %s", exc)
+
+    threading.Thread(target=_warm, name="rag-index-warm", daemon=True).start()
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    _warm_citation_index_async()
+    yield
+
+
 app = FastAPI(
     title="AccessGate",
     description="Film accessibility conformance pre-check engine.",
     version="1.0.0",
+    lifespan=_lifespan,
 )
 
 # CORS: this is an open, read-only demo API (Vercel frontend + mobile clients),
@@ -46,6 +82,8 @@ app.add_middleware(
 
 # In-memory report cache (keyed by report_id)
 _report_cache: dict[str, dict] = {}
+
+
 
 
 def _safe_name(filename: Optional[str], default: str) -> str:
@@ -116,7 +154,7 @@ def judges_page() -> JSONResponse:
                 {"name": "Silero VAD gap detection", "evidence": "src/gap_engine.py"},
                 {"name": "NER-style caption scorer", "evidence": "src/ner_scorer.py", "note": "Never auto-fails on ASR alone (Koenecke et al. PNAS 2020)"},
                 {"name": "Caption error-type classifier (recognition vs edition)", "evidence": "src/ner_scorer.py (_classify_error, phonetic heuristic)", "note": "The live NER path classifies with a phonetic heuristic (jellyfish). A trained sklearn model (macro-F1 0.94 on a synthetic weak-labeled held-out set) is a separate, documented, reproducible artifact (see data/training/model_card.md), not the runtime classifier."},
-                {"name": "RAG citation engine (Granite Embedding r2)", "evidence": "src/rag.py", "note": "Citations are retrieved at runtime from the Docling-parsed corpus, never hardcoded. A local install embeds with Granite Embedding r2. This hosted free-tier deploy omits the embedding stack (see requirements-deploy.txt), so it retrieves over the same corpus with the deterministic fallback encoder. The corpus and the citations are identical; only the retrieval encoder differs."},
+                {"name": "RAG citation engine (Granite Embedding)", "evidence": "src/rag.py", "note": "Citations are retrieved at runtime from the Docling-parsed corpus, never hardcoded. The encoder resolves best-available: Granite Embedding r2 locally via sentence-transformers; on this hosted deploy, which omits the embedding stack (requirements-deploy.txt), watsonx-hosted Granite embeddings over REST (ibm/granite-embedding-278m-multilingual, src/watsonx_embedding.py); and a deterministic character n-gram encoder as the last resort, so citations still work with every hosted API deleted. The active encoder is recorded in standards/index/index_meta.json and the index rebuilds if it changes."},
                 {"name": "SARIF 2.1.0 exporter", "evidence": "src/exporters/sarif.py"},
                 {"name": "OSCAL POA&M v1.1.2 exporter", "evidence": "src/exporters/oscal.py"},
                 {"name": "Editor-native exports (WebVTT AD track, findings CSV, WebVTT markers)", "evidence": "src/exporters/editor.py", "note": "A file a captioner or AD writer can open and use, not just a compliance document; the CSV is formula-injection hardened. Example artifacts: data/demo/editor_exports/"},
@@ -128,6 +166,7 @@ def judges_page() -> JSONResponse:
                 {"name": "watsonx-hosted vision (Llama 3.2 11B)", "evidence": "src/watsonx_vision.py", "note": "Drafts the gap fix live on the HOSTED demo (no Ollama on Render), via the /demo-fix endpoint; Granite Vision is the local model"},
                 {"name": "Granite Guardian 3:2b (local Ollama)", "evidence": "src/generative_fix.py"},
                 {"name": "Granite Guardian 3-8b (watsonx.ai)", "evidence": "src/watsonx_guardian.py", "note": "The safety gate that actually runs on this hosted deploy, where there is no Ollama. Model id ibm/granite-guardian-3-8b; surfaced live in guardian_provenance on every gated fix."},
+                {"name": "Granite Embedding (watsonx.ai)", "evidence": "src/watsonx_embedding.py", "note": "Embeds the standards corpus for citation retrieval on this hosted deploy, where the local embedding stack is absent. Model id ibm/granite-embedding-278m-multilingual, called over REST so it needs no torch. Falls back to the deterministic encoder if watsonx is unreachable."},
                 {"name": "Granite Speech 3.3-2b (local transformers)", "evidence": "src/granite_speech.py", "note": "High-accuracy NER reference, opt-in ACCESSGATE_GRANITE_SPEECH=1; faster-whisper is the default reference"},
                 {"name": "watsonx.ai (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_showcase.py", "note": "Hosted AD-line generation, side-by-side with the local Granite path; gracefully degrades if the key is absent"},
                 {"name": "watsonx NL review compiler (ibm/granite-3-8b-instruct)", "evidence": "src/watsonx_nl.py", "note": "Compiles a plain-English review instruction to a structured intent, then re-grounds it against the report's real findings through the same deterministic selector, so the model can only ever narrow to real findings; falls back to the keyword compiler with no key"}

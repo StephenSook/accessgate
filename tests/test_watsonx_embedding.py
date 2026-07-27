@@ -1,0 +1,275 @@
+"""
+Tests for the watsonx-hosted Granite embedding encoder and the encoder-identity
+guard on the RAG index.
+
+No test here makes a network call. The watsonx client is exercised against a
+stubbed requests.post, and the identity guard is exercised through rag.py's own
+module-level state.
+"""
+from __future__ import annotations
+
+import json
+import shutil
+
+import numpy as np
+import pytest
+
+from src import rag
+from src.watsonx_embedding import (
+    EMBEDDING_DIM,
+    MODEL_ID,
+    WatsonxEmbedder,
+    get_watsonx_embedder,
+)
+
+
+class _FakeResponse:
+    def __init__(self, payload, status_code=200):
+        self._payload = payload
+        self.status_code = status_code
+
+    def json(self):
+        return self._payload
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise RuntimeError(f"HTTP {self.status_code}")
+
+
+@pytest.fixture
+def embedder():
+    return WatsonxEmbedder(api_key="k", project_id="p", base_url="https://example.invalid")
+
+
+class TestGetWatsonxEmbedder:
+    def test_returns_none_without_credentials(self, monkeypatch):
+        monkeypatch.delenv("WATSONX_API_KEY", raising=False)
+        monkeypatch.delenv("WATSONX_PROJECT", raising=False)
+        assert get_watsonx_embedder() is None
+
+    def test_returns_none_with_key_but_no_project(self, monkeypatch):
+        monkeypatch.setenv("WATSONX_API_KEY", "k")
+        monkeypatch.delenv("WATSONX_PROJECT", raising=False)
+        assert get_watsonx_embedder() is None
+
+    def test_builds_encoder_when_configured(self, monkeypatch):
+        monkeypatch.setenv("WATSONX_API_KEY", "k")
+        monkeypatch.setenv("WATSONX_PROJECT", "p")
+        enc = get_watsonx_embedder()
+        assert enc is not None
+        assert enc.encoder_id == f"watsonx:{MODEL_ID}"
+
+
+class TestWatsonxEmbedderEncode:
+    def test_encode_shapes_and_batches_and_preserves_order(self, embedder, monkeypatch):
+        calls = []
+
+        def fake_post(url, json=None, headers=None, timeout=None):
+            calls.append(list(json["inputs"]))
+            # Each vector encodes its own input index, so a reordering or a
+            # misaligned batch boundary is detectable rather than invisible.
+            return _FakeResponse({
+                "results": [
+                    {"embedding": [float(int(text.split()[1]))] * EMBEDDING_DIM}
+                    for text in json["inputs"]
+                ]
+            })
+
+        monkeypatch.setattr("src.watsonx_embedding.requests.post", fake_post)
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+
+        out = embedder.encode([f"chunk {i}" for i in range(70)], batch_size=32)
+
+        assert out.shape == (70, EMBEDDING_DIM)
+        assert out.dtype == np.float32
+        # 70 inputs at batch_size 32 must be exactly three requests, and every
+        # input must appear exactly once, in order.
+        assert [len(c) for c in calls] == [32, 32, 6]
+        assert [t for c in calls for t in c] == [f"chunk {i}" for i in range(70)]
+        # Row i must carry input i's marker value.
+        assert [row[0] for row in out] == [float(i) for i in range(70)]
+
+    def test_encode_caps_oversized_batch_size(self, embedder, monkeypatch):
+        # rag.py builds with batch_size=64; the client must not forward that
+        # straight to an endpoint it has only been exercised at 32.
+        sizes = []
+
+        def fake_post(url, json=None, headers=None, timeout=None):
+            sizes.append(len(json["inputs"]))
+            return _FakeResponse(
+                {"results": [{"embedding": [0.1] * EMBEDDING_DIM} for _ in json["inputs"]]}
+            )
+
+        monkeypatch.setattr("src.watsonx_embedding.requests.post", fake_post)
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        embedder.encode([f"c{i}" for i in range(70)], batch_size=64)
+        assert max(sizes) <= 32
+
+    def test_encode_rejects_non_positive_batch_size(self, embedder):
+        with pytest.raises(ValueError, match="batch_size must be positive"):
+            embedder.encode(["a"], batch_size=0)
+
+    def test_encode_raises_on_wrong_dimension(self, embedder, monkeypatch):
+        # A well-formed response of the wrong width would otherwise build an
+        # index in a vector space nothing else shares.
+        monkeypatch.setattr(
+            "src.watsonx_embedding.requests.post",
+            lambda *a, **k: _FakeResponse({"results": [{"embedding": [0.1] * 512}]}),
+        )
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        with pytest.raises(ValueError, match="expected 768"):
+            embedder.encode(["a"])
+
+    def test_encode_empty_returns_empty_matrix(self, embedder):
+        out = embedder.encode([])
+        assert out.shape == (0, EMBEDDING_DIM)
+
+    def test_encode_accepts_a_bare_string(self, embedder, monkeypatch):
+        monkeypatch.setattr(
+            "src.watsonx_embedding.requests.post",
+            lambda *a, **k: _FakeResponse({"results": [{"embedding": [0.2] * EMBEDDING_DIM}]}),
+        )
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        assert embedder.encode("one string").shape == (1, EMBEDDING_DIM)
+
+    def test_encode_raises_on_count_mismatch(self, embedder, monkeypatch):
+        # A short result list would otherwise silently misalign every chunk with
+        # the wrong vector.
+        monkeypatch.setattr(
+            "src.watsonx_embedding.requests.post",
+            lambda *a, **k: _FakeResponse({"results": [{"embedding": [0.1] * EMBEDDING_DIM}]}),
+        )
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        with pytest.raises(ValueError, match="1 embeddings for 2 inputs"):
+            embedder.encode(["a", "b"])
+
+    def test_encode_refreshes_token_once_on_401(self, embedder, monkeypatch):
+        tokens = iter(["stale", "fresh"])
+        seen = []
+
+        def fake_post(url, json=None, headers=None, timeout=None):
+            seen.append(headers["Authorization"])
+            if len(seen) == 1:
+                return _FakeResponse({}, status_code=401)
+            return _FakeResponse({"results": [{"embedding": [0.3] * EMBEDDING_DIM}]})
+
+        monkeypatch.setattr("src.watsonx_embedding.requests.post", fake_post)
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: next(tokens))
+
+        out = embedder.encode(["a"])
+        assert out.shape == (1, EMBEDDING_DIM)
+        assert seen == ["Bearer stale", "Bearer fresh"]
+
+    def test_encode_propagates_http_error(self, embedder, monkeypatch):
+        monkeypatch.setattr(
+            "src.watsonx_embedding.requests.post",
+            lambda *a, **k: _FakeResponse({}, status_code=500),
+        )
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        with pytest.raises(RuntimeError):
+            embedder.encode(["a"])
+
+
+class TestEncoderIdentity:
+    def test_encoder_id_reports_tfidf_when_no_encoder(self, monkeypatch):
+        monkeypatch.setattr(rag, "_embedder", None)
+        monkeypatch.setattr(rag, "_get_embedder", lambda: None)
+        assert rag.encoder_id() == rag.TFIDF_ENCODER_ID
+
+    def test_encoder_id_uses_encoder_attribute_when_present(self, monkeypatch):
+        class _Enc:
+            encoder_id = "watsonx:test-model"
+
+        monkeypatch.setattr(rag, "_get_embedder", lambda: _Enc())
+        assert rag.encoder_id() == "watsonx:test-model"
+
+    def test_encoder_id_falls_back_to_sentence_transformers_name(self, monkeypatch):
+        class _Plain:
+            """A sentence-transformers model exposes no encoder_id attribute."""
+
+        monkeypatch.setattr(rag, "_get_embedder", lambda: _Plain())
+        assert rag.encoder_id() == f"sentence-transformers:{rag.EMBEDDING_MODEL}"
+
+    def test_committed_index_meta_matches_the_local_encoder(self):
+        # The index shipped in the repo is built locally with Granite Embedding
+        # r2. If this drifts, every clone rebuilds the index on first query.
+        meta = json.loads(rag.INDEX_META_FILE.read_text())
+        assert meta["encoder"] == f"sentence-transformers:{rag.EMBEDDING_MODEL}"
+        assert meta["dim"] == EMBEDDING_DIM
+
+    def test_watsonx_and_local_share_a_dimension(self):
+        # The reason identity tracking exists at all: a dimension check cannot
+        # distinguish these two encoders, so it cannot guard the swap.
+        meta = json.loads(rag.INDEX_META_FILE.read_text())
+        assert meta["dim"] == EMBEDDING_DIM
+        assert meta["encoder"] != f"watsonx:{MODEL_ID}"
+
+
+class TestEncoderFailureIsSurvivable:
+    """
+    A hosted encoder can fail mid-run. That must degrade the citation, never
+    take down the conformance check that asked for it.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _reset(self, monkeypatch, tmp_path):
+        # Point the module at a throwaway index. Without this, resolving a
+        # different encoder here rebuilds the COMMITTED index in place and
+        # dirties the working tree (observed: embeddings.npy rewritten at
+        # 218x512 by the deterministic encoder).
+        shutil.copytree(rag.INDEX_DIR, tmp_path / "index")
+        monkeypatch.setattr(rag, "INDEX_DIR", tmp_path / "index")
+        monkeypatch.setattr(rag, "CHUNKS_FILE", tmp_path / "index" / "chunks.json")
+        monkeypatch.setattr(rag, "EMBEDDINGS_FILE", tmp_path / "index" / "embeddings.npy")
+        monkeypatch.setattr(rag, "INDEX_META_FILE", tmp_path / "index" / "index_meta.json")
+        monkeypatch.setattr(rag, "_chunks", None)
+        monkeypatch.setattr(rag, "_embeddings", None)
+        monkeypatch.setattr(rag, "_encoder_failed", False)
+        monkeypatch.setattr(rag, "_embedder", None)
+        yield
+        rag._chunks = None
+        rag._embeddings = None
+
+    def test_query_encode_failure_returns_a_citation_instead_of_raising(self, monkeypatch):
+        class _Exploding:
+            encoder_id = "watsonx:boom"
+
+            def encode(self, *a, **k):
+                raise RuntimeError("watsonx 503")
+
+        monkeypatch.setattr(rag, "_get_embedder", lambda: _Exploding())
+        # Must not raise. engine.py calls this per finding; an exception here
+        # would 500 the entire check.
+        out = rag.retrieve_citation("DCMP-CAP-01", "caption line length")
+        assert isinstance(out, str) and out
+
+    def test_demote_is_sticky_and_flips_reported_identity(self, monkeypatch):
+        class _Enc:
+            encoder_id = "watsonx:boom"
+
+        monkeypatch.setattr(rag, "_get_embedder", lambda: _Enc())
+        assert rag.encoder_id() == "watsonx:boom"
+
+        # Restore the real resolver so the sticky flag is what decides.
+        monkeypatch.undo()
+        monkeypatch.setattr(rag, "_encoder_failed", False)
+        monkeypatch.setattr(rag, "_embedder", None)
+        rag._demote_encoder("simulated failure")
+        assert rag._encoder_failed is True
+        assert rag._get_embedder() is None
+        # This is what stops the rebuild-every-load loop: after demotion the
+        # reported identity matches what a fallback build actually wrote.
+        assert rag.encoder_id() == rag.TFIDF_ENCODER_ID
+
+    def test_no_network_call_when_watsonx_is_unconfigured(self, monkeypatch):
+        """The offline path must stay offline: no credentials, no requests."""
+        monkeypatch.delenv("WATSONX_API_KEY", raising=False)
+        monkeypatch.delenv("WATSONX_PROJECT", raising=False)
+
+        calls = []
+        monkeypatch.setattr(
+            "src.watsonx_embedding.requests.post",
+            lambda *a, **k: calls.append(a) or _FakeResponse({"results": []}),
+        )
+        assert get_watsonx_embedder() is None
+        assert calls == []

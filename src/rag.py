@@ -22,6 +22,8 @@ import hashlib
 import json
 import logging
 import os
+import tempfile
+import threading
 from pathlib import Path
 from typing import Optional
 import numpy as np
@@ -36,6 +38,11 @@ INDEX_DIR = STANDARDS_DIR / "index"
 # Index files
 CHUNKS_FILE = INDEX_DIR / "chunks.json"
 EMBEDDINGS_FILE = INDEX_DIR / "embeddings.npy"
+# Records which encoder built the index. Two different encoders can share a
+# dimension (Granite Embedding r2 locally and watsonx Granite are both 768), so
+# a dimension check alone cannot tell them apart and would leave the index
+# silently scored in the wrong vector space. The identity is what matters.
+INDEX_META_FILE = INDEX_DIR / "index_meta.json"
 
 # Default embedding model
 EMBEDDING_MODEL = "ibm-granite/granite-embedding-english-r2"
@@ -48,6 +55,18 @@ CHUNK_OVERLAP = 80        # overlap between adjacent chunks
 _chunks: Optional[list[dict]] = None
 _embeddings: Optional[np.ndarray] = None
 _embedder = None
+
+#: Sticky for the process once a resolved encoder actually fails. Without this,
+#: a failing hosted encoder is re-resolved on every call: queries keep raising,
+#: and because the index gets written with the fallback's identity while
+#: encoder_id() still optimistically reports the hosted one, every load sees a
+#: mismatch and rebuilds again. Demoting once makes the failure terminal and
+#: self-consistent.
+_encoder_failed = False
+
+#: Rebuilds mutate three files that must be read as a set. FastAPI serves
+#: requests concurrently, so serialize builds and publish atomically.
+_index_lock = threading.RLock()
 
 
 # ---------------------------------------------------------------------------
@@ -175,16 +194,104 @@ def _build_chunks() -> list[dict]:
 # Embedding and index
 # ---------------------------------------------------------------------------
 
+#: Identity of the deterministic fallback encoder. Bump if _tfidf_encode changes
+#: shape or hashing, so stale indexes rebuild instead of scoring nonsense.
+TFIDF_ENCODER_ID = "tfidf:md5-3gram-512"
+
+
 def _get_embedder():
+    """
+    Resolve the citation encoder, best available first.
+
+    1. sentence-transformers with Granite Embedding r2. The local, fully
+       offline path; this is what keeps the API-deletion test true.
+    2. watsonx-hosted Granite embeddings. Used on the deploy, where the
+       embedding stack is deliberately absent from requirements-deploy.txt.
+       One HTTPS call, no torch.
+    3. None, meaning the caller uses the deterministic n-gram fallback.
+
+    Local is tried first on purpose: when the full stack is present we should
+    not make a network call, and the offline path should stay the default.
+    """
     global _embedder
+    if _encoder_failed:
+        return None
     if _embedder is None:
         try:
             from sentence_transformers import SentenceTransformer
             _embedder = SentenceTransformer(EMBEDDING_MODEL)
             logger.info("Loaded Granite Embedding r2 via sentence-transformers.")
+            return _embedder
         except Exception as e:
-            logger.warning("Granite Embedding unavailable: %s. Using TF-IDF fallback.", e)
+            logger.info("Local Granite Embedding unavailable: %s. Trying watsonx.", e)
+
+        try:
+            from src.watsonx_embedding import get_watsonx_embedder
+            _embedder = get_watsonx_embedder()
+            if _embedder is not None:
+                logger.info("Using watsonx-hosted Granite embeddings (%s).", _embedder.encoder_id)
+            else:
+                logger.warning("watsonx embeddings not configured. Using deterministic fallback.")
+        except Exception as e:  # noqa: BLE001
+            logger.warning("watsonx embeddings unavailable: %s. Using deterministic fallback.", e)
     return _embedder
+
+
+def encoder_id() -> str:
+    """Stable identity of the encoder currently in use."""
+    embedder = _get_embedder()
+    if embedder is None:
+        return TFIDF_ENCODER_ID
+    return getattr(embedder, "encoder_id", f"sentence-transformers:{EMBEDDING_MODEL}")
+
+
+def _demote_encoder(reason: object) -> None:
+    """
+    Permanently drop to the deterministic encoder for this process.
+
+    Called when a resolved encoder raises. Making this sticky is what keeps the
+    index identity and the query identity in agreement: after demotion both the
+    stored meta and encoder_id() say tfidf, so the next load does not see a
+    mismatch and rebuild forever.
+    """
+    global _embedder, _encoder_failed
+    logger.error("Encoder failed (%s). Falling back to %s for this process.",
+                 reason, TFIDF_ENCODER_ID)
+    _embedder = None
+    _encoder_failed = True
+
+
+def _atomic_write_text(path: Path, text: str) -> None:
+    """Write text to path atomically, via a temp file in the same directory."""
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(text)
+        os.replace(tmp, path)
+    except Exception:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
+def _atomic_write_npy(path: Path, array: np.ndarray) -> None:
+    """Write a .npy array to path atomically."""
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), suffix=".npy")
+    os.close(fd)
+    try:
+        # np.save appends .npy only when the name lacks it; tmp already ends .npy
+        np.save(tmp, array)
+        os.replace(tmp, path)
+    except Exception:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
+def _read_index_meta() -> dict:
+    try:
+        with open(INDEX_META_FILE) as f:
+            return json.load(f)
+    except Exception:  # noqa: BLE001
+        return {}
 
 
 def build_index(force: bool = False) -> None:
@@ -198,9 +305,23 @@ def build_index(force: bool = False) -> None:
     """
     global _chunks, _embeddings
 
-    if not force and CHUNKS_FILE.exists() and EMBEDDINGS_FILE.exists():
-        logger.info("Index already exists. Use force=True to rebuild.")
-        return
+    with _index_lock:
+        # Re-check inside the lock: a concurrent request may have finished the
+        # rebuild while this one waited, and redoing it would spend another
+        # round of hosted embedding calls for nothing.
+        if not force and CHUNKS_FILE.exists() and EMBEDDINGS_FILE.exists():
+            logger.info("Index already exists. Use force=True to rebuild.")
+            return
+        if force and _read_index_meta().get("encoder") == encoder_id() \
+                and CHUNKS_FILE.exists() and EMBEDDINGS_FILE.exists():
+            logger.info("Index already rebuilt by another caller; skipping.")
+            return
+        _build_index_locked()
+
+
+def _build_index_locked() -> None:
+    """Body of build_index. Callers must hold _index_lock."""
+    global _chunks, _embeddings
 
     INDEX_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -211,13 +332,21 @@ def build_index(force: bool = False) -> None:
 
     texts = [c["text"] for c in chunks]
     embedder = _get_embedder()
+    active_encoder = encoder_id()
 
     if embedder is not None:
-        logger.info("Embedding %d chunks with Granite Embedding r2...", len(texts))
-        embeddings = embedder.encode(texts, batch_size=64, show_progress_bar=False)
+        logger.info("Embedding %d chunks with %s...", len(texts), active_encoder)
+        try:
+            embeddings = embedder.encode(texts, batch_size=64, show_progress_bar=False)
+        except Exception as e:  # noqa: BLE001
+            # A half-built or zeroed index would make every citation wrong with
+            # no visible signal. Demote (so queries use the same encoder this
+            # index was actually built with) and record what really ran.
+            _demote_encoder(e)
+            embeddings = _tfidf_encode(texts)
+            active_encoder = TFIDF_ENCODER_ID
     else:
-        # TF-IDF character n-gram fallback
-        logger.info("Using TF-IDF character n-gram fallback embeddings.")
+        logger.info("Using deterministic character n-gram fallback embeddings.")
         embeddings = _tfidf_encode(texts)
 
     # L2-normalize for cosine similarity via dot product
@@ -225,14 +354,27 @@ def build_index(force: bool = False) -> None:
     norms = np.where(norms == 0, 1.0, norms)
     embeddings = embeddings / norms
 
-    # Save
-    with open(CHUNKS_FILE, "w") as f:
-        json.dump(chunks, f, indent=2)
-    np.save(EMBEDDINGS_FILE, embeddings)
+    if embeddings.shape[0] != len(chunks):
+        # Never publish an index whose rows do not line up with its chunks: the
+        # top-scoring row would name the wrong passage, or index out of range.
+        logger.error("Refusing to save index: %d embeddings for %d chunks.",
+                     embeddings.shape[0], len(chunks))
+        return
+
+    # Publish atomically. A reader must never observe new chunks against old
+    # embeddings, or a half-written json, so each file is written to a temp in
+    # the same directory and renamed into place (os.replace is atomic on POSIX).
+    _atomic_write_text(CHUNKS_FILE, json.dumps(chunks, indent=2))
+    _atomic_write_npy(EMBEDDINGS_FILE, embeddings)
+    _atomic_write_text(
+        INDEX_META_FILE,
+        json.dumps({"encoder": active_encoder, "dim": int(embeddings.shape[1])}, indent=2),
+    )
 
     _chunks = chunks
     _embeddings = embeddings
-    logger.info("Index saved: %d chunks, embedding dim %d", len(chunks), embeddings.shape[1])
+    logger.info("Index saved: %d chunks, encoder %s, embedding dim %d",
+                len(chunks), active_encoder, embeddings.shape[1])
 
 
 def _tfidf_encode(texts: list[str], n: int = 3, dim: int = 512) -> np.ndarray:
@@ -265,6 +407,20 @@ def _load_index() -> tuple[list[dict], np.ndarray]:
     if not CHUNKS_FILE.exists() or not EMBEDDINGS_FILE.exists():
         logger.info("Index not found, building now.")
         build_index()
+    else:
+        # The committed index is built locally with Granite Embedding r2. A
+        # different environment may resolve a different encoder, and watsonx
+        # Granite happens to share r2's 768 dimensions, so a shape check cannot
+        # detect the swap. Compare identities and rebuild when they differ,
+        # otherwise queries would be scored against a foreign vector space and
+        # every citation would be quietly wrong.
+        stored = _read_index_meta().get("encoder")
+        current = encoder_id()
+        if stored != current:
+            logger.warning(
+                "Index encoder %r != active encoder %r, rebuilding.", stored, current
+            )
+            build_index(force=True)
 
     with open(CHUNKS_FILE) as f:
         _chunks = json.load(f)
@@ -302,11 +458,18 @@ def retrieve_citation(rule_id: str, query: str, top_k: int = 1) -> str:
     if not chunks:
         return _fallback_citation(rule_id)
 
-    # Embed the query
+    # Embed the query. A hosted encoder can fail mid-run (network, 5xx, rate
+    # limit); that must degrade the citation, never take down the check that
+    # asked for it, so failures demote to the deterministic encoder instead of
+    # propagating out to the engine.
     embedder = _get_embedder()
+    q_vec = None
     if embedder is not None:
-        q_vec = embedder.encode([query], show_progress_bar=False)[0]
-    else:
+        try:
+            q_vec = embedder.encode([query], show_progress_bar=False)[0]
+        except Exception as e:  # noqa: BLE001
+            _demote_encoder(e)
+    if q_vec is None:
         q_vec = _tfidf_encode([query])[0]
 
     # L2-normalize

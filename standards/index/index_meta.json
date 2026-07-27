@@ -1,0 +1,4 @@
+{
+  "encoder": "sentence-transformers:ibm-granite/granite-embedding-english-r2",
+  "dim": 768
+}
