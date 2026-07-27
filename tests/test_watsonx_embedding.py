@@ -205,6 +205,30 @@ class TestEncoderIdentity:
         assert meta["encoder"] != f"watsonx:{MODEL_ID}"
 
 
+class TestCitationProvenanceIsExposed:
+    """A judge must be able to read which encoder served a citation, not infer it."""
+
+    def test_judges_reports_active_and_index_encoders(self):
+        from fastapi.testclient import TestClient
+        from src.app import app
+
+        body = TestClient(app).get("/judges").json()
+        prov = body["citation_provenance"]
+        assert prov["active"], "the active encoder must be named"
+        assert prov["index_built_with"] == json.loads(rag.INDEX_META_FILE.read_text())["encoder"]
+
+    def test_provenance_never_breaks_the_judges_page(self, monkeypatch):
+        # The transparency page must survive its own transparency field failing.
+        import src.app as app_module
+
+        monkeypatch.setattr(
+            rag, "encoder_id", lambda: (_ for _ in ()).throw(RuntimeError("boom"))
+        )
+        out = app_module._citation_provenance()
+        assert out["active"] is None
+        assert "boom" in out["error"]
+
+
 class TestEncoderFailureIsSurvivable:
     """
     A hosted encoder can fail mid-run. That must degrade the citation, never

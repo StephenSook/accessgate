@@ -86,6 +86,29 @@ _report_cache: dict[str, dict] = {}
 
 
 
+def _citation_provenance() -> dict:
+    """
+    Report which encoder is actually retrieving citations on THIS instance.
+
+    The gated fix already states the engine behind every generated line. The
+    citation layer deserves the same treatment: a judge should not have to infer
+    from the text of a citation whether a Granite model produced it. `active` is
+    what this process would use for a query right now; `index_built_with` is what
+    the on-disk index was actually embedded with. They agree in a healthy state,
+    and a mismatch is exactly the condition that triggers a rebuild.
+    """
+    try:
+        from src.rag import _read_index_meta, encoder_id
+        return {
+            "active": encoder_id(),
+            "index_built_with": _read_index_meta().get("encoder"),
+            "note": "Best-available resolution: Granite Embedding r2 locally, watsonx-hosted Granite on this deploy, deterministic character n-gram as the last resort so citations survive with every hosted API deleted.",
+        }
+    except Exception as exc:  # noqa: BLE001
+        # Never let a transparency field take down the transparency page.
+        return {"active": None, "error": str(exc)}
+
+
 def _safe_name(filename: Optional[str], default: str) -> str:
     """Basename of an uploaded filename, preventing path traversal (../, /)."""
     name = Path(filename or "").name
@@ -181,6 +204,7 @@ def judges_page() -> JSONResponse:
         },
         "api_deletion_test": "Remove every hosted AI API. The engine still runs. The gap detector, caption scorer, classifier, rule evaluators, RAG citations, the SARIF/OSCAL/editor exporters, and the event-sourced review session (with its deterministic NL compiler) are all self-built and API-deletion-proof.",
         "generative_provenance": "Every generated output carries its provenance: which engine drafted it, the model id where the code holds it, the call latency, and an explicit fallback flag. A canned fallback draft or a safety screen that could not run is marked fallback and can never be accepted, so a judge always sees whether an output came from a live model or a deterministic path. Surfaced on the gated fix (draft_provenance, guardian_provenance) and in the fix panel UI.",
+        "citation_provenance": _citation_provenance(),
         "demo_transparency": "Nothing in the demo is synthetic: the report is the real engine's output on the real public-domain Night of the Living Dead audio and captions, and any uploaded file is analyzed and drafted live end to end. On the hosted site the /demo-fix endpoint drafts the gated AD fix live via watsonx-hosted vision. For the recorded video's fix beat, the AD draft was pre-generated for take reliability (the local 2b vision model over-describes the short window on camera); the DCMP structure validator and the Granite Guardian safety screen still ran live on it, and the same fix drafts live on the hosted site.",
         "github": "https://github.com/StephenSook/accessgate"
     })
