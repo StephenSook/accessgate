@@ -206,8 +206,9 @@ export default function App() {
               {' '}overlaps dialogue. AccessGate scores all of it against <b>WCAG 2.2</b>,
               {' '}<b>FCC 47 CFR 79.1</b>, <b>DCMP</b>, and <b>Netflix</b> standards, cites the exact
               {' '}rule text behind every flag, and never auto-fails a caption on ASR evidence alone.
-              {' '}Click a failing gap and Granite Vision drafts a fix, the DCMP validator re-checks it,
-              {' '}Granite Guardian screens it, and the row flips green.
+              {' '}Click a failing gap and the gated fix runs: watsonx-hosted vision drafts a description
+              {' '}(Granite Vision locally), the DCMP validator re-checks it, Granite Guardian screens it,
+              {' '}and the row flips green.
             </p>
             <div className="ag-hero__chips">
               <span className="ag-chip ag-chip--live">Load demo to see it</span>
