@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from typing import Optional
 
 import numpy as np
@@ -54,6 +55,25 @@ BATCH_SIZE = 32
 # Embedding dimension of MODEL_ID, verified live. Declared so callers can detect
 # a shape change without a network call.
 EMBEDDING_DIM = 768
+
+# Statuses worth retrying: a rate limit or a transient upstream error. Anything
+# else (401 after refresh, 400, 404) is a real fault and should surface.
+_RETRY_STATUS = frozenset({429, 500, 502, 503, 504})
+RATE_LIMIT_RETRIES = 3
+_BACKOFF_BASE_S = 2.0
+_MAX_BACKOFF_S = 30.0
+
+
+def _retry_after_seconds(resp, attempt: int) -> float:
+    """Honour Retry-After when the server sends it, else exponential backoff."""
+    header = getattr(resp, "headers", {}) or {}
+    value = header.get("Retry-After")
+    if value:
+        try:
+            return min(float(value), _MAX_BACKOFF_S)
+        except (TypeError, ValueError):
+            pass
+    return min(_BACKOFF_BASE_S * (2 ** attempt), _MAX_BACKOFF_S)
 
 
 class WatsonxEmbedder:
@@ -100,6 +120,22 @@ class WatsonxEmbedder:
             resp = requests.post(
                 url, json=payload, headers=self._auth_header(refresh=True), timeout=60
             )
+
+        # An index build is a burst of sequential calls, which is exactly what
+        # trips a rate limit; observed live as 429 while rebuilding 218 chunks.
+        # A transient limit should cost a short wait, not the Granite encoder for
+        # the rest of the process, so back off and retry before giving up.
+        for attempt in range(RATE_LIMIT_RETRIES):
+            if resp.status_code not in _RETRY_STATUS:
+                break
+            delay = _retry_after_seconds(resp, attempt)
+            logger.warning(
+                "watsonx embeddings returned %s, retrying in %.1fs (attempt %d/%d).",
+                resp.status_code, delay, attempt + 1, RATE_LIMIT_RETRIES,
+            )
+            time.sleep(delay)
+            resp = requests.post(url, json=payload, headers=self._auth_header(), timeout=60)
+
         resp.raise_for_status()
 
         results = resp.json()["results"]

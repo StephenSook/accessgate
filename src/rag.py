@@ -70,9 +70,18 @@ _index_lock = threading.RLock()
 
 
 # ---------------------------------------------------------------------------
-# Standard documents (inline minimal reference text)
-# These serve as fallback when Docling-parsed files are not yet present.
-# Each passage is authoritative short-form text from the actual standard.
+# Standard documents (inline short-form reference text)
+#
+# These are ALWAYS indexed alongside the Docling-parsed pages, not only when the
+# parsed files are missing. Both are needed: the Docling parse carries the full
+# source pages (and with them the site's navigation and image boilerplate), while
+# these hold the crisp clause wording that a citation should actually quote. Two
+# ids here deliberately match a parsed filename (dcmp_captioning_key,
+# dcmp_description_key), so those sources contribute chunks from both.
+#
+# Each passage is authoritative short-form text from the actual standard. They
+# are literals in source, so describe the corpus as "the parsed standards plus
+# committed clause text", never as purely Docling output.
 # ---------------------------------------------------------------------------
 
 _INLINE_STANDARDS: dict[str, str] = {

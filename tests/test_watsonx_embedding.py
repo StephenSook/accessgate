@@ -16,6 +16,7 @@ import pytest
 
 from src import rag
 from src.watsonx_embedding import (
+    RATE_LIMIT_RETRIES,
     EMBEDDING_DIM,
     MODEL_ID,
     WatsonxEmbedder,
@@ -24,9 +25,10 @@ from src.watsonx_embedding import (
 
 
 class _FakeResponse:
-    def __init__(self, payload, status_code=200):
+    def __init__(self, payload, status_code=200, headers=None):
         self._payload = payload
         self.status_code = status_code
+        self.headers = headers or {}
 
     def json(self):
         return self._payload
@@ -159,6 +161,68 @@ class TestWatsonxEmbedderEncode:
         out = embedder.encode(["a"])
         assert out.shape == (1, EMBEDDING_DIM)
         assert seen == ["Bearer stale", "Bearer fresh"]
+
+    def test_retries_a_rate_limit_then_succeeds(self, embedder, monkeypatch):
+        # Observed live: rebuilding 218 chunks is a burst of sequential calls and
+        # watsonx answered 429. A transient limit must cost a wait, not the
+        # Granite encoder for the rest of the process.
+        slept = []
+        responses = [
+            _FakeResponse({}, status_code=429),
+            _FakeResponse({"results": [{"embedding": [0.4] * EMBEDDING_DIM}]}),
+        ]
+        monkeypatch.setattr("src.watsonx_embedding.requests.post",
+                            lambda *a, **k: responses.pop(0))
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        monkeypatch.setattr("src.watsonx_embedding.time.sleep", lambda s: slept.append(s))
+
+        assert embedder.encode(["a"]).shape == (1, EMBEDDING_DIM)
+        assert len(slept) == 1
+
+    def test_retry_honours_retry_after_header(self, embedder, monkeypatch):
+        slept = []
+        responses = [
+            _FakeResponse({}, status_code=429, headers={"Retry-After": "7"}),
+            _FakeResponse({"results": [{"embedding": [0.4] * EMBEDDING_DIM}]}),
+        ]
+        monkeypatch.setattr("src.watsonx_embedding.requests.post",
+                            lambda *a, **k: responses.pop(0))
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        monkeypatch.setattr("src.watsonx_embedding.time.sleep", lambda s: slept.append(s))
+
+        embedder.encode(["a"])
+        assert slept == [7.0]
+
+    def test_gives_up_after_bounded_retries(self, embedder, monkeypatch):
+        # Must not retry forever: a sustained outage has to surface so rag.py can
+        # fall back rather than hang the request.
+        calls = []
+
+        def always_429(*a, **k):
+            calls.append(1)
+            return _FakeResponse({}, status_code=429)
+
+        monkeypatch.setattr("src.watsonx_embedding.requests.post", always_429)
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        monkeypatch.setattr("src.watsonx_embedding.time.sleep", lambda s: None)
+
+        with pytest.raises(RuntimeError):
+            embedder.encode(["a"])
+        assert len(calls) == 1 + RATE_LIMIT_RETRIES
+
+    def test_does_not_retry_a_client_error(self, embedder, monkeypatch):
+        # A 400 is a real fault; retrying it just wastes a judge's time.
+        calls = []
+
+        def bad_request(*a, **k):
+            calls.append(1)
+            return _FakeResponse({}, status_code=400)
+
+        monkeypatch.setattr("src.watsonx_embedding.requests.post", bad_request)
+        monkeypatch.setattr("src.watsonx_embedding._iam_token", lambda _k: "tok")
+        with pytest.raises(RuntimeError):
+            embedder.encode(["a"])
+        assert len(calls) == 1
 
     def test_encode_propagates_http_error(self, embedder, monkeypatch):
         monkeypatch.setattr(
