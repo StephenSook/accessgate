@@ -1,5 +1,5 @@
 AccessGate
-Copyright (c) 2026 [Team Name]
+Copyright (c) 2026 Stephen Sookra
 
 AccessGate is licensed under the MIT License. See LICENSE for the full text.
 
@@ -44,8 +44,8 @@ Big Buck Bunny
 IBM Granite models
 ------------------------------------------------------------------------
 
-IBM Granite Speech 4.1, Granite Vision, Granite Guardian, Granite 4.x, and
-Granite Embedding r2
+IBM Granite Speech 3.3-2b, Granite Vision 3.2 2b, Granite Guardian 3:2b and
+3-8b, granite-3-8b-instruct, and Granite Embedding english-r2
   License: Apache 2.0
 
 ------------------------------------------------------------------------
