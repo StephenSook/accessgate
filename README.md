@@ -1,13 +1,13 @@
 # ACCESSGATE
 
-**A local, explainable conformance pre-check engine for film accessibility: click a failing audio-description gap, and Granite Vision drafts a fix, the DCMP validator re-checks it, Granite Guardian screens it, and the row flips green live on an interactive timeline.**
+**A local, explainable conformance pre-check engine for film accessibility: click a failing audio-description gap, and watsonx drafts a fix, the DCMP validator re-checks it, Granite Guardian screens it, and the row flips green live on an interactive timeline.**
 
 [![CI](https://github.com/StephenSook/accessgate/actions/workflows/test.yml/badge.svg)](https://github.com/StephenSook/accessgate/actions/workflows/test.yml)
 [![Live demo](https://img.shields.io/badge/live%20demo-online-3fb950.svg)](https://accessgate-web.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://lablab.ai)
-[![195 tests](https://img.shields.io/badge/tests-195%20passing-3fb950.svg)](tests/)
+[![234 tests](https://img.shields.io/badge/tests-234%20passing-3fb950.svg)](tests/)
 
 Built for the **IBM AI Builders Challenge July 2026**, **Reimagine Creative Industries with AI** track.
 
@@ -26,7 +26,7 @@ Fastest path to check each thing that matters. No account, no keys.
 | **Try it, zero setup** | [Live web app](https://accessgate-web.vercel.app), click **LOAD DEMO** (no upload, no keys) |
 | **Claims are wired, not aspirational** | [IBM Stack](#ibm-stack-what-is-actually-wired), then grep any row in the shipped code |
 | **Honesty, live** | [`/judges`](https://accessgate-api.onrender.com/judges) transparency endpoint |
-| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (195 passing), `python -m src.engine` |
+| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (234 passing), `python -m src.engine` |
 | **Results measured, not asserted** | [Evaluation](#evaluation-measured-not-asserted) |
 
 ---
@@ -73,11 +73,11 @@ That balance, never too sparse, never overcrowded, sized to the gap, is exactly 
 
 Two accessibility surfaces, two audiences. Captions are what make a film usable for **Deaf and hard-of-hearing** viewers; audio description is what makes it usable for **blind and low-vision** viewers. AccessGate checks both, against the same coded standards.
 
-AccessGate ingests a film plus its caption (.srt/.vtt) and audio-description (.vtt) sidecar files, scores them against **23 coded rules** across four standards families, and returns a per-rule pass/fail report where every flag cites the exact standard text it came from, retrieved at runtime from a Granite Embedding index, never hardcoded.
+AccessGate ingests a film plus its caption (.srt/.vtt) and audio-description (.vtt) sidecar files, scores them against **23 coded rules** across four standards families, and returns a per-rule pass/fail report where every flag cites the exact standard text it came from, retrieved at runtime from the Docling-parsed standards corpus, never hardcoded. Locally that retrieval runs on a Granite Embedding r2 index; the hosted free-tier deploy cannot carry the embedding stack, so it retrieves with the deterministic fallback encoder over the same corpus (`requirements-deploy.txt`, `src/rag.py`).
 
 **Every flag is verifiable, not guessed.** Run it on a real broadcast-defective caption file and each finding traces to the exact FCC, WCAG, DCMP, or Netflix text a human reviewer can open and check, not a black-box score. The same report speaks to two audiences: the rule-by-rule citations for compliance engineers, and a plain-English watsonx executive summary for producers and other non-technical stakeholders.
 
-Click a failing audio-description gap on the conformance timeline and the gated fix loop runs: Granite Vision drafts a description sized to fit the silent window, the DCMP structure validator re-checks it, Granite Guardian screens it for content safety, and the row flips green live.
+Click a failing audio-description gap on the conformance timeline and the gated fix loop runs: a vision model drafts a description sized to fit the silent window, the DCMP structure validator re-checks it, Granite Guardian screens it for content safety, and the row flips green live. On the hosted demo the drafter is watsonx-hosted Llama 3.2 Vision; run it locally and the drafter is Granite Vision 3.2. The screen is Granite Guardian either way.
 
 **Each of the 23 rules is a contract, not a guess, and the output is a file you can use.** A deterministic evaluator either holds or it names the exact clause it broke, so a finding is a guarantee a human can verify, never an LLM's opinion. And AccessGate exports into the tools that actually fix the file: the flagged cues and the gated AD fix write to editor-native formats (a WebVTT audio-description track, a findings CSV, navigable WebVTT markers, `src/exporters/editor.py`, example artifacts in `data/demo/editor_exports/`) alongside the SARIF 2.1.0 and OSCAL POA&M compliance documents. A captioner or AD writer opens the result in their own workflow instead of reading a report.
 
@@ -91,7 +91,7 @@ To our knowledge, AccessGate is the first tool that is all of these at once: ope
 
 ## AccessGate in One Loop
 
-> A film's caption file has a 44-character line, a 1.2-second cue, a 240-wpm burst, a sound effect without a source bracket, and a 2.1-second sync drift. Its audio-description file has a past-tense line, a jargon term, and an AD line overlapping dialogue. The NER caption score lands at 94.1%, below 98%, but ASR carries measured racial disparity (Koenecke et al., PNAS 2020: WER 0.35 for Black speakers vs 0.19 for white), so the band is flagged for human review, never auto-failed. Every flag cites the exact standard section that governs it. Click the failing AD gap at 67.2s. Granite Vision drafts a present-tense, active-voice, third-person description that fits the 6.6-second window. The DCMP validator passes it. Guardian clears it. The row flips green.
+> A film's caption file has a 44-character line, a 1.2-second cue, a 240-wpm burst, a sound effect without a source bracket, and a 2.1-second sync drift. Its audio-description file has a past-tense line, a jargon term, and an AD line overlapping dialogue. The NER caption score lands at 77.8%, below 98%, but ASR carries measured racial disparity (Koenecke et al., PNAS 2020: WER 0.35 for Black speakers vs 0.19 for white), so the band is flagged for human review, never auto-failed. Every flag cites the exact standard section that governs it. Click the failing AD gap at 39.1s. The vision drafter writes a present-tense, active-voice, third-person description that fits the 5.9-second window (watsonx-hosted Llama 3.2 Vision on the deploy, Granite Vision 3.2 locally). The DCMP validator passes it. Granite Guardian clears it. The row flips green.
 
 ---
 
@@ -139,11 +139,13 @@ flowchart TB
 
     subgraph GENFIX["Gated Generative Fix (on gap click)"]
         direction LR
-        GV["Granite Vision\ndraft AD description"]
+        GV["Granite Vision 3.2\ndraft AD description (local)"]
+        WXV["watsonx-hosted Llama 3.2 Vision\ndraft AD description (hosted demo)"]
         DCMPV["DCMP Structure\nValidator (self-built)"]
-        GG["Granite Guardian\ncontent safety screen"]
+        GG["Granite Guardian\ncontent safety screen\n(3:2b local / 3-8b watsonx)"]
         WX["watsonx.ai Lite\nhosted side-by-side"]
         GV --> DCMPV --> GG
+        WXV --> DCMPV
         GV -.-> WX
     end
 
@@ -170,15 +172,16 @@ flowchart TB
 
 ## IBM Stack (what is actually wired)
 
-AccessGate runs on **five IBM Granite models** (Vision, Guardian, Speech, Embedding, and Granite 3 8B via watsonx.ai), plus watsonx-hosted vision and Docling, every one wired in the shipped code, not a badge. Every row below states exactly how, because honest labeling is the point: a judge can grep any claim. See the live `/judges` endpoint for the same breakdown.
+AccessGate runs on **five IBM Granite model families** (Vision, Guardian, Speech, Embedding, and Granite 3 8B via watsonx.ai), plus watsonx-hosted vision and Docling, every one wired in the shipped code, not a badge. Every row below states exactly how, because honest labeling is the point: a judge can grep any claim, and where the hosted free-tier deploy runs a different path than a local install, the row says so. See the live `/judges` endpoint for the same breakdown.
 
 | IBM Tool | Role | Wiring |
 |---|---|---|
 | **IBM Bob** | Primary development tool: authored the conformance engine, the test suite, and the frontend; parallel subagents; custom mode; conformance Skill; Plan specs; two /review audits (SARIF + OSCAL); self-referential MCP loop. Deployment and later Granite Speech wiring / UI refinements were finished with other tooling after Bob credits ran out. | Primary development tool |
 | **Granite Speech 3.3-2b** | High-accuracy reference transcript feeding the NER scorer | Wired, local `transformers` (`src/granite_speech.py`, opt-in `ACCESSGATE_GRANITE_SPEECH=1`; faster-whisper is the default reference because Granite Speech is ~20x realtime on CPU) |
 | **Granite Vision 3.2 2b** | Drafts the AD fix on a failing gap | Wired, local Ollama (`src/generative_fix.py`) |
-| **Granite Guardian 3 2b** | Screens generated AD for content safety before the row flips green | Wired, local Ollama (`src/generative_fix.py`) |
-| **Granite Embedding r2** | Embeds the standards corpus so citations are retrieved at runtime, never hardcoded | Wired, `sentence-transformers` (`src/rag.py`; deterministic TF-IDF fallback if unavailable) |
+| **Granite Guardian 3 2b** | Screens generated AD for content safety before the row flips green, local path | Wired, local Ollama (`src/generative_fix.py`) |
+| **Granite Guardian 3 8b** | The same safety gate on the hosted demo, where there is no Ollama. This is the screen a judge actually triggers from the live site | Wired, hosted (`src/watsonx_guardian.py`, `ibm/granite-guardian-3-8b`) |
+| **Granite Embedding r2** | Embeds the standards corpus so citations are retrieved at runtime, never hardcoded | Wired, `sentence-transformers` (`src/rag.py`). The hosted deploy omits the embedding stack (`requirements-deploy.txt`) and retrieves over the same corpus with the deterministic fallback encoder |
 | **watsonx.ai (granite-3-8b-instruct)** | Hosted AD-line generation and a plain-English report summary (`src/report_summary.py`), side by side with the local Granite path | Wired, hosted (`src/watsonx_showcase.py`) |
 | **watsonx-hosted vision (Llama 3.2 11B)** | Drafts the gap fix live on the hosted demo where there is no Ollama (`/demo-fix`); Granite Vision is the local model | Wired, `src/watsonx_vision.py` |
 | **Docling** | Parses the WCAG, FCC, DCMP and Netflix source pages into the markdown corpus the RAG cites | Wired, `scripts/parse_standards.py` → `standards/parsed/` (6 docs) |
@@ -206,7 +209,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 | Rule engine on **real machine captions** | **55 real defects / 6 rules** | faster-whisper on the real NOTLD audio, no injected defects (`data/demo/notld_real_autocaption.srt`) |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
-| Tests passing | **195** | `pytest` on Python 3.11 and 3.12 |
+| Tests passing | **234** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
 
 **Verified on real, naturally-defective captions, not just an injected demo.** The 10/10 row is a designed showcase (a hand-authored degradation recipe). To prove the engine on real data, we transcribed the public-domain Night of the Living Dead audio with faster-whisper and ran the 23 rules on that raw machine-caption output. With zero injected defects, AccessGate flagged **55 real violations across 6 rules**: 40 over-long lines (DCMP-CAP-01, NFLX-LEN-01), 8 reading-speed breaches (DCMP-CAP-03, NFLX-CPS-01), and 7 sub-minimum-duration cues (DCMP-CAP-04, NFLX-DUR-01). Machine captions are the single most common real-world accessibility defect, and the run is reproducible: `python scripts/transcribe_real_captions.py`.
 
@@ -214,7 +217,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 
 ## How IBM Bob Was Used
 
-IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 195-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
+IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 234-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
 
 The most distinctive use is a self-referential loop: AccessGate's own MCP server (exposing `check_conformance`, `detect_gaps`, and `score_captions`) was registered in Bob and consumed by Bob during development, so Bob checked the tool's conformance output using the tool itself. The engine became its own test harness, inside the primary development tool.
 
@@ -297,7 +300,7 @@ accessgate/
 ├── mobile/                    # Expo / React Native (iOS + Android) client
 ├── security/                  # SARIF + OSCAL /review audit outputs
 ├── bob_sessions/              # IBM Bob usage screenshot (Bobalytics)
-├── tests/                     # 195 passing tests
+├── tests/                     # 234 passing tests
 ├── render.yaml                # Render deployment config (FastAPI backend)
 ├── AGENTS.md                  # Project policy spine (read every session)
 └── .bob/                      # Custom mode, conformance skill, MCP config
