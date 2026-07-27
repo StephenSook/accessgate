@@ -8,6 +8,12 @@ export interface RuleResult {
   message: string
   timecode: number | null
   citation: string
+  clause_id?: string | null       // short standard label, e.g. "WCAG 2.2 SC 1.2.2"
+  clause_url?: string | null       // canonical URL for the clause
+  measured?: number | null         // observed value (e.g. 22.5)
+  limit?: number | null            // the rule's threshold (e.g. 20)
+  unit?: string | null             // unit for measured/limit (e.g. "cps")
+  delta_pct?: number | null        // signed percent over/under the limit
   sarif_level: 'error' | 'warning' | 'note'
   confidence: number | null
   human_review_required: boolean

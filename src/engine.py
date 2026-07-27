@@ -26,6 +26,7 @@ from src.caption_parser import parse_captions
 from src.gap_engine import detect_gaps
 from src.ner_scorer import score_captions
 from src.rag import retrieve_citation, build_index
+from src.standards_registry import clause_ref
 from src.evaluators.fcc import (
     eval_fcc_acc_01, eval_fcc_syn_01, eval_fcc_cmp_01, eval_fcc_plc_01,
 )
@@ -163,7 +164,7 @@ def run_engine(
     all_results.extend(eval_nflx_len_01(cues))
     all_results.extend(eval_nflx_dur_01(cues))
 
-    # ---- Step 5: populate RAG citations ----
+    # ---- Step 5: populate RAG citations + canonical clause references ----
     logger.info("Retrieving citations from RAG index...")
     for result in all_results:
         # Retrieve the verbatim passage from the standard for every result. The
@@ -173,6 +174,13 @@ def run_engine(
         retrieved = retrieve_citation(result.rule_id, query)
         if retrieved:
             result.citation = retrieved
+        # Canonical clause reference: a short standard label + a live URL a
+        # reviewer can open. The verbatim quote (citation) says WHAT the rule
+        # requires; the clause ref says exactly WHICH clause and WHERE to read it.
+        ref = clause_ref(result.rule_id)
+        if ref:
+            result.clause_id = ref["clause_id"]
+            result.clause_url = ref["clause_url"]
 
     # ---- Step 6: assemble report ----
     report = ConformanceReport(

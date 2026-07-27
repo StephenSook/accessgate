@@ -82,7 +82,10 @@
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 45.0,
+      "limit": 32.0,
+      "unit": "chars"
     },
     {
       "rule_id": "DCMP-CAP-01",
@@ -92,7 +95,10 @@
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 53.0,
+      "limit": 32.0,
+      "unit": "chars"
     },
     {
       "rule_id": "DCMP-CAP-02",
@@ -112,7 +118,10 @@
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 660.0,
+      "limit": 225.0,
+      "unit": "wpm"
     },
     {
       "rule_id": "DCMP-CAP-04",
@@ -122,7 +131,10 @@
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 0.8,
+      "limit": 2.0,
+      "unit": "s"
     },
     {
       "rule_id": "DCMP-CAP-04",
@@ -132,7 +144,10 @@
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 1.0,
+      "limit": 2.0,
+      "unit": "s"
     },
     {
       "rule_id": "DCMP-CAP-05",
@@ -282,7 +297,10 @@
       "citation": "Netflix Timed Text Style Guide (TTSG) - English.\nReading speed: Maximum 20 characters per second (CPS) for adult content.\nMaximum 17 CPS for children's content.\nLine length: Maximum 42 characters per line.\nLine count: Maximum 2 lines per event.\nMinimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 53.0,
+      "limit": 20.0,
+      "unit": "cps"
     },
     {
       "rule_id": "NFLX-LEN-01",
@@ -292,7 +310,10 @@
       "citation": "e event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.\nFrame rate: Typically 23.976, 24, or 25 fps depending on the content locale.\nCharacter encoding: UTF-8.",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 45.0,
+      "limit": 42.0,
+      "unit": "chars"
     },
     {
       "rule_id": "NFLX-LEN-01",
@@ -302,7 +323,10 @@
       "citation": "Netflix Timed Text Style Guide (TTSG) - English.\nReading speed: Maximum 20 characters per second (CPS) for adult content.\nMaximum 17 CPS for children's content.\nLine length: Maximum 42 characters per line.\nLine count: Maximum 2 lines per event.\nMinimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 53.0,
+      "limit": 42.0,
+      "unit": "chars"
     },
     {
       "rule_id": "NFLX-DUR-01",
@@ -312,7 +336,10 @@
       "citation": "e event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.\nFrame rate: Typically 23.976, 24, or 25 fps depending on the content locale.\nCharacter encoding: UTF-8.",
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "measured": 0.8,
+      "limit": 0.833,
+      "unit": "s"
     }
   ],
   "ner": {

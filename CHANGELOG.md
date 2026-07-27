@@ -4,6 +4,20 @@ All notable changes to AccessGate are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/). This project was built for the
 IBM AI Builders Challenge (July 2026) with IBM Bob as the primary development tool.
 
+## 2026-07-26: Clause-cited findings and computed-number evidence
+
+- Every finding now carries a canonical clause reference: a short standard label
+  (e.g. "WCAG 2.2 SC 1.2.2") and a live, verified URL to the authoritative source,
+  in addition to the verbatim RAG quote. Added `src/standards_registry.py` (URLs
+  checked live), surfaced in the rule table (a clickable clause link), the findings
+  CSV export, and the served demo/cached reports. A finding now says both what the
+  rule requires and exactly which clause and where to read it.
+- Numeric findings now report the observed value against the threshold as structured
+  fields (`measured`, `limit`, `unit`) with a computed `delta_pct`, so a breach reads
+  as undeniable arithmetic ("53 cps vs 20 cps limit, +165%") rather than only prose.
+  Populated in the Netflix and DCMP caption evaluators, shown in the rule table and
+  the CSV. Verdicts stay computed in code; this only surfaces the arithmetic behind them.
+
 ## 2026-07-20: Accessibility validated by a real screen-reader user
 
 - Shipped a screen-reader heading outline (Upload, Conformance results, timeline,

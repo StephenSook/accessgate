@@ -75,7 +75,8 @@ def export_findings_csv(
     writer = csv.writer(buf)
     writer.writerow([
         "timecode_seconds", "timecode", "rule_id", "status", "level",
-        "standard", "message", "human_review_required", "citation",
+        "standard", "clause_url", "measured", "limit", "unit", "delta_pct",
+        "message", "human_review_required", "citation",
     ])
     for r in _reportable(report.results):
         tc = "" if r.timecode is None else f"{r.timecode:.3f}"
@@ -83,7 +84,11 @@ def export_findings_csv(
         writer.writerow([
             _csv_safe(tc), _csv_safe(tc_h), _csv_safe(r.rule_id),
             _csv_safe(r.status), _csv_safe(r.sarif_level),
-            _csv_safe(_standard_for(r.rule_id)), _csv_safe(r.message),
+            _csv_safe(_standard_for(r.rule_id)), _csv_safe(r.clause_url),
+            _csv_safe("" if r.measured is None else r.measured),
+            _csv_safe("" if r.limit is None else r.limit),
+            _csv_safe(r.unit), _csv_safe("" if r.delta_pct is None else r.delta_pct),
+            _csv_safe(r.message),
             _csv_safe(r.human_review_required), _csv_safe(r.citation),
         ])
     out = buf.getvalue()

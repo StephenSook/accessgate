@@ -48,6 +48,7 @@ def eval_nflx_cps_01(
                     f"Text: {cue.text[:50]!r}"
                 ),
                 timecode=cue.start,
+                measured=round(cps, 1), limit=max_cps, unit="cps",
                 citation=rule.source, sarif_level=rule.sarif_level,
             ))
 
@@ -69,17 +70,24 @@ def eval_nflx_len_01(cues: list[CaptionCue]) -> list[RuleResult]:
 
     for cue in cues:
         issues = []
-        for line in cue.lines:
-            if len(line) > NETFLIX_MAX_CHARS_PER_LINE:
-                issues.append(f"line {len(line)} chars: {line!r}")
+        over_lines = [line for line in cue.lines if len(line) > NETFLIX_MAX_CHARS_PER_LINE]
+        for line in over_lines:
+            issues.append(f"line {len(line)} chars: {line!r}")
         if len(cue.lines) > NETFLIX_MAX_LINES:
             issues.append(f"{len(cue.lines)} lines (max {NETFLIX_MAX_LINES})")
 
         if issues:
+            # Report the dominant numeric breach: the longest over-limit line if
+            # any, else the line count against the 2-line limit.
+            if over_lines:
+                measured, limit, unit = float(max(len(l) for l in over_lines)), float(NETFLIX_MAX_CHARS_PER_LINE), "chars"
+            else:
+                measured, limit, unit = float(len(cue.lines)), float(NETFLIX_MAX_LINES), "lines"
             results.append(RuleResult(
                 rule_id=rule.id, status="fail",
                 message=f"Caption at {cue.start:.2f}s: {'; '.join(issues)}",
                 timecode=cue.start,
+                measured=measured, limit=limit, unit=unit,
                 citation=rule.source, sarif_level=rule.sarif_level,
             ))
 
@@ -107,14 +115,18 @@ def eval_nflx_dur_01(
 
     for i, cue in enumerate(sorted_cues):
         issues = []
+        # The dominant numeric breach is the duration bound it violates.
+        measured = limit = None
         if cue.duration < NETFLIX_MIN_DURATION_S:
             issues.append(
                 f"duration {cue.duration:.3f}s below minimum {NETFLIX_MIN_DURATION_S:.3f}s"
             )
+            measured, limit = round(cue.duration, 3), round(NETFLIX_MIN_DURATION_S, 3)
         if cue.duration > NETFLIX_MAX_DURATION_S:
             issues.append(
                 f"duration {cue.duration:.1f}s exceeds maximum {NETFLIX_MAX_DURATION_S}s"
             )
+            measured, limit = round(cue.duration, 3), NETFLIX_MAX_DURATION_S
         # Check gap to next cue
         if i < len(sorted_cues) - 1:
             gap = sorted_cues[i + 1].start - cue.end
@@ -128,6 +140,8 @@ def eval_nflx_dur_01(
                 rule_id=rule.id, status="fail",
                 message=f"Caption at {cue.start:.2f}s: {'; '.join(issues)}",
                 timecode=cue.start,
+                measured=measured, limit=limit,
+                unit="s" if measured is not None else None,
                 citation=rule.source, sarif_level=rule.sarif_level,
             ))
 

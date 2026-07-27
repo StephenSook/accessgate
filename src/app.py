@@ -24,6 +24,8 @@ from fastapi import FastAPI, File, Form, UploadFile, WebSocket, HTTPException, B
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from src.standards_registry import enrich_report_dict
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -81,7 +83,9 @@ def demo_report() -> JSONResponse:
     if not demo_path.exists():
         raise HTTPException(status_code=404, detail="Demo report not found.")
     with open(demo_path) as f:
-        return JSONResponse(content=json.load(f))
+        # The committed demo artifact predates the clause-reference field; add the
+        # canonical clause URLs on the way out so /demo matches a live /check.
+        return JSONResponse(content=enrich_report_dict(json.load(f)))
 
 
 # ---------------------------------------------------------------------------
@@ -272,7 +276,7 @@ def get_report(report_id: str) -> JSONResponse:
     """Retrieve a previously-generated conformance report by ID."""
     if report_id not in _report_cache:
         raise HTTPException(status_code=404, detail="Report not found.")
-    return JSONResponse(content=_report_cache[report_id])
+    return JSONResponse(content=enrich_report_dict(_report_cache[report_id]))
 
 
 # ---------------------------------------------------------------------------

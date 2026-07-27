@@ -84,9 +84,26 @@ class RuleResult(BaseModel):
     message: str
     timecode: Optional[float] = None      # seconds into the film
     citation: str = ""                     # RAG-retrieved verbatim source text
+    clause_id: Optional[str] = None        # short standard label, e.g. "WCAG 2.2 SC 1.2.2"
+    clause_url: Optional[str] = None       # canonical URL for the clause (verified live)
+    measured: Optional[float] = None       # observed value on a numeric rule (e.g. 22.5)
+    limit: Optional[float] = None          # the threshold it is measured against (e.g. 20)
+    unit: Optional[str] = None             # unit for measured/limit (e.g. "cps", "chars", "s")
     sarif_level: Literal["error", "warning", "note"] = "warning"
     confidence: Optional[float] = None    # for banded checks
     human_review_required: bool = False
+
+    @computed_field
+    @property
+    def delta_pct(self) -> Optional[float]:
+        """Signed percent the observed value is over (+) or under (-) the limit.
+
+        Turns a finding into undeniable arithmetic ("22.5 vs 20 cps = +12.5%").
+        None unless both measured and a non-zero limit are present.
+        """
+        if self.measured is None or self.limit is None or self.limit == 0:
+            return None
+        return round((self.measured - self.limit) / self.limit * 100, 1)
 
 
 class NERScoreResult(BaseModel):

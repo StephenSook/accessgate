@@ -26,6 +26,7 @@ def eval_dcmp_cap_01(cues: list[CaptionCue]) -> list[RuleResult]:
                     rule_id=rule.id, status="fail",
                     message=f"Line exceeds {DCMP_MAX_CHARS_PER_LINE} chars ({len(line)} chars) at {cue.start:.2f}s: {line!r}",
                     timecode=cue.start,
+                    measured=float(len(line)), limit=float(DCMP_MAX_CHARS_PER_LINE), unit="chars",
                     citation=rule.source, sarif_level=rule.sarif_level,
                 ))
     if not results:
@@ -47,6 +48,7 @@ def eval_dcmp_cap_02(cues: list[CaptionCue]) -> list[RuleResult]:
                 rule_id=rule.id, status="fail",
                 message=f"Caption at {cue.start:.2f}s has {len(cue.lines)} lines (max {DCMP_MAX_LINES}).",
                 timecode=cue.start,
+                measured=float(len(cue.lines)), limit=float(DCMP_MAX_LINES), unit="lines",
                 citation=rule.source, sarif_level=rule.sarif_level,
             ))
     if not results:
@@ -77,6 +79,7 @@ def eval_dcmp_cap_03(cues: list[CaptionCue], profile: str = "adult") -> list[Rul
                 rule_id=rule.id, status="fail",
                 message=f"Caption at {cue.start:.2f}s exceeds {wpm_cap:.0f} wpm ({wpm:.0f} wpm). Text: {cue.text[:50]!r}",
                 timecode=cue.start,
+                measured=round(wpm, 1), limit=wpm_cap, unit="wpm",
                 citation=rule.source, sarif_level=rule.sarif_level,
             ))
     if not results:
@@ -98,6 +101,7 @@ def eval_dcmp_cap_04(cues: list[CaptionCue]) -> list[RuleResult]:
                 rule_id=rule.id, status="fail",
                 message=f"Caption at {cue.start:.2f}s displayed for {cue.duration:.2f}s (minimum {DCMP_MIN_DISPLAY_S}s). Text: {cue.text[:50]!r}",
                 timecode=cue.start,
+                measured=round(cue.duration, 2), limit=DCMP_MIN_DISPLAY_S, unit="s",
                 citation=rule.source, sarif_level=rule.sarif_level,
             ))
     if not results:

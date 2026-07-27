@@ -168,8 +168,34 @@ export function RuleResultsTable({ results, onTimecodeClick, onRequestFix }: Pro
                   {isExp && (
                     <tr style={{ background: 'var(--ag-surface)', borderBottom: '1px solid var(--ag-border)' }}>
                       <td colSpan={7} style={{ padding: '12px 16px 14px 36px' }}>
+                        {/* Computed-number evidence: the observed value against the
+                            rule's threshold, so the finding is undeniable arithmetic. */}
+                        {r.measured != null && r.limit != null && (
+                          <div style={{ marginBottom: 8, display: 'inline-flex', alignItems: 'baseline', gap: 8, fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                            <span style={{ color: 'var(--ag-text)' }}>
+                              {r.measured}{r.unit ? ` ${r.unit}` : ''}
+                            </span>
+                            <span style={{ color: 'var(--ag-text-muted)' }}>
+                              vs {r.limit}{r.unit ? ` ${r.unit}` : ''} limit
+                            </span>
+                            {r.delta_pct != null && (
+                              <span style={{ color: r.delta_pct > 0 ? 'var(--ag-red)' : 'var(--ag-green)', fontWeight: 600 }}>
+                                {r.delta_pct > 0 ? '+' : ''}{r.delta_pct}%
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ag-text-muted)', textTransform: 'uppercase', marginBottom: 4, letterSpacing: 1 }}>
                           Source Citation
+                          {r.clause_id && r.clause_url && (
+                            <>
+                              {' · '}
+                              <a href={r.clause_url} target="_blank" rel="noopener noreferrer"
+                                style={{ color: 'var(--ag-blue-light)', textTransform: 'none', letterSpacing: 0 }}>
+                                {r.clause_id} ↗
+                              </a>
+                            </>
+                          )}
                         </div>
                         <blockquote style={{ margin: 0, padding: '8px 12px', borderLeft: '2px solid var(--ag-blue)', background: 'rgba(15,98,254,0.06)', fontSize: 12, color: 'var(--ag-text)', fontStyle: 'italic' }}>
                           {r.citation || '—'}
