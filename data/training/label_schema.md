@@ -20,7 +20,7 @@ Examples: "there" -> "their", "peace" -> "piece", "write" -> "right"
 A word-level error where a human captioner made a deliberate choice:
 a meaning-preserving paraphrase, synonym, or deliberate omission.
 Signals:
-- High ASR confidence (> 0.75) — the word was recognized but changed editorially
+- High ASR confidence (> 0.75), the word was recognized but changed editorially
 - Semantic similarity > 0.85 (meaning preserved)
 - OR: deliberate omission of a filler word (um, uh, you know)
 
@@ -46,9 +46,9 @@ Cohen's kappa. Target kappa >= 0.6 (substantial agreement).
 
 ## Data sources
 
-- LibriSpeech test-clean (CC BY 4.0) — read speech, 16kHz, clean conditions
-- Common Voice CC0 — crowd-sourced, diverse speakers
-- AMI Meeting Corpus CC BY 4.0 — spontaneous meeting speech
-- VoxPopuli CC0 — European Parliament speech
+- LibriSpeech test-clean (CC BY 4.0), read speech, 16kHz, clean conditions
+- Common Voice CC0, crowd-sourced, diverse speakers
+- AMI Meeting Corpus CC BY 4.0, spontaneous meeting speech
+- VoxPopuli CC0, European Parliament speech
 
 All sources are publicly licensed and may be redistributed.

@@ -192,7 +192,7 @@ export function WaveformDisplay({ file, src, gaps, activeTimecode, onTimecodeCli
         <div
           ref={containerRef}
           role="application"
-          aria-label="Audio waveform — click to seek"
+          aria-label="Audio waveform, click to seek"
           style={{
             width: '100%',
             background: 'var(--ag-bg)',

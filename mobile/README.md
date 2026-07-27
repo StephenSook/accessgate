@@ -35,7 +35,7 @@ APK from the EAS build page and install it on any Android device or emulator.
 
 ## Screens
 
-- **Home** — Load Demo, or Check a Caption File (on-device picker).
-- **Report** — metrics, Granite executive summary, dialogue-free gaps, rule results.
-- **Gap fix** — tap a gap → watsonx vision drafts the audio description → DCMP
+- **Home**: Load Demo, or Check a Caption File (on-device picker).
+- **Report**: metrics, Granite executive summary, dialogue-free gaps, rule results.
+- **Gap fix**: tap a gap → watsonx vision drafts the audio description → DCMP
   validation → accept → flips green.

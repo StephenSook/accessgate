@@ -29,21 +29,21 @@ interface JudgesData {
 const TIER_CONFIG = {
   wired_live: {
     label: 'Wired Live',
-    subtitle: 'Runs locally — zero hosted API calls',
+    subtitle: 'Runs locally, zero hosted API calls',
     accent: '#24a148',      // --ag-green
     dimAccent: 'rgba(36,161,72,0.12)',
     border: 'rgba(36,161,72,0.35)',
   },
   integration: {
     label: 'Integration',
-    subtitle: 'Calls a hosted or local model — gracefully degrades',
+    subtitle: 'Calls a hosted or local model, degrades gracefully',
     accent: '#4589ff',      // --ag-blue-light
     dimAccent: 'rgba(69,137,255,0.10)',
     border: 'rgba(69,137,255,0.30)',
   },
   accelerator: {
     label: 'Accelerator',
-    subtitle: 'IBM Bob tooling — not runtime product code',
+    subtitle: 'IBM Bob tooling, not runtime product code',
     accent: '#f1c21b',      // --ag-amber
     dimAccent: 'rgba(241,194,27,0.10)',
     border: 'rgba(241,194,27,0.30)',

@@ -27,7 +27,7 @@ def eval_fcc_acc_01(
         return RuleResult(
             rule_id=rule.id,
             status="skip",
-            message="No reference transcript available — accuracy check skipped.",
+            message="No reference transcript available, accuracy check skipped.",
             citation=rule.source,
             sarif_level=rule.sarif_level,
             human_review_required=True,
@@ -37,7 +37,7 @@ def eval_fcc_acc_01(
         return RuleResult(
             rule_id=rule.id,
             status="skip",
-            message="Reference transcript is empty — accuracy check skipped.",
+            message="Reference transcript is empty, accuracy check skipped.",
             citation=rule.source,
             sarif_level=rule.sarif_level,
         )
@@ -50,7 +50,7 @@ def eval_fcc_acc_01(
         return RuleResult(
             rule_id=rule.id,
             status="pass",
-            message=f"NER score {score_pct}% (band {band_low_pct}%–{band_high_pct}%) meets the 98% threshold.",
+            message=f"NER score {score_pct}% (band {band_low_pct}%-{band_high_pct}%) meets the 98% threshold.",
             citation=rule.source,
             sarif_level=rule.sarif_level,
             confidence=ner_result.ner_score,
@@ -62,9 +62,9 @@ def eval_fcc_acc_01(
             rule_id=rule.id,
             status="flag",
             message=(
-                f"NER score {score_pct}% (band {band_low_pct}%–{band_high_pct}%) "
+                f"NER score {score_pct}% (band {band_low_pct}%-{band_high_pct}%) "
                 f"straddles the 98% threshold. Human review required. "
-                f"ASR carries measured demographic disparity (Koenecke et al., PNAS 2020) — "
+                f"ASR carries measured demographic disparity (Koenecke et al., PNAS 2020), "
                 f"never auto-fail on ASR evidence alone."
             ),
             citation=rule.source,
@@ -78,7 +78,7 @@ def eval_fcc_acc_01(
         rule_id=rule.id,
         status="fail",
         message=(
-            f"NER score {score_pct}% (band {band_low_pct}%–{band_high_pct}%) "
+            f"NER score {score_pct}% (band {band_low_pct}%-{band_high_pct}%) "
             f"is below the 98% threshold. "
             f"Note: {len(ner_result.low_confidence_regions)} low-confidence region(s) flagged for human review."
         ),
@@ -119,7 +119,7 @@ def eval_fcc_syn_01(
                 rule_id=rule.id,
                 status="fail",
                 message=(
-                    f"Caption cue at {cue.start:.2f}s–{cue.end:.2f}s does not overlap "
+                    f"Caption cue at {cue.start:.2f}s-{cue.end:.2f}s does not overlap "
                     f"any detected speech region within {tolerance_ms}ms tolerance. "
                     f"Text: {cue.text[:60]!r}"
                 ),
@@ -154,7 +154,7 @@ def eval_fcc_cmp_01(
         return RuleResult(
             rule_id=rule.id,
             status="skip",
-            message="No speech regions detected — completeness check skipped.",
+            message="No speech regions detected, completeness check skipped.",
             citation=rule.source,
             sarif_level=rule.sarif_level,
         )
@@ -175,7 +175,7 @@ def eval_fcc_cmp_01(
             status="fail",
             message=(
                 f"{len(uncovered)} speech region(s) have no caption coverage. "
-                f"First uncovered region: {first.start:.2f}s–{first.end:.2f}s."
+                f"First uncovered region: {first.start:.2f}s-{first.end:.2f}s."
             ),
             timecode=uncovered[0].start,
             citation=rule.source,
@@ -221,8 +221,8 @@ def eval_fcc_plc_01(cues: list[CaptionCue]) -> list[RuleResult]:
                 rule_id=rule.id,
                 status="fail",
                 message=(
-                    f"Caption cues overlap: [{a.start:.2f}s–{a.end:.2f}s] "
-                    f"and [{b.start:.2f}s–{b.end:.2f}s]."
+                    f"Caption cues overlap: [{a.start:.2f}s-{a.end:.2f}s] "
+                    f"and [{b.start:.2f}s-{b.end:.2f}s]."
                 ),
                 timecode=b.start,
                 citation=rule.source,

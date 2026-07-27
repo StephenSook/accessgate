@@ -12,8 +12,8 @@ The AccessGate caption error-type classifier is a logistic regression model that
 
 | Class | Definition |
 |---|---|
-| `recognition` | An ASR mishear — the original audio was present but transcribed incorrectly (phonetically similar errors, deletions, insertions). |
-| `edition` | A meaning-preserving paraphrase or deliberate omission — the captioner chose different words that convey the same or reduced meaning without ASR error. |
+| `recognition` | An ASR mishear, the original audio was present but transcribed incorrectly (phonetically similar errors, deletions, insertions). |
+| `edition` | A meaning-preserving paraphrase or deliberate omission, the captioner chose different words that convey the same or reduced meaning without ASR error. |
 
 A third class, `correct`, covers tokens where no deviation exists. The classifier feeds the NER-style caption scorer's E-vs-R decision (edition errors reduce the NER score more than recognition errors in the FCC model).
 
@@ -42,7 +42,7 @@ A third class, `correct`, covers tokens where no deviation exists. The classifie
 
 | Corpus | Exclusion Reason |
 |---|---|
-| TED-LIUM | CC BY-NC-ND — NonCommercial clause incompatible |
+| TED-LIUM | CC BY-NC-ND, NonCommercial clause incompatible |
 | OpenSubtitles | License unclear, community-sourced SRTs not usable as reference |
 | GigaSpeech | Restricted license |
 | Switchboard | Restricted license |

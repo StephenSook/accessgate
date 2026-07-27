@@ -95,7 +95,7 @@ def generate_ad_line(
     }
 
     if not api_key or not project_id:
-        result["error"] = "WATSONX_API_KEY or WATSONX_PROJECT not set — skipping hosted call"
+        result["error"] = "WATSONX_API_KEY or WATSONX_PROJECT not set, skipping hosted call"
         logger.warning(result["error"])
         return result
 

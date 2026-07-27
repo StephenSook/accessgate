@@ -98,7 +98,7 @@ export function ConformanceTimeline({ report, activeTimecode, onTimecodeClick, o
         {/* Speech region bands */}
         {report.speech_regions.map((s, i) => (
           <div key={`speech-${i}`}
-            title={`Speech ${fmtTime(s.start)}–${fmtTime(s.end)}`}
+            title={`Speech ${fmtTime(s.start)}-${fmtTime(s.end)}`}
             style={{
               position: 'absolute',
               left: pct(s.start),
@@ -114,7 +114,7 @@ export function ConformanceTimeline({ report, activeTimecode, onTimecodeClick, o
         {report.gaps.map((g, i) => (
           <div key={`gap-${i}`}
             onClick={(e) => { e.stopPropagation(); onGapClick(g) }}
-            title={`Gap ${fmtTime(g.start)}–${fmtTime(g.end)} (${(g.duration ?? g.end - g.start).toFixed(1)}s) — click to fix AD`}
+            title={`Gap ${fmtTime(g.start)}-${fmtTime(g.end)} (${(g.duration ?? g.end - g.start).toFixed(1)}s), click to fix AD`}
             style={{
               position: 'absolute',
               left: pct(g.start),

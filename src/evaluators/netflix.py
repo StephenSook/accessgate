@@ -148,7 +148,7 @@ def eval_nflx_dur_01(
     if not results:
         results.append(RuleResult(
             rule_id=rule.id, status="pass",
-            message=f"All captions within {NETFLIX_MIN_DURATION_S:.3f}s–{NETFLIX_MAX_DURATION_S}s duration range.",
+            message=f"All captions within {NETFLIX_MIN_DURATION_S:.3f}s-{NETFLIX_MAX_DURATION_S}s duration range.",
             citation=rule.source, sarif_level=rule.sarif_level,
         ))
     return results

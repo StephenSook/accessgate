@@ -59,7 +59,7 @@ def eval_wcag_125_02(ad_cues: list[CaptionCue] | None) -> RuleResult:
         message=(
             f"Audio description semantic sufficiency requires human review. "
             f"Automatable checks (presence, timing, structure) are covered by other rules. "
-            f"SC 1.2.5 sufficiency — whether descriptions convey important visual information — "
+            f"SC 1.2.5 sufficiency, whether descriptions convey important visual information, "
             f"cannot be machine-verified per W3C ACT guidance."
         ),
         citation=rule.source, sarif_level=rule.sarif_level,

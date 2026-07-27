@@ -192,7 +192,7 @@ export default function App() {
           <p className="ag-mode-note">
             <b>Hosted demo</b> runs the 23-rule conformance engine live on your uploaded caption file.
             {' '}ASR accuracy scoring (Granite Speech / faster-whisper), Silero VAD gap detection, and the
-            {' '}Granite Vision generative fix run in the <b>full local pipeline</b> — see the demo report for all of it.
+            {' '}Granite Vision generative fix run in the <b>full local pipeline</b>. See the demo report for all of it.
           </p>
         </section>
 
@@ -361,7 +361,7 @@ function FileField({ id, name, label, accept, required }: {
         className={`ag-dropzone${over ? ' ag-dropzone--over' : ''}${fileName ? ' ag-dropzone--filled' : ''}`}
         role="button"
         tabIndex={0}
-        aria-label={`${label}${required ? ' (required)' : ''} — drop a file or click to browse`}
+        aria-label={`${label}${required ? ' (required)' : ''}: drop a file or click to browse`}
         onClick={() => inputRef.current?.click()}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputRef.current?.click() } }}
         onDragOver={(e) => { e.preventDefault(); setOver(true) }}

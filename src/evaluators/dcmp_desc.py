@@ -96,7 +96,7 @@ def _has_active_present(text: str) -> bool:
 
 
 def eval_dcmp_desc_02(ad_cues: list[CaptionCue]) -> list[RuleResult]:
-    """DCMP-DESC-02: AD must use third-person narrative — no first/second person."""
+    """DCMP-DESC-02: AD must use third-person narrative, no first/second person."""
     rule = get_rule("DCMP-DESC-02")
     results = []
     for cue in ad_cues:
@@ -237,7 +237,7 @@ def eval_dcmp_desc_05(
             results.append(RuleResult(
                 rule_id=rule.id, status="fail",
                 message=(
-                    f"AD at {cue.start:.2f}s–{cue.end:.2f}s overlaps a detected "
+                    f"AD at {cue.start:.2f}s-{cue.end:.2f}s overlaps a detected "
                     f"speech region. Text: {cue.text[:60]!r}"
                 ),
                 timecode=cue.start,

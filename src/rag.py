@@ -206,7 +206,7 @@ def build_index(force: bool = False) -> None:
 
     chunks = _build_chunks()
     if not chunks:
-        logger.error("No chunks built — cannot create index.")
+        logger.error("No chunks built, cannot create index.")
         return
 
     texts = [c["text"] for c in chunks]
@@ -263,7 +263,7 @@ def _load_index() -> tuple[list[dict], np.ndarray]:
         return _chunks, _embeddings
 
     if not CHUNKS_FILE.exists() or not EMBEDDINGS_FILE.exists():
-        logger.info("Index not found — building now.")
+        logger.info("Index not found, building now.")
         build_index()
 
     with open(CHUNKS_FILE) as f:
@@ -321,7 +321,7 @@ def retrieve_citation(rule_id: str, query: str, top_k: int = 1) -> str:
     # crashing on the dot product.
     if q_vec.shape[0] != embeddings.shape[1]:
         logger.warning(
-            "RAG index dim %d != query dim %d — rebuilding index with the current encoder.",
+            "RAG index dim %d != query dim %d, rebuilding index with the current encoder.",
             embeddings.shape[1], q_vec.shape[0],
         )
         try:
@@ -379,7 +379,7 @@ def _fallback_citation(rule_id: str) -> str:
         "DCMP-DESC-05": "DCMP Description Key: Audio descriptions must not overlap essential program audio or dialogue.",
         "NFLX-CPS-01": "Netflix TTSG: Maximum 20 characters per second for adult content.",
     }
-    return fallbacks.get(rule_id, f"[Citation for {rule_id} — see rules/rules_registry.yaml]")
+    return fallbacks.get(rule_id, f"[Citation for {rule_id}, see rules/rules_registry.yaml]")
 
 
 # ---------------------------------------------------------------------------

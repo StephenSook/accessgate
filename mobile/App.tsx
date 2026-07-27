@@ -139,7 +139,7 @@ function RuleRow({ r }: { r: RuleResult }) {
         <Text style={[s.ruleStatus, { color: statusColor(r.status) }]}>{r.status.toUpperCase()}</Text>
       </View>
       <Text style={s.ruleMsg}>{r.message}</Text>
-      {open && <Text style={s.ruleCite}>“{r.citation}”</Text>}
+      {open && <Text style={s.ruleCite}>"{r.citation}"</Text>}
     </Pressable>
   )
 }
@@ -177,7 +177,7 @@ function FixModal({ gap, onClose }: { gap: GapRegion | null; onClose: () => void
           {fix && (
             <ScrollView style={{ marginTop: 8 }}>
               <Stage label="1. VISION DRAFT" color={C.blueLight}>
-                <Text style={s.draft}>“{fix.draft_text}”</Text>
+                <Text style={s.draft}>"{fix.draft_text}"</Text>
                 <Text style={[s.small, { color: fix.fits_gap ? C.green : C.red }]}>
                   {fix.word_count} words · {fix.fits_gap ? '✓ fits gap' : '✗ too long'}
                 </Text>
@@ -194,7 +194,7 @@ function FixModal({ gap, onClose }: { gap: GapRegion | null; onClose: () => void
                 </Text>
               </Stage>
               {accepted ? (
-                <View style={s.accepted}><Text style={s.acceptedText}>✓ FIX ACCEPTED — ROW FLIPPED GREEN</Text></View>
+                <View style={s.accepted}><Text style={s.acceptedText}>✓ FIX ACCEPTED: ROW FLIPPED GREEN</Text></View>
               ) : (
                 <Pressable
                   style={[s.btnPrimary, { backgroundColor: fix.accepted ? C.green : C.surface2 }]}

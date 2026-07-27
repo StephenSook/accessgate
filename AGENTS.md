@@ -21,16 +21,16 @@ Base Granite Speech 3.3-2b does not emit timestamps. Use faster-whisper with wor
 
 ## Repo map
 
-- `src/` — product code (engine, scorers, validators, MCP server)
-- `src/evaluators/` — one file per rule family (fcc.py, wcag.py, dcmp_caption.py, dcmp_desc.py, netflix.py)
-- `src/exporters/` — SARIF 2.1.0 and OSCAL POA&M v1.1.2 exporters
-- `src/mcp_server/` — FastMCP server exposing check_conformance, detect_gaps, score_captions
-- `rules/` — the rule registry (rules_registry.yaml) and parsed standards
-- `standards/` — Docling-parsed source documents and the Granite Embedding numpy cosine index
-- `security/` — SARIF and OSCAL POA&M outputs from /review audits
-- `bob_sessions/` — exported Bob task histories and Bobalytics screenshots
-- `data/` — demo assets and NOTICE-tracked media; hand-labeled training data
-- `frontend/` — Vite + Carbon single-page app
+- `src/`: product code (engine, scorers, validators, MCP server)
+- `src/evaluators/`: one file per rule family (fcc.py, wcag.py, dcmp_caption.py, dcmp_desc.py, netflix.py)
+- `src/exporters/`: SARIF 2.1.0 and OSCAL POA&M v1.1.2 exporters
+- `src/mcp_server/`: FastMCP server exposing check_conformance, detect_gaps, score_captions
+- `rules/`: the rule registry (rules_registry.yaml) and parsed standards
+- `standards/`: Docling-parsed source documents and the Granite Embedding numpy cosine index
+- `security/`: SARIF and OSCAL POA&M outputs from /review audits
+- `bob_sessions/`: exported Bob task histories and Bobalytics screenshots
+- `data/`: demo assets and NOTICE-tracked media; hand-labeled training data
+- `frontend/`: Vite + Carbon single-page app
 
 ## Build and test commands
 
@@ -56,7 +56,7 @@ Custom mode in .bob/custom_modes.yaml, Skill in .bob/skills/conformance/SKILL.md
 
 ## SARIF timecode rule
 
-Timecodes go in a SARIF result's `properties` property bag — NOT in `region` fields. A SARIF region requires startLine, charOffset, or byteOffset. Violating this breaks schema validation.
+Timecodes go in a SARIF result's `properties` property bag, NOT in `region` fields. A SARIF region requires startLine, charOffset, or byteOffset. Violating this breaks schema validation.
 
 ## Submission deadline
 
