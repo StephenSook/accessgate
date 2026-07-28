@@ -25,6 +25,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import tempfile
 import threading
 from pathlib import Path
@@ -47,6 +48,18 @@ EMBEDDINGS_FILE = INDEX_DIR / "embeddings.npy"
 # silently scored in the wrong vector space. The identity is what matters.
 INDEX_META_FILE = INDEX_DIR / "index_meta.json"
 
+
+def _encoder_slug(enc_id: str) -> str:
+    """Filesystem-safe name for an encoder identity."""
+    return re.sub(r"[^a-z0-9]+", "-", enc_id.lower()).strip("-")
+
+
+def embeddings_path_for(enc_id: str) -> Path:
+    """Per-encoder vectors. The chunk TEXT is encoder-independent and shared;
+    only the vectors differ, so the repo can ship one set per encoder and no
+    environment has to re-embed anything on startup."""
+    return INDEX_DIR / f"embeddings-{_encoder_slug(enc_id)}.npy"
+
 # Default embedding model
 EMBEDDING_MODEL = "ibm-granite/granite-embedding-english-r2"
 
@@ -66,6 +79,12 @@ _embedder = None
 #: mismatch and rebuilds again. Demoting once makes the failure terminal and
 #: self-consistent.
 _encoder_failed = False
+
+#: Encoder whose vectors are actually loaded in memory right now. With one
+#: vector file per encoder, index_meta.json only records whichever build ran
+#: last, so it is no longer a reliable answer to "what served this citation".
+#: This is, and it is what /judges reports.
+_loaded_encoder: Optional[str] = None
 
 #: Rebuilds mutate three files that must be read as a set. FastAPI serves
 #: requests concurrently, so serialize builds and publish atomically.
@@ -249,6 +268,11 @@ def _get_embedder():
     return _embedder
 
 
+def loaded_encoder() -> Optional[str]:
+    """The encoder whose vectors are in memory, or None before any load."""
+    return _loaded_encoder
+
+
 def encoder_id() -> str:
     """Stable identity of the encoder currently in use."""
     embedder = _get_embedder()
@@ -344,8 +368,13 @@ def build_index(force: bool = False) -> None:
         if not force and CHUNKS_FILE.exists() and EMBEDDINGS_FILE.exists():
             logger.info("Index already exists. Use force=True to rebuild.")
             return
+        # Skip only if a concurrent caller already produced everything this
+        # build would produce, INCLUDING the per-encoder vector file. Checking
+        # the meta alone let a rebuild no-op while the encoder-specific file was
+        # still missing, which is exactly the case when publishing a new one.
         if force and _read_index_meta().get("encoder") == encoder_id() \
-                and CHUNKS_FILE.exists() and EMBEDDINGS_FILE.exists():
+                and CHUNKS_FILE.exists() and EMBEDDINGS_FILE.exists() \
+                and embeddings_path_for(encoder_id()).exists():
             logger.info("Index already rebuilt by another caller; skipping.")
             return
         _build_index_locked()
@@ -398,6 +427,9 @@ def _build_index_locked() -> None:
     # the same directory and renamed into place (os.replace is atomic on POSIX).
     _atomic_write_text(CHUNKS_FILE, json.dumps(chunks, indent=2))
     _atomic_write_npy(EMBEDDINGS_FILE, embeddings)
+    # Also publish under the encoder-specific name so this build can be
+    # committed and reused by any environment that resolves the same encoder.
+    _atomic_write_npy(embeddings_path_for(active_encoder), embeddings)
     _atomic_write_text(
         INDEX_META_FILE,
         json.dumps({"encoder": active_encoder, "dim": int(embeddings.shape[1])}, indent=2),
@@ -431,10 +463,29 @@ def _tfidf_encode(texts: list[str], n: int = 3, dim: int = 512) -> np.ndarray:
 
 def _load_index() -> tuple[list[dict], np.ndarray]:
     """Load index from disk, building it first if needed."""
-    global _chunks, _embeddings
+    global _chunks, _embeddings, _loaded_encoder
 
     if _chunks is not None and _embeddings is not None:
         return _chunks, _embeddings
+
+    # Fast path: the repo ships one vector file per encoder, so if the active
+    # encoder already has prebuilt vectors we load them and never rebuild. This
+    # is what lets the hosted deploy use Granite vectors without spending a
+    # single embedding call on startup, and what stops a judge's fresh clone
+    # from re-embedding 218 chunks before its first citation.
+    active = encoder_id()
+    prebuilt = embeddings_path_for(active)
+    if CHUNKS_FILE.exists() and prebuilt.exists():
+        with open(CHUNKS_FILE) as f:
+            _chunks = json.load(f)
+        _embeddings = np.load(prebuilt)
+        if _embeddings.shape[0] == len(_chunks):
+            _loaded_encoder = active
+            logger.info("Loaded prebuilt index for %s (%d chunks).", active, len(_chunks))
+            return _chunks, _embeddings
+        logger.warning("Prebuilt index for %s has %d rows for %d chunks; rebuilding.",
+                       active, _embeddings.shape[0], len(_chunks))
+        _chunks = _embeddings = None
 
     if not CHUNKS_FILE.exists() or not EMBEDDINGS_FILE.exists():
         logger.info("Index not found, building now.")
@@ -482,6 +533,7 @@ def _load_index() -> tuple[list[dict], np.ndarray]:
     with open(CHUNKS_FILE) as f:
         _chunks = json.load(f)
     _embeddings = np.load(EMBEDDINGS_FILE)
+    _loaded_encoder = _read_index_meta().get("encoder") or encoder_id()
     return _chunks, _embeddings
 
 

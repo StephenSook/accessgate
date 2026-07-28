@@ -195,29 +195,49 @@
     "start": 5440
   },
   {
-    "text": "# Request Access\n\nDue to aggressive automated scraping of FederalRegister.gov and eCFR.gov, programmatic access to these sites is limited to access to our extensive developer APIs. Please visit [FederalRegister.gov API](https://www.federalregister.gov/developers/documentation/api/v1) documentation or [eCFR.gov API](https://www.ecfr.gov/developers/documentation/api/v1) documentation to learn more a",
+    "text": "# 47 CFR 79.1(j)(2) - Caption quality standards\n\nSource: Electronic Code of Federal Regulations, Title 47, Part 79, Section 79.1,\nretrieved from the official eCFR API (https://www.ecfr.gov/api/versioner/v1/).\nNot scraped: eCFR blocks automated page access, and an earlier version of this\nfile had captured that block page instead of the regulation itself.\n\nCaptioning shall be accurate, synchronous,",
     "source": "fcc_79_1_caption_quality",
     "start": 0
   },
   {
-    "text": "ps://www.ecfr.gov/developers/documentation/api/v1) documentation to learn more about how to access the API.\n\nYour request has been flagged as potentially automated. If you are human user receiving this message, please complete the CAPTCHA (bot test) below and click \"Request Access\". You may occassionally be asked to complete the CAPTCHA again, this is normal and part of our security measures.\n\nReq",
+    "text": "e instead of the regulation itself.\n\nCaptioning shall be accurate, synchronous, complete, and appropriately placed as those terms are defined herein.\n\n(i) Accuracy. Captioning shall match the spoken words (or song lyrics when provided on the audio track) in their original language (English or Spanish), in the order spoken, without substituting words for proper names and places, and without paraphr",
     "source": "fcc_79_1_caption_quality",
     "start": 320
   },
   {
-    "text": "mplete the CAPTCHA again, this is normal and part of our security measures.\n\nRequest Access\n\n*An official website of the United States government.*\n\nIf you experiencing issues with the CAPTCHA or want to request a wider IP range, you can use the \"Site Help\" button found in the lower, right of this page to make a request.\n\n### IP Access Help\n\nThis contact form is only for IP Access help. Please do",
+    "text": "ken, without substituting words for proper names and places, and without paraphrasing, except to the extent that paraphrasing is necessary to resolve any time constraints. Captions shall contain proper spelling (including appropriate homophones), appropriate punctuation and capitalization, correct tense and use of singular or plural forms, and accurate representation of numbers with appropriate sy",
     "source": "fcc_79_1_caption_quality",
     "start": 640
   },
   {
-    "text": "t.\n\n### IP Access Help\n\nThis contact form is only for IP Access help. Please do not provide confidential information or personal data.\n\n* Your Name\n\nsite\\_feedback[name]\n\n* Email\n\nsite\\_feedback[email]\n\n* How can we help you?\n\nUpload Attachment\n\nsite\\_feedback[attachment]\n\n- [ ] * I am requesting technical help.\n\nRequest Help\n\nLoading...\n\n<!-- image -->\n\nSite Help",
+    "text": "ular or plural forms, and accurate representation of numbers with appropriate symbols or words. If slang or grammatical errors are intentionally used in a program's dialogue, they shall be mirrored in the captions. Captioning shall provide nonverbal information that is not observable, such as the identity of speakers, the existence of music (whether or not there are also lyrics to be captioned), s",
     "source": "fcc_79_1_caption_quality",
     "start": 960
   },
   {
-    "text": "st Help\n\nLoading...\n\n<!-- image -->\n\nSite Help",
+    "text": "the existence of music (whether or not there are also lyrics to be captioned), sound effects, and audience reaction, to the greatest extent possible, given the nature of the program. Captions shall be legible, with appropriate spacing between words for readability.\n\n(ii) Synchronicity. Captioning shall coincide with the corresponding spoken words and sounds to the greatest extent possible, given t",
     "source": "fcc_79_1_caption_quality",
     "start": 1280
+  },
+  {
+    "text": "e corresponding spoken words and sounds to the greatest extent possible, given the type of the programming. Captions shall begin to appear at the time that the corresponding speech or sounds begin and end approximately when the speech or sounds end. Captions shall be displayed on the screen at a speed that permits them to be read by viewers.\n\n(iii) Completeness. Captioning shall run from the begin",
+    "source": "fcc_79_1_caption_quality",
+    "start": 1600
+  },
+  {
+    "text": "to be read by viewers.\n\n(iii) Completeness. Captioning shall run from the beginning to the end of the program, to the fullest extent possible.\n\n(iv) Placement. Captioning shall be viewable and shall not block other important visual content on the screen, including, but not limited to, character faces, featured text (e.g., weather or other news updates, graphics and credits), and other information",
+    "source": "fcc_79_1_caption_quality",
+    "start": 1920
+  },
+  {
+    "text": ".g., weather or other news updates, graphics and credits), and other information that is essential to understanding a program's content when the closed captioning feature is activated. Caption font shall be sized appropriately for legibility. Lines of caption shall not overlap one another and captions shall be adequately positioned so that they do not run off the edge of the video screen.",
+    "source": "fcc_79_1_caption_quality",
+    "start": 2240
+  },
+  {
+    "text": "ly positioned so that they do not run off the edge of the video screen.",
+    "source": "fcc_79_1_caption_quality",
+    "start": 2560
   },
   {
     "text": "# English (USA) Timed Text Style Guide\n\n1. [Netflix | Partner Help Center](/hc/en-us)\n2. [Globalization](/hc/en-us/categories/1500000000781-Globalization)\n3. [Guidelines](/hc/en-us/sections/29153729626771-Guidelines)\n4. [Timed Text Style Guides](/hc/en-us/sections/22463232153235-Timed-Text-Style-Guides)\n\n[Print](javascript:window.print())\n\nThis document covers the language specific requirements fo",

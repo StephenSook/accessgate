@@ -254,19 +254,36 @@ class TestEncoderIdentity:
         monkeypatch.setattr(rag, "_get_embedder", lambda: _Plain())
         assert rag.encoder_id() == f"sentence-transformers:{rag.EMBEDDING_MODEL}"
 
-    def test_committed_index_meta_matches_the_local_encoder(self):
-        # The index shipped in the repo is built locally with Granite Embedding
-        # r2. If this drifts, every clone rebuilds the index on first query.
-        meta = json.loads(rag.INDEX_META_FILE.read_text())
-        assert meta["encoder"] == f"sentence-transformers:{rag.EMBEDDING_MODEL}"
-        assert meta["dim"] == EMBEDDING_DIM
+    def test_repo_ships_prebuilt_vectors_for_both_real_encoders(self):
+        """Both environments must find vectors already built for them.
 
-    def test_watsonx_and_local_share_a_dimension(self):
-        # The reason identity tracking exists at all: a dimension check cannot
-        # distinguish these two encoders, so it cannot guard the swap.
-        meta = json.loads(rag.INDEX_META_FILE.read_text())
-        assert meta["dim"] == EMBEDDING_DIM
-        assert meta["encoder"] != f"watsonx:{MODEL_ID}"
+        The repo ships one vector file per encoder so neither a fresh clone nor
+        the hosted deploy re-embeds the corpus on startup. If either file goes
+        missing, that environment silently pays a full rebuild on its first
+        citation, which on the hosted side is metered.
+        """
+        local = rag.embeddings_path_for(f"sentence-transformers:{rag.EMBEDDING_MODEL}")
+        hosted = rag.embeddings_path_for(f"watsonx:{MODEL_ID}")
+        assert local.exists(), f"missing prebuilt local vectors: {local.name}"
+        assert hosted.exists(), f"missing prebuilt hosted vectors: {hosted.name}"
+
+        chunks = json.loads(rag.CHUNKS_FILE.read_text())
+        for path in (local, hosted):
+            vecs = np.load(path)
+            assert vecs.shape[0] == len(chunks), f"{path.name} rows != chunk count"
+            assert vecs.shape[1] == EMBEDDING_DIM
+
+    def test_the_two_encoders_share_a_dimension_but_not_a_vector_space(self):
+        """Why identity tracking exists: a shape check cannot tell them apart.
+
+        Both are 768-dimensional, so nothing about the array shape reveals a
+        swap. The vectors themselves are different, which is exactly why the
+        wrong file would produce confident nonsense rather than an error.
+        """
+        local = np.load(rag.embeddings_path_for(f"sentence-transformers:{rag.EMBEDDING_MODEL}"))
+        hosted = np.load(rag.embeddings_path_for(f"watsonx:{MODEL_ID}"))
+        assert local.shape == hosted.shape, "identical shapes are the whole problem"
+        assert not np.allclose(local, hosted), "different encoders must give different vectors"
 
 
 class TestCitationProvenanceIsExposed:
@@ -416,8 +433,16 @@ class TestQuotaGuardOnColdStart:
             return None if rag._encoder_failed else _Metered()
 
         monkeypatch.setattr(rag, "_get_embedder", _resolve)
-        # Committed index says sentence-transformers, active says watsonx: the
-        # exact mismatch a cold start on the deploy produces.
+        # Remove the prebuilt hosted vectors so the guard path is what runs.
+        # With them present the fast path loads them and never re-embeds, which
+        # is the normal case; this test covers the fallback where they are
+        # absent and a naive implementation would re-embed through the meter.
+        rag.embeddings_path_for(f"watsonx:{MODEL_ID}").unlink(missing_ok=True)
+        # And make the stored identity genuinely differ from the active one.
+        # index_meta.json records whichever build ran last, so do not depend on
+        # what happens to be committed; state the mismatch this test is about.
+        rag.INDEX_META_FILE.write_text(json.dumps(
+            {"encoder": f"sentence-transformers:{rag.EMBEDDING_MODEL}", "dim": EMBEDDING_DIM}))
         rag._load_index()
 
         assert calls == [], "the corpus was re-embedded against a metered encoder"
