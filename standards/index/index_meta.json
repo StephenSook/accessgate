@@ -1,4 +1,4 @@
 {
-  "encoder": "watsonx:ibm/granite-embedding-278m-multilingual",
-  "dim": 768
+  "encoder": "tfidf:md5-3gram-512",
+  "dim": 512
 }

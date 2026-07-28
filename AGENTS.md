@@ -52,7 +52,7 @@ Each must survive an API-deletion test: with every hosted AI API removed, the en
 
 ## IBM Bob usage to document as evidence
 
-Custom mode in .bob/custom_modes.yaml, Skill in .bob/skills/conformance/SKILL.md, Plan specs in plan/, two /review audits (SARIF plus OSCAL) in security/, exported bob_sessions/ with Bobalytics, and the self-referential MCP loop (the product's own MCP server exposing check_conformance, detect_gaps, score_captions, consumed by Bob during development).
+Custom mode in .bob/custom_modes.yaml, Skill in .bob/skills/conformance/SKILL.md, Plan specs in plan/, two /review audits (SARIF plus OSCAL) in security/, the Bobalytics usage screenshot in bob_sessions/, the engine build trace in the git history (2026-07-13 19:53 to 20:40 ET, see bob_sessions/README.md), and the self-referential MCP wiring (the product's own MCP server exposing check_conformance, detect_gaps, score_captions, registered to Bob in .bob/mcp.json with all three pre-authorised). Bob keeps session history server-side, so there are no session transcripts to export; do not claim any.
 
 ## SARIF timecode rule
 

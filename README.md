@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://aibuilderschallenge-bobhub.bemyapp.com/)
-[![298 tests](https://img.shields.io/badge/tests-298%20passing-3fb950.svg)](tests/)
+[![309 tests](https://img.shields.io/badge/tests-309%20passing-3fb950.svg)](tests/)
 
 Built for the **IBM AI Builders Challenge July 2026**, **Reimagine Creative Industries with AI** track.
 
@@ -26,7 +26,7 @@ Fastest path to check each thing that matters. No account, no keys.
 | **Try it, zero setup** | [Live web app](https://accessgate-web.vercel.app), click **LOAD DEMO** (no upload, no keys) |
 | **Claims are wired, not aspirational** | [IBM Stack](#ibm-stack-what-is-actually-wired), then grep any row in the shipped code |
 | **Honesty, live** | [`/judges`](https://accessgate-api.onrender.com/judges) transparency endpoint |
-| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (298 passing), `python -m src.engine` |
+| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (309 passing), `python -m src.engine` |
 | **Results measured, not asserted** | [Evaluation](#evaluation-measured-not-asserted) |
 
 ---
@@ -79,7 +79,7 @@ AccessGate ingests a film plus its caption (.srt/.vtt) and audio-description (.v
 
 Click a failing audio-description gap on the conformance timeline and the gated fix loop runs: a vision model drafts a description sized to fit the silent window, the DCMP structure validator re-checks it, Granite Guardian screens it for content safety, and the row flips green live. On the hosted demo the drafter is watsonx-hosted Llama 3.2 Vision; run it locally and the drafter is Granite Vision 3.2. The screen is Granite Guardian either way.
 
-**Each of the 23 rules is a contract, not a guess, and the output is a file you can use.** A deterministic evaluator either holds or it names the exact clause it broke, so a finding is a guarantee a human can verify, never an LLM's opinion. And AccessGate exports into the tools that actually fix the file: the flagged cues and the gated AD fix write to editor-native formats (a WebVTT audio-description track, a findings CSV, navigable WebVTT markers, `src/exporters/editor.py`, example artifacts in `data/demo/editor_exports/`) alongside the SARIF 2.1.0 and OSCAL POA&M compliance documents. A captioner or AD writer opens the result in their own workflow instead of reading a report.
+**Each of the 23 rules is a contract, not a guess, and the output is a file you can use.** A deterministic evaluator either holds or it names the exact clause it broke, so a finding is a guarantee a human can verify, never an LLM's opinion. And AccessGate exports into the tools that actually fix the file: the flagged cues write to editor-native formats (a findings CSV and navigable WebVTT markers, `src/exporters/editor.py`, example artifacts in `data/demo/editor_exports/`) alongside the SARIF 2.1.0 and OSCAL POA&M compliance documents. A captioner opens the result in their own workflow instead of reading a report. (`src/exporters/editor.py` also carries a gated-AD-drafts WebVTT writer, `export_ad_descriptions_vtt`, which emits only fixes that passed the full gate. It is unit-tested but no shipped surface calls it yet, because accepted drafts are not retained server-side, so it is a library function rather than a product output.)
 
 **And the review of that report is itself auditable and drivable in plain English.** Beyond the one-shot report, AccessGate opens an event-sourced review session: a QC lead accepts, dismisses (with a reason), flags, or annotates each finding and accepts or rejects the gated fixes, as reversible typed operations against the findings. Every operation carries a server-computed inverse, so undo is deterministic, and the whole session replays from its append-only log, a tamper-evident audit trail of who decided what and why. The session takes plain English (`dismiss every reading-speed flag after two minutes as acceptable for this title`): watsonx-hosted Granite compiles the instruction into a structured intent that is then re-grounded against the report's real findings through the same deterministic selector, so it can never act on a rule id or timecode the engine did not produce (a deterministic keyword compiler runs when no key is present). See `src/review_session.py` and the `/review/*` endpoints.
 
@@ -210,7 +210,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 | Rule engine on **real machine captions** | **55 real defects / 6 rules** | faster-whisper on the real NOTLD audio, no injected defects (`data/demo/notld_real_autocaption.srt`) |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
-| Tests passing | **298** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
+| Tests passing | **309** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
 | NER caption accuracy, demo file | **~78%** | Reproduces to within about a point, see the note below |
 
 **Why the NER figure is quoted approximately.** The NER score is measured against a
@@ -229,18 +229,33 @@ alone.
 
 ## How IBM Bob Was Used
 
-IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 298-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
+IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 309-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
 
-The most distinctive use is a self-referential loop: AccessGate's own MCP server (exposing `check_conformance`, `detect_gaps`, and `score_captions`) was registered in Bob and consumed by Bob during development, so Bob checked the tool's conformance output using the tool itself. The engine became its own test harness, inside the primary development tool.
+The most distinctive setup is a self-referential one: AccessGate's own MCP server (exposing `check_conformance`, `detect_gaps`, and `score_captions`) is registered to Bob in `.bob/mcp.json` with all three tools pre-authorised, so the tool that built the engine can call the engine. The config and the server are both in this repo; the Bob-side session transcripts are not, so treat this as a wired capability rather than a logged event.
+
+The build itself is in the git history, which is the part you can check without taking our word for anything. The engine core landed in eight commits on 2026-07-13 between 19:53 and 20:40 ET, with the test count carried in each subject line:
+
+| Time (ET) | Commit | Tests |
+|---|---|---|
+| 19:53 | data models, rule registry loader | 6 |
+| 19:57 | caption parser (SRT+VTT) | 9 |
+| 19:58 | VAD gap engine + NER scorer | 22 |
+| 20:09 | all 23 rule evaluators | 108 |
+| 20:23 | caption error-type classifier (macro-F1 0.952) | 108 |
+| 20:34 | RAG layer, main engine, SARIF/OSCAL exporters | 154 |
+| 20:40 | generative fix loop, MCP server, FastAPI | 172 |
+
+Reproduce it with `git log --reverse --format='%ad %s' --date=format:'%H:%M'`. Bob credits ran out later that same day, which is why the commits after it shift to deployment, Granite Speech wiring, and honesty refinements done with other tooling.
 
 | Evidence | Location |
 |---|---|
 | Custom mode (`accessibility-compliance-engineer`) | `.bob/custom_modes.yaml` |
 | Conformance rule-authoring skill | `.bob/skills/conformance/SKILL.md` |
-| /review audit 1 (SARIF) | `security/review-audit-1.sarif` |
+| /review audit 1 (SARIF, `tool.driver.name` is `IBM Bob`) | `security/review-audit-1.sarif` |
 | /review audit 2 (OSCAL POA&M) | `security/review-audit-2.oscal.json` |
 | Self-referential MCP config | `.bob/mcp.json` |
 | Bobalytics usage screenshot | `bob_sessions/bobalytics-usage.png` |
+| Engine build trace | `git log`, 2026-07-13 19:53 to 20:40 ET |
 
 ---
 
@@ -312,7 +327,7 @@ accessgate/
 ├── mobile/                    # Expo / React Native (iOS + Android) client
 ├── security/                  # SARIF + OSCAL /review audit outputs
 ├── bob_sessions/              # IBM Bob usage screenshot (Bobalytics)
-├── tests/                     # 298 passing tests
+├── tests/                     # 309 passing tests
 ├── render.yaml                # Render deployment config (FastAPI backend)
 ├── AGENTS.md                  # Project policy spine (read every session)
 └── .bob/                      # Custom mode, conformance skill, MCP config

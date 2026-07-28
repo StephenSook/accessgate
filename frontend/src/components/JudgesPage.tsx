@@ -32,6 +32,20 @@ interface JudgesData {
   generative_provenance?: string
   citation_provenance?: { active?: string | null; index_built_with?: string | null; note?: string }
   demo_transparency?: string
+  // The build trace is the one piece of Bob evidence a judge can re-derive from
+  // a clone instead of trusting a document we wrote about ourselves, so it gets
+  // rendered rather than left in the raw JSON like the four fields above were.
+  bob_usage?: {
+    role?: string
+    build_trace?: {
+      note?: string
+      window_et?: string
+      commits_that_day?: number
+      commits?: { time_et: string; commit: string; tests: number | null; subject: string }[]
+    }
+    artifacts_in_repo?: { what: string; where: string }[]
+    not_in_repo?: string
+  }
 }
 
 const TIER_CONFIG = {
@@ -178,6 +192,71 @@ export function JudgesPage() {
               <span><b>Not checked: {b.not_checked}. </b>{b.why}</span>
             </blockquote>
           ))}
+        </div>
+      )}
+
+      {data.bob_usage && (
+        <div style={{ marginTop: 20 }}>
+          <div className="ag-divider" style={{ margin: '16px 0' }} />
+          <h3 style={{ fontSize: 14, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.8 }}>
+            How IBM Bob was used
+          </h3>
+
+          {data.bob_usage.role && (
+            <blockquote style={{ ...styles.blockquote, marginTop: 12 }}>
+              <span style={styles.blockquoteIcon}>◆</span>
+              <span>{data.bob_usage.role}</span>
+            </blockquote>
+          )}
+
+          {data.bob_usage.build_trace?.commits && data.bob_usage.build_trace.commits.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 8 }}>
+                <b>Engine build trace, {data.bob_usage.build_trace.window_et} ET.</b>{' '}
+                {data.bob_usage.build_trace.note}
+              </div>
+              {/* Wide on purpose: let the table scroll rather than the page. */}
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%', minWidth: 460 }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', opacity: 0.7 }}>
+                      <th style={{ padding: '4px 10px 4px 0' }}>Time</th>
+                      <th style={{ padding: '4px 10px 4px 0' }}>Commit</th>
+                      <th style={{ padding: '4px 10px 4px 0' }}>What landed</th>
+                      <th style={{ padding: '4px 0' }}>Tests</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.bob_usage.build_trace.commits.map((c) => (
+                      <tr key={c.commit} style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                        <td style={{ padding: '4px 10px 4px 0', whiteSpace: 'nowrap' }}>{c.time_et}</td>
+                        <td style={{ padding: '4px 10px 4px 0' }}><code>{c.commit}</code></td>
+                        <td style={{ padding: '4px 10px 4px 0' }}>{c.subject}</td>
+                        <td style={{ padding: '4px 0', whiteSpace: 'nowrap' }}>{c.tests ?? '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {data.bob_usage.artifacts_in_repo && data.bob_usage.artifacts_in_repo.length > 0 && (
+            <ul style={{ marginTop: 12, fontSize: 12, opacity: 0.85, paddingLeft: 18 }}>
+              {data.bob_usage.artifacts_in_repo.map((a) => (
+                <li key={a.where} style={{ marginBottom: 4 }}>
+                  {a.what} · <code>{a.where}</code>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {data.bob_usage.not_in_repo && (
+            <blockquote style={{ ...styles.blockquote, marginTop: 12 }}>
+              <span style={styles.blockquoteIcon}>∅</span>
+              <span><b>Not in the repo. </b>{data.bob_usage.not_in_repo}</span>
+            </blockquote>
+          )}
         </div>
       )}
     </div>

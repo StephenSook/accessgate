@@ -287,6 +287,74 @@ def demo_report() -> JSONResponse:
 # Judges transparency endpoint — honesty tier breakdown
 # ---------------------------------------------------------------------------
 
+# The engine's build trace, transcribed from this repo's own git history so a
+# judge can re-derive it rather than trust it:
+#   git log --reverse --format='%ad %s' --date=format:'%H:%M'
+# These eight commits are the window in which the engine core was authored
+# through IBM Bob on 2026-07-13. Bob credits ran out later the same day, which
+# is why commits after this window shift to deployment and refinement done with
+# other tooling. Kept as data, not prose, so it stays checkable line by line.
+_BOB_BUILD_TRACE = [
+    {"time_et": "19:40", "commit": "539905e", "tests": None,
+     "subject": "repo foundation, Bob artifacts, rule registry, README, AGENTS.md"},
+    {"time_et": "19:53", "commit": "d825caf", "tests": 6,
+     "subject": "data models, rule registry loader"},
+    {"time_et": "19:57", "commit": "c08b279", "tests": 9,
+     "subject": "caption parser (SRT+VTT)"},
+    {"time_et": "19:58", "commit": "2bb704e", "tests": 22,
+     "subject": "VAD gap engine + NER scorer"},
+    {"time_et": "20:09", "commit": "14c1b7f", "tests": 108,
+     "subject": "all 23 rule evaluators, degradation recipe verified"},
+    {"time_et": "20:23", "commit": "afda272", "tests": 108,
+     "subject": "trained caption error-type classifier, macro-F1 0.952"},
+    {"time_et": "20:34", "commit": "69d24f9", "tests": 154,
+     "subject": "RAG layer (Granite Embedding), main engine, SARIF/OSCAL exporters"},
+    {"time_et": "20:40", "commit": "df1a5df", "tests": 172,
+     "subject": "generative fix loop (Vision+DCMP+Guardian), MCP server, FastAPI"},
+]
+
+
+def _bob_usage() -> dict:
+    """What IBM Bob actually did, separated from what only the config implies."""
+    return {
+        "role": (
+            "Primary development tool, not exclusive. Bob authored the conformance "
+            "engine, the test suite, and the React frontend. Deployment, the Granite "
+            "Speech wiring, and later honesty and UI refinements were finished with "
+            "other tooling after Bob credits ran out on 2026-07-13. The July rules "
+            "require Bob as primary, not exclusive, so this is the honest and "
+            "compliant claim."
+        ),
+        "build_trace": {
+            "note": (
+                "The engine core, from first model to a running FastAPI service with "
+                "a generative fix loop, in eight commits over 47 minutes on "
+                "2026-07-13. Test counts are carried in the commit subjects "
+                "themselves, so this is re-derivable from a clone with: "
+                "git log --reverse --format='%ad %s' --date=format:'%H:%M'"
+            ),
+            "window_et": "2026-07-13 19:40 to 20:40",
+            "commits_that_day": 37,
+            "commits": _BOB_BUILD_TRACE,
+        },
+        "artifacts_in_repo": [
+            {"what": "Custom mode (accessibility-compliance-engineer)", "where": ".bob/custom_modes.yaml"},
+            {"what": "Conformance rule-authoring skill", "where": ".bob/skills/conformance/SKILL.md"},
+            {"what": "/review audit 1, SARIF, tool.driver.name is 'IBM Bob'", "where": "security/review-audit-1.sarif"},
+            {"what": "/review audit 2, OSCAL POA&M", "where": "security/review-audit-2.oscal.json"},
+            {"what": "Self-referential MCP config, three tools pre-authorised", "where": ".bob/mcp.json"},
+            {"what": "Bobalytics usage screenshot", "where": "bob_sessions/bobalytics-usage.png"},
+        ],
+        "not_in_repo": (
+            "Bob session transcripts. Bob keeps conversation history server-side, "
+            "not on disk, so there is no session export to commit. The build trace "
+            "above and the git history are the checkable substitute, and they are "
+            "stronger evidence than a self-exported file because a judge can "
+            "re-derive them from a clone."
+        ),
+    }
+
+
 @app.get("/judges")
 def judges_page() -> JSONResponse:
     """
@@ -314,7 +382,7 @@ def judges_page() -> JSONResponse:
                 {"name": "RAG citation engine", "evidence": "src/rag.py", "note": "Citations are retrieved at runtime rather than mapped rule-to-string. The corpus is the six Docling-parsed standard pages (210 of 222 chunks) plus committed short-form clause text for the same six standards (12 chunks, src/rag.py _INLINE_STANDARDS). The repo ships one PREBUILT vector set per encoder, so no environment re-embeds at request time: a local install loads Granite Embedding r2 vectors, this hosted deploy loads watsonx-hosted Granite vectors (ibm/granite-embedding-278m-multilingual). See citation_provenance.serving below for the set actually answering right now. A metered encoder is never permitted to re-embed the corpus at request time; doing that on every cold start exhausted a month of token quota in a day on 2026-07-27, which is why index building is a deliberate offline step."},
                 {"name": "SARIF 2.1.0 exporter", "evidence": "src/exporters/sarif.py"},
                 {"name": "OSCAL POA&M v1.1.2 exporter", "evidence": "src/exporters/oscal.py"},
-                {"name": "Editor-native exports (WebVTT AD track, findings CSV, WebVTT markers)", "evidence": "src/exporters/editor.py", "note": "A file a captioner or AD writer can open and use, not just a compliance document; the CSV is formula-injection hardened. Example artifacts: data/demo/editor_exports/"},
+                {"name": "Editor-native exports (findings CSV, WebVTT markers)", "evidence": "src/exporters/editor.py", "note": "A file a captioner can open and use, not just a compliance document; the CSV is formula-injection hardened. Example artifacts: data/demo/editor_exports/. SCOPE: the same module carries export_ad_descriptions_vtt, which writes gate-passing AD drafts as a WebVTT descriptions track. It is unit-tested but NO shipped surface calls it, because accepted draft text is not retained server-side (the review session stores only accepted/rejected per gap). It is a library function, not a product output, and is not counted as wired."},
                 {"name": "MCP server (self-referential loop)", "evidence": "src/mcp_server/server.py"},
                 {"name": "Event-sourced conformance review session (reversible typed ops, server-computed inverses, deterministic replay + undo, append-only audit trail, grounded so an instruction can only target findings the engine actually produced)", "evidence": "src/review_session.py + /review/* endpoints", "note": "The deterministic natural-language compiler runs with no keys; the watsonx NL path (below) is the optional IBM-runtime upgrade"}
             ],
@@ -333,9 +401,10 @@ def judges_page() -> JSONResponse:
                 {"name": "IBM Bob DCMP/FCC/Netflix rule-authoring skill", "evidence": ".bob/skills/conformance/SKILL.md"},
                 {"name": "IBM Bob /review SARIF audit", "evidence": "security/review-audit-1.sarif"},
                 {"name": "IBM Bob /review OSCAL audit", "evidence": "security/review-audit-2.oscal.json"},
-                {"name": "Self-referential MCP loop (Bob consumed its own tool during dev)", "evidence": ".bob/mcp.json"}
+                {"name": "Self-referential MCP wiring (AccessGate's own engine registered to Bob)", "evidence": ".bob/mcp.json + src/mcp_server/server.py", "note": "All three tools (check_conformance, detect_gaps, score_captions) are pre-authorised in alwaysAllow, so the tool that built the engine can call the engine. Both the config and the server are in this repo. The Bob-side session transcripts are NOT: Bob stores conversation history server-side, and bob_sessions/ holds only the Bobalytics usage screenshot. Treat this as a wired capability, not a logged event."}
             ]
         },
+        "bob_usage": _bob_usage(),
         "api_deletion_test": "Remove every hosted AI API. The engine still runs. The gap detector, caption scorer, classifier, rule evaluators, RAG citations, the SARIF/OSCAL/editor exporters, and the event-sourced review session (with its deterministic NL compiler) are all self-built and API-deletion-proof.",
         "generative_provenance": "Every generated output carries its provenance: which engine drafted it, the model id where the code holds it, the call latency, and an explicit fallback flag. A canned fallback draft or a safety screen that could not run is marked fallback and can never be accepted, so a judge always sees whether an output came from a live model or a deterministic path. Surfaced on the gated fix (draft_provenance, guardian_provenance) and in the fix panel UI.",
         "citation_provenance": _citation_provenance(),
