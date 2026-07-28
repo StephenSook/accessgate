@@ -11,6 +11,10 @@ import { WaveformDisplay } from './components/WaveformDisplay'
 import { ReviewWorkbench } from './components/ReviewWorkbench'
 import './index.css'
 
+// A warm /demo answers in well under a second. Anything past this is the free
+// tier waking up, not the engine working, so that is when we say so.
+const COLD_START_NOTICE_MS = 3500
+
 export default function App() {
   const [report, setReport] = useState<ConformanceReport | null>(null)
   const [filmFile, setFilmFile] = useState<File | null>(null)
@@ -21,6 +25,9 @@ export default function App() {
   const [showJudges, setShowJudges] = useState(false)
   const [summary, setSummary] = useState<ReportSummary | null>(null)
   const [statusMsg, setStatusMsg] = useState('')
+  // Shown only once a request outlives a warm response, so a cold start reads as
+  // a sleeping server rather than a broken one.
+  const [waking, setWaking] = useState(false)
   const resultsHeadingRef = useRef<HTMLHeadingElement>(null)
 
   // Move focus to the results heading after a run so a screen-reader user
@@ -57,6 +64,15 @@ export default function App() {
     setFilmFile(null)
     setSummary(null)
     setStatusMsg('Running conformance check, please wait.')
+    // The API runs on a free tier that sleeps after 15 minutes idle, and the
+    // first request after that spends up to a minute waking the instance. The
+    // progress bar alone makes that look like a hang, so if the wait passes the
+    // point where a warm response should have landed, say what is happening
+    // instead of leaving a bar spinning at whoever opened the demo first.
+    const wakeNotice = window.setTimeout(() => {
+      setWaking(true)
+      setStatusMsg('Waking the demo server. This can take up to a minute on the free tier.')
+    }, COLD_START_NOTICE_MS)
     try {
       const result = await loadDemo()
       setReport(result)
@@ -66,6 +82,8 @@ export default function App() {
       setError(err instanceof Error ? err.message : 'Unknown error')
       setStatusMsg('')
     } finally {
+      window.clearTimeout(wakeNotice)
+      setWaking(false)
       setLoading(false)
     }
   }
@@ -210,6 +228,13 @@ export default function App() {
               </button>
             </div>
             {loading && <div className="ag-loading-bar" role="progressbar" aria-label="Running conformance check" />}
+            {waking && (
+              <p style={{ marginTop: 10, fontSize: 12, color: 'var(--ag-text-muted)', fontFamily: 'var(--font-mono)' }}>
+                Waking the demo server. The API is hosted on a free tier that sleeps
+                after 15 minutes idle, so the first request can take up to a minute.
+                The conformance check itself takes seconds.
+              </p>
+            )}
           </form>
           {error && (
             <p role="alert" style={{ color: 'var(--ag-red)', marginTop: 12, fontSize: 13 }}>{error}</p>
