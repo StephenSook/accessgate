@@ -115,6 +115,74 @@ def _safe_name(filename: Optional[str], default: str) -> str:
     return name or default
 
 
+#: Caption and audio-description sidecars the parser can actually read.
+_CAPTION_SUFFIXES = {".srt", ".vtt"}
+#: Upload ceilings. Without these one oversized POST fills the instance's
+#: ephemeral disk and every later request fails on write for the life of the box.
+_MAX_MEDIA_BYTES = 200 * 1024 * 1024
+_MAX_SIDECAR_BYTES = 5 * 1024 * 1024
+
+
+def _reject_oversized(upload: UploadFile, limit: int, label: str) -> None:
+    size = getattr(upload, "size", None)
+    if size is not None and size > limit:
+        raise HTTPException(
+            status_code=413,
+            detail=(
+                f"{label} is {size / 1_048_576:.1f} MB, over the "
+                f"{limit // 1_048_576} MB limit for this endpoint."
+            ),
+        )
+
+
+def _reject_unsupported_caption(upload: UploadFile, label: str) -> None:
+    suffix = Path(upload.filename or "").suffix.lower()
+    if suffix not in _CAPTION_SUFFIXES:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"{label} has extension {suffix or '(none)'}, which this engine cannot parse. "
+                f"Supported: {', '.join(sorted(_CAPTION_SUFFIXES))}."
+            ),
+        )
+
+
+def _engine_http_error(exc: Exception, what: str) -> HTTPException:
+    """Turn an engine or parser exception into an answer a human can act on.
+
+    These endpoints used to run the pipeline with no `except` at all, so a
+    malformed .srt, an unsupported extension, or a missing ffmpeg on the
+    instance surfaced to the judge as a bare `500` with no body. The frontend
+    then rendered the literal string "/check failed: 500". Anyone uploading
+    their own file, which the UI explicitly invites, concluded the engine was
+    broken rather than that their file was.
+    """
+    if isinstance(exc, HTTPException):
+        return exc
+
+    # Parser-layer failures are a bad FILE, not a broken server, so they are 422.
+    # The subtitle libraries raise their own exception types rather than
+    # ValueError (pysubs2.FormatAutodetectionError on an empty or unrecognisable
+    # file, webvtt's MalformedFileError), so matching on the defining module
+    # catches them without having to import and enumerate each one.
+    origin = type(exc).__module__.split(".")[0]
+    if isinstance(exc, (ValueError, IndexError, KeyError)) or origin in {"pysubs2", "webvtt"}:
+        return HTTPException(
+            status_code=422,
+            detail=f"Could not parse {what}: {exc}",
+        )
+    if isinstance(exc, (FileNotFoundError, RuntimeError, OSError)):
+        return HTTPException(
+            status_code=503,
+            detail=(
+                f"Media analysis is unavailable on this instance ({exc}). "
+                f"Caption-only checks still work: use /check-captions."
+            ),
+        )
+    logger.exception("Unhandled error while processing %s", what)
+    return HTTPException(status_code=500, detail=f"Unexpected error processing {what}.")
+
+
 # ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
@@ -215,7 +283,7 @@ def judges_page() -> JSONResponse:
 # ---------------------------------------------------------------------------
 
 @app.post("/check")
-async def check_conformance(
+def check_conformance(
     film: UploadFile = File(...),
     captions: UploadFile = File(...),
     ad: Optional[UploadFile] = File(None),
@@ -225,8 +293,22 @@ async def check_conformance(
     Upload film + captions (+ optional AD) and run the full conformance pipeline.
 
     Returns ConformanceReport JSON plus a report_id for caching.
+
+    Deliberately `def`, not `async def`. The body is entirely synchronous and
+    slow: ffmpeg, VAD, whisper, and an index build behind a lock. FastAPI awaits
+    an `async def` handler directly on the single event loop this instance runs,
+    so declaring it async would block every other request, including the
+    `/health` probe Render uses to decide whether to restart the service. As a
+    plain `def` it runs in the threadpool instead.
     """
     from src.engine import run_engine
+
+    _reject_oversized(film, _MAX_MEDIA_BYTES, "film")
+    _reject_oversized(captions, _MAX_SIDECAR_BYTES, "caption file")
+    _reject_unsupported_caption(captions, "caption file")
+    if ad and ad.filename:
+        _reject_oversized(ad, _MAX_SIDECAR_BYTES, "audio-description file")
+        _reject_unsupported_caption(ad, "audio-description file")
 
     # Save uploads to temp files
     tmp_dir = Path(tempfile.mkdtemp())
@@ -245,12 +327,15 @@ async def check_conformance(
             with open(ad_path, "wb") as f:
                 shutil.copyfileobj(ad.file, f)
 
-        report = run_engine(
-            film_path=str(film_path),
-            caption_path=str(cap_path),
-            ad_path=str(ad_path) if ad_path else None,
-            profile=profile,
-        )
+        try:
+            report = run_engine(
+                film_path=str(film_path),
+                caption_path=str(cap_path),
+                ad_path=str(ad_path) if ad_path else None,
+                profile=profile,
+            )
+        except Exception as exc:  # noqa: BLE001 - mapped to a real status below
+            raise _engine_http_error(exc, f"{captions.filename or 'the caption file'}") from exc
 
         report_id = str(uuid.uuid4())
         report_dict = json.loads(report.model_dump_json())
@@ -268,7 +353,7 @@ async def check_conformance(
 # ---------------------------------------------------------------------------
 
 @app.post("/check-captions")
-async def check_captions(
+def check_captions(
     captions: UploadFile = File(...),
     profile: str = Form("netflix"),
 ) -> JSONResponse:
@@ -282,6 +367,9 @@ async def check_captions(
     """
     from src.engine import run_engine
 
+    _reject_oversized(captions, _MAX_SIDECAR_BYTES, "caption file")
+    _reject_unsupported_caption(captions, "caption file")
+
     tmp_dir = Path(tempfile.mkdtemp())
     try:
         cap_path = tmp_dir / _safe_name(captions.filename, "captions.srt")
@@ -290,14 +378,22 @@ async def check_captions(
         no_film = tmp_dir / "none.mp4"
         no_film.write_bytes(b"")  # absent film -> VAD + NER skip gracefully
 
-        report = run_engine(
-            film_path=str(no_film),
-            caption_path=str(cap_path),
-            ad_path=None,
-            profile=profile,
-        )
+        try:
+            report = run_engine(
+                film_path=str(no_film),
+                caption_path=str(cap_path),
+                ad_path=None,
+                profile=profile,
+            )
+        except Exception as exc:  # noqa: BLE001 - mapped to a real status below
+            raise _engine_http_error(exc, captions.filename or "the caption file") from exc
+
         d = json.loads(report.model_dump_json())
-        d["report_id"] = str(uuid.uuid4())
+        report_id = str(uuid.uuid4())
+        d["report_id"] = report_id
+        # Cache it like /check does. Without this the id handed to the client
+        # never resolves, so /report/{id} and the CSV/VTT export links 404.
+        _report_cache[report_id] = d
         return JSONResponse(content=d)
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
@@ -308,13 +404,14 @@ async def check_captions(
 # ---------------------------------------------------------------------------
 
 @app.post("/gaps")
-async def get_gaps(
+def get_gaps(
     film: UploadFile = File(...),
     min_duration: float = Form(2.5),
 ) -> JSONResponse:
     """Detect dialogue-free gaps in a film."""
     from src.gap_engine import detect_gaps
 
+    _reject_oversized(film, _MAX_MEDIA_BYTES, "film")
     tmp_dir = Path(tempfile.mkdtemp())
     try:
         film_path = tmp_dir / _safe_name(film.filename, "film.mp4")
@@ -322,7 +419,13 @@ async def get_gaps(
             shutil.copyfileobj(film.file, f)
 
         # detect_gaps returns (gaps, speech_regions) and its keyword is min_gap.
-        gaps, _speech = detect_gaps(str(film_path), min_gap=min_duration)
+        # This needs ffmpeg and the audio stack, neither of which is installed on
+        # the hosted free tier, so an unguarded call here returned a bare 500 even
+        # for a perfectly valid WAV.
+        try:
+            gaps, _speech = detect_gaps(str(film_path), min_gap=min_duration)
+        except Exception as exc:  # noqa: BLE001 - mapped to a real status below
+            raise _engine_http_error(exc, film.filename or "the media file") from exc
         return JSONResponse(content=[
             {"start": g.start, "end": g.end, "duration": g.duration,
              "max_words": g.max_words(wpm=150.0)}
@@ -349,7 +452,7 @@ def get_report(report_id: str) -> JSONResponse:
 # ---------------------------------------------------------------------------
 
 @app.post("/fix")
-async def request_fix(
+def request_fix(
     film: UploadFile = File(...),
     gap_start: float = Form(...),
     gap_end: float = Form(...),
@@ -408,7 +511,7 @@ def demo_summary() -> JSONResponse:
 
 
 @app.post("/summary")
-async def summary(report: dict = Body(...)) -> JSONResponse:
+def summary(report: dict = Body(...)) -> JSONResponse:
     """Granite-generated plain-English summary of a posted conformance report."""
     from src.report_summary import summarize_report
     return JSONResponse(content=summarize_report(report))
@@ -419,7 +522,7 @@ async def summary(report: dict = Body(...)) -> JSONResponse:
 # ---------------------------------------------------------------------------
 
 @app.post("/demo-fix")
-async def demo_fix(gap_start: float = Form(...), gap_end: float = Form(...)) -> JSONResponse:
+def demo_fix(gap_start: float = Form(...), gap_end: float = Form(...)) -> JSONResponse:
     """
     Run the gated generative fix for a demo gap, live, with no file upload.
 
