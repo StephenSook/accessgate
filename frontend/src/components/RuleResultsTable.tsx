@@ -11,6 +11,8 @@ interface Props {
   results: RuleResult[]
   onTimecodeClick: (t: number) => void
   onRequestFix: (gap: { start: number; end: number }) => void
+  /** Real dialogue-free gaps from the report, so the FIX button uses the actual window. */
+  gaps?: { start: number; end: number }[]
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -27,7 +29,20 @@ const SARIF_BADGE: Record<string, string> = {
 
 type SortKey = 'rule_id' | 'status' | 'sarif_level'
 
-export function RuleResultsTable({ results, onTimecodeClick, onRequestFix }: Props) {
+export function RuleResultsTable({ results, onTimecodeClick, onRequestFix, gaps = [] }: Props) {
+  // Find the real gap containing a finding's timecode. The FIX button used to
+  // synthesise `{start: t - 0.5, end: t + 7}`, a fixed 7.5s window that has
+  // nothing to do with the actual silence: the demo's real gaps are 5.88s,
+  // 3.93s and 2.58s. That inflated the word budget shown to the user (18 words
+  // where the real gap fits 6) and, worse, made the DCMP-DESC-04 re-check
+  // inside the gate validate the draft against a window up to 3x too long, so
+  // an over-long description could pass. Clicking the same gap on the timeline
+  // passed the true region, so the two routes into the panel disagreed.
+  function gapFor(timecode: number): { start: number; end: number } | null {
+    return gaps.find(g => timecode >= g.start && timecode <= g.end)
+      ?? gaps.find(g => Math.abs(g.start - timecode) < 1.5)
+      ?? null
+  }
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [sortKey, setSortKey] = useState<SortKey>('status')
   const [showPassSkip, setShowPassSkip] = useState(false)
@@ -153,9 +168,9 @@ export function RuleResultsTable({ results, onTimecodeClick, onRequestFix }: Pro
                     </td>
                     {/* Action */}
                     <td style={{ padding: '10px 12px' }}>
-                      {r.status === 'fail' && isAdRule(r.rule_id) && r.timecode != null && (
+                      {r.status === 'fail' && isAdRule(r.rule_id) && r.timecode != null && gapFor(r.timecode) && (
                         <button
-                          onClick={() => onRequestFix({ start: r.timecode! - 0.5, end: r.timecode! + 7 })}
+                          onClick={() => onRequestFix(gapFor(r.timecode!)!)}
                           aria-label={`Request generative fix for ${r.rule_id}`}
                           style={{ background: 'var(--ag-blue)', color: 'white', border: 'none', padding: '3px 10px', fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-mono)' }}>
                           FIX

@@ -16,7 +16,7 @@ interface Props {
   filmFile: File | null
   demoMode?: boolean
   onClose: () => void
-  onAccepted: () => void
+  onAccepted: (resolvedRuleIds: string[]) => void
 }
 
 export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: Props) {
@@ -43,7 +43,11 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
 
   function handleAccept() {
     setAccepted(true)
-    onAccepted()
+    // Hand the rule ids the backend says this fix satisfies back to the report,
+    // so the timeline row actually flips. Previously this told the parent
+    // nothing and the parent did nothing with it, so the panel announced "ROW
+    // FLIPPED GREEN" while the row stayed red.
+    onAccepted(result?.resolves_rule_ids ?? [])
   }
 
   const duration = gap.end - gap.start

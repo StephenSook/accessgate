@@ -24,6 +24,14 @@ interface JudgesData {
   }
   api_deletion_test: string
   github: string
+  // These four are returned by /judges and were previously parsed and dropped,
+  // so the strongest honesty material this project has, including the
+  // disclosure about the recorded video's fix beat, existed only in the raw
+  // API response and never reached the page titled "HONESTY MOAT".
+  scope_boundaries?: { not_checked: string; why: string }[]
+  generative_provenance?: string
+  citation_provenance?: { active?: string | null; index_built_with?: string | null; note?: string }
+  demo_transparency?: string
 }
 
 const TIER_CONFIG = {
@@ -133,6 +141,45 @@ export function JudgesPage() {
         <span style={styles.blockquoteIcon}>⚙</span>
         {data.api_deletion_test}
       </blockquote>
+
+      {data.demo_transparency && (
+        <blockquote style={{ ...styles.blockquote, marginTop: 12 }}>
+          <span style={styles.blockquoteIcon}>◉</span>
+          <span><b>What is and is not live in the demo. </b>{data.demo_transparency}</span>
+        </blockquote>
+      )}
+
+      {data.generative_provenance && (
+        <blockquote style={{ ...styles.blockquote, marginTop: 12 }}>
+          <span style={styles.blockquoteIcon}>✎</span>
+          <span><b>Provenance on every generated line. </b>{data.generative_provenance}</span>
+        </blockquote>
+      )}
+
+      {data.citation_provenance?.active && (
+        <blockquote style={{ ...styles.blockquote, marginTop: 12 }}>
+          <span style={styles.blockquoteIcon}>❝</span>
+          <span>
+            <b>Citation encoder on this instance. </b>
+            Active: <code>{data.citation_provenance.active}</code>
+            {data.citation_provenance.index_built_with && (
+              <> · index built with <code>{data.citation_provenance.index_built_with}</code></>
+            )}
+            {data.citation_provenance.note && <> · {data.citation_provenance.note}</>}
+          </span>
+        </blockquote>
+      )}
+
+      {data.scope_boundaries && data.scope_boundaries.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          {data.scope_boundaries.map((b, i) => (
+            <blockquote key={i} style={{ ...styles.blockquote, marginTop: i ? 8 : 0 }}>
+              <span style={styles.blockquoteIcon}>∅</span>
+              <span><b>Not checked: {b.not_checked}. </b>{b.why}</span>
+            </blockquote>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

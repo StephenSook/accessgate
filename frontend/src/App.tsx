@@ -31,7 +31,17 @@ export default function App() {
 
   // Warm the Render free-tier backend on first paint so a judge's first click
   // does not eat a cold start (best-effort; failure is ignored).
-  useEffect(() => { healthCheck().catch(() => {}) }, [])
+  // Real engine status, not a decoration. This used to render a green dot
+  // unconditionally while throwing the health result away, so the header said
+  // "Engine online" even when every button was failing.
+  const [engineOnline, setEngineOnline] = useState<boolean | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    healthCheck()
+      .then(() => { if (!cancelled) setEngineOnline(true) })
+      .catch(() => { if (!cancelled) setEngineOnline(false) })
+    return () => { cancelled = true }
+  }, [])
 
   function announceReport(r: ConformanceReport) {
     const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`
@@ -122,9 +132,24 @@ export default function App() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <span className="ag-status" aria-label="Engine online">
-              <span className="ag-status__dot" aria-hidden="true" />
-              Engine online
+            <span
+              className="ag-status"
+              data-state={engineOnline === null ? 'checking' : engineOnline ? 'online' : 'offline'}
+              aria-label={
+                engineOnline === null ? 'Checking engine status'
+                  : engineOnline ? 'Engine online' : 'Engine unreachable'
+              }
+            >
+              <span
+                className="ag-status__dot"
+                aria-hidden="true"
+                style={{
+                  background: engineOnline === null ? 'var(--ag-amber)'
+                    : engineOnline ? undefined : '#da1e28',
+                }}
+              />
+              {engineOnline === null ? 'Checking engine'
+                : engineOnline ? 'Engine online' : 'Engine unreachable'}
             </span>
             <AxeScoreBadge />
             <button
@@ -300,6 +325,7 @@ export default function App() {
               <h3 className="ag-sr-only">Rule results</h3>
               <RuleResultsTable
                 results={report.results}
+                gaps={report.gaps}
                 onTimecodeClick={setActiveTimecode}
                 onRequestFix={(gap) => setSelectedGap(gap)}
               />
@@ -316,9 +342,26 @@ export default function App() {
                   filmFile={filmFile}
                   demoMode={!filmFile}
                   onClose={() => setSelectedGap(null)}
-                  onAccepted={() => {
-                    // Keep the panel open so the "row flipped green" confirmation
-                    // stays visible; the user dismisses it with the close button.
+                  onAccepted={(resolvedRuleIds) => {
+                    // Actually flip the rows. The panel used to announce "ROW
+                    // FLIPPED GREEN" while nothing mutated the report, so the
+                    // DCMP-DESC row stayed red behind it. Only rows the backend
+                    // reports as resolved for THIS gap are flipped, and only
+                    // when the gated fix was genuinely accepted.
+                    if (!resolvedRuleIds.length) return
+                    setReport(prev => prev && ({
+                      ...prev,
+                      results: prev.results.map(r =>
+                        resolvedRuleIds.includes(r.rule_id) &&
+                        selectedGap != null &&
+                        r.timecode != null &&
+                        r.timecode >= selectedGap.start &&
+                        r.timecode <= selectedGap.end
+                          ? { ...r, status: 'pass' as const,
+                              message: `${r.message}  [resolved by an accepted, Guardian-screened fix]` }
+                          : r
+                      ),
+                    }))
                   }}
                 />
               )}
