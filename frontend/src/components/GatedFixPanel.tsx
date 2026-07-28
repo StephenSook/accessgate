@@ -156,8 +156,12 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
           {/* watsonx.ai Lite side-by-side (when WATSONX_API_KEY is set) */}
           {(result as FixResult & { watsonx_showcase?: { generated_text: string; word_count: number; error: string | null; source: string } }).watsonx_showcase && (() => {
             const wx = (result as FixResult & { watsonx_showcase?: { generated_text: string; word_count: number; error: string | null; source: string } }).watsonx_showcase!
+            // Numbered "4." previously implied a fourth gate stage. It is not one:
+            // this line is generated side by side for comparison and never passes
+            // through the DCMP validator or Granite Guardian, so it must not read
+            // as gated output inside a panel whose whole claim is the gate.
             return (
-              <Stage label="4. watsonx.ai Lite (ibm/granite-3-8b-instruct)" status="done">
+              <Stage label="Side by side, outside the gate: watsonx.ai (ibm/granite-3-8b-instruct)" status="done">
                 {wx.error ? (
                   <div style={{ color: 'var(--ag-text-muted)', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
                     Not configured: {wx.error}
@@ -169,6 +173,9 @@ export function GatedFixPanel({ gap, filmFile, demoMode, onClose, onAccepted }: 
                     </p>
                     <div style={{ marginTop: 6, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ag-text-muted)' }}>
                       {wx.word_count} words · {wx.source}
+                    </div>
+                    <div style={{ marginTop: 6, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ag-amber)' }}>
+                      Comparison only. Not validated, not screened, never accepted.
                     </div>
                   </>
                 )}
