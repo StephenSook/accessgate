@@ -197,7 +197,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 1. **Conformance rule engine**: NER scorer (`(N-E-R)/N`, Romero-Fresco/Ofcom broadcast model), 98% threshold, confidence bands, never auto-fails on ASR alone per Koenecke et al. PNAS 2020
 2. **Dialogue-gap detection and timing engine**: two-tier speech detection (Silero VAD attempted first, then a pure-stdlib RMS energy detector), gap complement above 2.5s minimum, merged across sub-300ms blips. With the dependency set this repo ships, Silero declines to load and the RMS detector is what produces the demo's 197 speech regions and 3 gaps, which is exactly why this artifact survives the API-deletion test: the working path needs only `wave`, `struct`, and `math`
 3. **Audio-description structure validator**: DCMP rules: word-count-fits-gap, no-overlap-with-dialogue, present-tense, active-voice, third-person, objectivity flags
-4. **Caption error-type classifier**: supervised logistic regression on a synthetic weak-labeled set, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.94**
+4. **Caption error-type classifier**: supervised logistic regression on a synthetic weak-labeled set, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.952**
 
 ---
 
@@ -205,7 +205,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 
 | Metric | Value | Source |
 |---|---|---|
-| Classifier macro-F1 | **0.94** | synthetic held-out set, 3-class |
+| Classifier macro-F1 | **0.952** | synthetic held-out set, 3-class, n=140, reproduce with `python -m src.classifier --synthetic` |
 | Rule engine: violations detected | **10 / 10** | `data/demo/notld_broken.srt` + `notld_broken_ad.vtt` degradation recipe |
 | Rule engine on **real machine captions** | **55 real defects / 6 rules** | faster-whisper on the real NOTLD audio, no injected defects (`data/demo/notld_real_autocaption.srt`) |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |

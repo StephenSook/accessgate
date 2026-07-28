@@ -7,9 +7,14 @@ Load-Bearing Artifact (generative layer):
 The gate is three-stage: only a description that passes DCMP structure checks
 AND clears Granite Guardian gets accepted and flips the row green.
 
-Pre-generation: for the demo, the fix for the NOTLD target gap is pre-generated
-and saved to data/demo/pregenerated_fix.json. DCMP re-validation and Guardian
-screening run live in the demo; generation is pre-baked.
+Demo generation is LIVE, not pre-baked. /demo-fix calls generate_demo_fix,
+which drafts through the vision model on each click and then runs the DCMP
+validator and the Guardian screen. This paragraph previously described a
+pre-generated draft read from data/demo/pregenerated_fix.json; that file no
+longer exists and nothing reads it, but "generation is pre-baked" sitting at the
+top of the generative module is the single worst sentence for a sceptical reader
+to encounter first. The one genuinely pre-generated artifact is the AD draft
+used in the recorded video, which is disclosed on the /judges page.
 
 API-deletion test: if Ollama is unavailable, the module falls back to a
 hard-coded placeholder draft that still exercises the validation/screening path.

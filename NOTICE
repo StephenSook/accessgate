@@ -3,8 +3,15 @@ Copyright (c) 2026 Stephen Sookra
 
 AccessGate is licensed under the MIT License. See LICENSE for the full text.
 
-This project incorporates, redistributes, or was trained on the following
-third-party materials. Each is used under its own license, noted below.
+This project incorporates or redistributes the following third-party materials.
+Each is used under its own license, noted below.
+
+NOTE ON THE TRAINING CORPORA SECTION: the shipped caption error-type classifier
+is trained on synthetically generated data (see src/classifier.py), NOT on the
+corpora listed below. They are recorded here as the license-cleared corpus plan
+for a future weight release, and because their attribution requirements are
+referenced by data/training/model_card.md. No corpus below has been redistributed
+or trained on in this repository.
 
 ------------------------------------------------------------------------
 Training corpora

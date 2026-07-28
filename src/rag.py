@@ -3,11 +3,14 @@ RAG layer for AccessGate: Granite Embedding r2 citation retrieval.
 
 Builds a citation index from an authoritative standards corpus (WCAG, FCC,
 DCMP, Netflix) and provides runtime retrieval for every rule evaluator. The
-corpus is authoritative short-form text held inline below, plus any
-Docling-parsed markdown dropped into standards/parsed/ (the loader picks those
-up if present; none ship by default). Chunks are embedded with Granite
-Embedding r2 (sentence-transformers, with a deterministic TF-IDF fallback) and
-searched by numpy cosine similarity, no FAISS dependency.
+corpus is BOTH: six Docling-parsed standard pages committed under
+standards/parsed/ (206 of the index's 218 chunks) and authoritative short-form
+clause text held inline below (the remaining 12). An earlier version of this
+docstring said the parsed files "none ship by default", which has not been true
+since they were committed and made /judges look inflated to anyone who read
+both. Chunks are embedded with Granite Embedding r2 (sentence-transformers,
+then watsonx-hosted Granite, then a deterministic n-gram fallback) and searched
+by numpy cosine similarity, no FAISS dependency.
 
 Hard rule: citations must be retrieved from the actual source text,
 never hardcoded from memory. This module fulfills that constraint.

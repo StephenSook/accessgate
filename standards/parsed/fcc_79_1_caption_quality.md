@@ -1,39 +1,16 @@
-# Request Access
+# 47 CFR 79.1(j)(2) - Caption quality standards
 
-Due to aggressive automated scraping of FederalRegister.gov and eCFR.gov, programmatic access to these sites is limited to access to our extensive developer APIs. Please visit [FederalRegister.gov API](https://www.federalregister.gov/developers/documentation/api/v1) documentation or [eCFR.gov API](https://www.ecfr.gov/developers/documentation/api/v1) documentation to learn more about how to access the API.
+Source: Electronic Code of Federal Regulations, Title 47, Part 79, Section 79.1,
+retrieved from the official eCFR API (https://www.ecfr.gov/api/versioner/v1/).
+Not scraped: eCFR blocks automated page access, and an earlier version of this
+file had captured that block page instead of the regulation itself.
 
-Your request has been flagged as potentially automated. If you are human user receiving this message, please complete the CAPTCHA (bot test) below and click "Request Access". You may occassionally be asked to complete the CAPTCHA again, this is normal and part of our security measures.
+Captioning shall be accurate, synchronous, complete, and appropriately placed as those terms are defined herein.
 
-Request Access
+(i) Accuracy. Captioning shall match the spoken words (or song lyrics when provided on the audio track) in their original language (English or Spanish), in the order spoken, without substituting words for proper names and places, and without paraphrasing, except to the extent that paraphrasing is necessary to resolve any time constraints. Captions shall contain proper spelling (including appropriate homophones), appropriate punctuation and capitalization, correct tense and use of singular or plural forms, and accurate representation of numbers with appropriate symbols or words. If slang or grammatical errors are intentionally used in a program's dialogue, they shall be mirrored in the captions. Captioning shall provide nonverbal information that is not observable, such as the identity of speakers, the existence of music (whether or not there are also lyrics to be captioned), sound effects, and audience reaction, to the greatest extent possible, given the nature of the program. Captions shall be legible, with appropriate spacing between words for readability.
 
-*An official website of the United States government.*
+(ii) Synchronicity. Captioning shall coincide with the corresponding spoken words and sounds to the greatest extent possible, given the type of the programming. Captions shall begin to appear at the time that the corresponding speech or sounds begin and end approximately when the speech or sounds end. Captions shall be displayed on the screen at a speed that permits them to be read by viewers.
 
-If you experiencing issues with the CAPTCHA or want to request a wider IP range, you can use the "Site Help" button found in the lower, right of this page to make a request.
+(iii) Completeness. Captioning shall run from the beginning to the end of the program, to the fullest extent possible.
 
-### IP Access Help
-
-This contact form is only for IP Access help. Please do not provide confidential information or personal data.
-
-* Your Name
-
-site\_feedback[name]
-
-* Email
-
-site\_feedback[email]
-
-* How can we help you?
-
-Upload Attachment
-
-site\_feedback[attachment]
-
-- [ ] * I am requesting technical help.
-
-Request Help
-
-Loading...
-
-<!-- image -->
-
-Site Help
+(iv) Placement. Captioning shall be viewable and shall not block other important visual content on the screen, including, but not limited to, character faces, featured text (e.g., weather or other news updates, graphics and credits), and other information that is essential to understanding a program's content when the closed captioning feature is activated. Caption font shall be sized appropriately for legibility. Lines of caption shall not overlap one another and captions shall be adequately positioned so that they do not run off the edge of the video screen.
