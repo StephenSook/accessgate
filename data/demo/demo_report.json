@@ -6,13 +6,19 @@
   "results": [
     {
       "rule_id": "FCC-ACC-01",
-      "status": "fail",
-      "message": "NER score 77.79% (band 73.65%\u201379.86%) is below the 98% threshold. Note: 2 low-confidence region(s) flagged for human review.",
+      "status": "flag",
+      "message": "NER score 78.92% (band 74.73%-81.02%) is below the 98% threshold, measured against an ASR-derived reference. Flagged for human review, never auto-failed: ASR carries measured demographic disparity (Koenecke et al., PNAS 2020). Re-run against a human-verified reference transcript for a pass/fail verdict. Note: 2 low-confidence region(s) flagged for human review.",
       "timecode": null,
       "citation": "ther information or text.\nThe NER (Net Error Rate) accuracy standard is: (total words - errors) / total words.\nPrograms with a score of 98 percent or higher are deemed accurate.",
+      "clause_id": "FCC 47 CFR 79.1(j)(2)",
+      "clause_url": "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-79/section-79.1",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "warning",
-      "confidence": 0.7779,
-      "human_review_required": true
+      "confidence": 0.7892,
+      "human_review_required": true,
+      "delta_pct": null
     },
     {
       "rule_id": "FCC-SYN-01",
@@ -20,19 +26,31 @@
       "message": "All 16 caption cues overlap detected speech regions.",
       "timecode": null,
       "citation": "47 CFR 79.1(j)(2) Caption quality standards.\nCaptioning quality is defined by four factors:\n(i) Accuracy: Captions must match the spoken words in the dialogue and convey\nbackground noises and other sounds to the fullest extent possible.\n(ii) Synchronicity: Captions must be displayed to coincide with their\ncorresponding spoken words and sounds to the greatest extent possible.\n(iii) Program complete",
+      "clause_id": "FCC 47 CFR 79.1(j)(2)",
+      "clause_url": "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-79/section-79.1",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "FCC-CMP-01",
       "status": "fail",
-      "message": "150 speech region(s) have no caption coverage. First uncovered region: 37.80s\u201337.83s.",
+      "message": "150 speech region(s) have no caption coverage. First uncovered region: 37.80s-37.83s.",
       "timecode": 37.8,
       "citation": "47 CFR 79.1(j)(2) Caption quality standards.\nCaptioning quality is defined by four factors:\n(i) Accuracy: Captions must match the spoken words in the dialogue and convey\nbackground noises and other sounds to the fullest extent possible.\n(ii) Synchronicity: Captions must be displayed to coincide with their\ncorresponding spoken words and sounds to the greatest extent possible.\n(iii) Program complete",
+      "clause_id": "FCC 47 CFR 79.1(j)(2)",
+      "clause_url": "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-79/section-79.1",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "error",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "FCC-PLC-01",
@@ -40,9 +58,15 @@
       "message": "No overlapping caption cues detected.",
       "timecode": null,
       "citation": "47 CFR 79.1(j)(2) Caption quality standards.\nCaptioning quality is defined by four factors:\n(i) Accuracy: Captions must match the spoken words in the dialogue and convey\nbackground noises and other sounds to the fullest extent possible.\n(ii) Synchronicity: Captions must be displayed to coincide with their\ncorresponding spoken words and sounds to the greatest extent possible.\n(iii) Program complete",
+      "clause_id": "FCC 47 CFR 79.1(j)(2)",
+      "clause_url": "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-79/section-79.1",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "WCAG-122-01",
@@ -50,9 +74,15 @@
       "message": "Caption track present with 16 cues.",
       "timecode": null,
       "citation": "WCAG 2.2 Success Criterion 1.2.2 Captions (Prerecorded) - Level A\nCaptions are provided for all prerecorded audio content in synchronized media,\nexcept when the media is a media alternative for text and is clearly labeled as such.\nCaptions include all dialogue and important sound effects.",
+      "clause_id": "WCAG 2.2 SC 1.2.2",
+      "clause_url": "https://www.w3.org/WAI/WCAG22/Understanding/captions-prerecorded.html",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "error",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "WCAG-125-01",
@@ -60,19 +90,31 @@
       "message": "Audio description track present with 3 cues.",
       "timecode": null,
       "citation": "WCAG 2.2 Success Criterion 1.2.5 Audio Description (Prerecorded) - Level AA\nAudio description is provided for all prerecorded video content in synchronized media.\nThe audio description provides information about actions, characters, scene changes,\nand on-screen text that are important to understanding the content.",
+      "clause_id": "WCAG 2.2 SC 1.2.5",
+      "clause_url": "https://www.w3.org/WAI/WCAG22/Understanding/audio-description-prerecorded.html",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "error",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "WCAG-125-02",
       "status": "flag",
-      "message": "Audio description semantic sufficiency requires human review. Automatable checks (presence, timing, structure) are covered by other rules. SC 1.2.5 sufficiency \u2014 whether descriptions convey important visual information \u2014 cannot be machine-verified per W3C ACT guidance.",
+      "message": "Audio description semantic sufficiency requires human review. Automatable checks (presence, timing, structure) are covered by other rules. SC 1.2.5 sufficiency, whether descriptions convey important visual information, cannot be machine-verified per W3C ACT guidance.",
       "timecode": null,
       "citation": "WCAG 2.2 Success Criterion 1.2.5 Audio Description (Prerecorded) - Level AA\nAudio description is provided for all prerecorded video content in synchronized media.\nThe audio description provides information about actions, characters, scene changes,\nand on-screen text that are important to understanding the content.",
+      "clause_id": "WCAG 2.2 SC 1.2.5",
+      "clause_url": "https://www.w3.org/WAI/WCAG22/Understanding/audio-description-prerecorded.html",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": true
+      "human_review_required": true,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-CAP-01",
@@ -80,12 +122,15 @@
       "message": "Line exceeds 32 chars (45 chars) at 31.50s: 'I already lost a whole hour of sleep on this.'",
       "timecode": 31.5,
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "clause_id": "DCMP Captioning Key",
+      "clause_url": "https://dcmp.org/learn/captioningkey",
+      "measured": 45.0,
+      "limit": 32.0,
+      "unit": "chars",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 45.0,
-      "limit": 32.0,
-      "unit": "chars"
+      "delta_pct": 40.6
     },
     {
       "rule_id": "DCMP-CAP-01",
@@ -93,12 +138,15 @@
       "message": "Line exceeds 32 chars (53 chars) at 168.60s: 'Look here comes one of them right now, come on hurry.'",
       "timecode": 168.6,
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "clause_id": "DCMP Captioning Key",
+      "clause_url": "https://dcmp.org/learn/captioningkey",
+      "measured": 53.0,
+      "limit": 32.0,
+      "unit": "chars",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 53.0,
-      "limit": 32.0,
-      "unit": "chars"
+      "delta_pct": 65.6
     },
     {
       "rule_id": "DCMP-CAP-02",
@@ -106,9 +154,15 @@
       "message": "All captions have 2 or fewer lines.",
       "timecode": null,
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "clause_id": "DCMP Captioning Key",
+      "clause_url": "https://dcmp.org/learn/captioningkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-CAP-03",
@@ -116,12 +170,15 @@
       "message": "Caption at 168.60s exceeds 225 wpm (660 wpm). Text: 'Look here comes one of them right now, come on hur'",
       "timecode": 168.6,
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "clause_id": "DCMP Captioning Key",
+      "clause_url": "https://dcmp.org/learn/captioningkey",
+      "measured": 660.0,
+      "limit": 225.0,
+      "unit": "wpm",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 660.0,
-      "limit": 225.0,
-      "unit": "wpm"
+      "delta_pct": 193.3
     },
     {
       "rule_id": "DCMP-CAP-04",
@@ -129,12 +186,15 @@
       "message": "Caption at 36.90s displayed for 0.80s (minimum 2.0s). Text: 'There it is.'",
       "timecode": 36.9,
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "clause_id": "DCMP Captioning Key",
+      "clause_url": "https://dcmp.org/learn/captioningkey",
+      "measured": 0.8,
+      "limit": 2.0,
+      "unit": "s",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 0.8,
-      "limit": 2.0,
-      "unit": "s"
+      "delta_pct": -60.0
     },
     {
       "rule_id": "DCMP-CAP-04",
@@ -142,12 +202,15 @@
       "message": "Caption at 168.60s displayed for 1.00s (minimum 2.0s). Text: 'Look here comes one of them right now, come on hur'",
       "timecode": 168.6,
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "clause_id": "DCMP Captioning Key",
+      "clause_url": "https://dcmp.org/learn/captioningkey",
+      "measured": 1.0,
+      "limit": 2.0,
+      "unit": "s",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 1.0,
-      "limit": 2.0,
-      "unit": "s"
+      "delta_pct": -50.0
     },
     {
       "rule_id": "DCMP-CAP-05",
@@ -155,9 +218,15 @@
       "message": "No unbracketed sound-effect captions detected.",
       "timecode": null,
       "citation": "rg/learn/602-captioning-key---sound-effects-and-music) From about [captioning-key](/learn/tags/captioning-key)\nCaptioning Key - Sound Effects and Music\n\n<!-- image -->\n- [Captioning Key - Speaker Identification Establishing the identity of both onscreen and offscreen speakers is vital for clarity.](https://dcmp.org/learn/603-captioning-key---speaker-identification) From about [captioning-key](/lea",
+      "clause_id": "DCMP Captioning Key",
+      "clause_url": "https://dcmp.org/learn/captioningkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-CAP-06",
@@ -165,9 +234,15 @@
       "message": "No past-tense sound captions detected.",
       "timecode": null,
       "citation": "DCMP Captioning Key: Standards and Guidelines for Caption Quality.\nCharacter count: A maximum of 32 characters per line.\nLine count: No more than 2 lines per caption frame.\nReading speed: Educational captions range from 130 to 160 wpm by grade level.\nNear-verbatim adult captions should not exceed 225 words per minute.\nMinimum display time: Captions should appear on screen for a minimum of 2 second",
+      "clause_id": "DCMP Captioning Key",
+      "clause_url": "https://dcmp.org/learn/captioningkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-01",
@@ -175,9 +250,15 @@
       "message": "No past-tense or passive-voice AD lines detected.",
       "timecode": null,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-02",
@@ -185,9 +266,15 @@
       "message": "No first/second person pronouns found in AD.",
       "timecode": null,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-03",
@@ -195,9 +282,15 @@
       "message": "No premature jargon or cinematic terms detected in AD.",
       "timecode": null,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-04",
@@ -205,9 +298,15 @@
       "message": "AD at 46.00s has 10 words but gap (3.93s) fits only 9 words at 150 wpm.",
       "timecode": 46.0,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-04",
@@ -215,39 +314,63 @@
       "message": "AD at 157.90s has 8 words but gap (2.58s) fits only 6 words at 150 wpm.",
       "timecode": 157.9,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "warning",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-05",
       "status": "fail",
-      "message": "AD at 39.60s\u201344.40s overlaps a detected speech region. Text: 'A sedan drove slowly along the cemetery road.'",
+      "message": "AD at 39.60s-44.40s overlaps a detected speech region. Text: 'A sedan drove slowly along the cemetery road.'",
       "timecode": 39.6,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "error",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-05",
       "status": "fail",
-      "message": "AD at 46.00s\u201349.20s overlaps a detected speech region. Text: 'In a dolly shot, the camera creeps toward the graves.'",
+      "message": "AD at 46.00s-49.20s overlaps a detected speech region. Text: 'In a dolly shot, the camera creeps toward the graves.'",
       "timecode": 46.0,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "error",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-05",
       "status": "fail",
-      "message": "AD at 157.90s\u2013160.10s overlaps a detected speech region. Text: 'A figure lurches out from behind the trees.'",
+      "message": "AD at 157.90s-160.10s overlaps a detected speech region. Text: 'A figure lurches out from behind the trees.'",
       "timecode": 157.9,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "error",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-06",
@@ -255,9 +378,15 @@
       "message": "AD at 39.60s may be a sentence fragment (no verb detected). Text: 'A sedan drove slowly along the cemetery road.'",
       "timecode": 39.6,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": true
+      "human_review_required": true,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-06",
@@ -265,9 +394,15 @@
       "message": "AD at 46.00s may be a sentence fragment (no verb detected). Text: 'In a dolly shot, the camera creeps toward the graves.'",
       "timecode": 46.0,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": true
+      "human_review_required": true,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-06",
@@ -275,9 +410,15 @@
       "message": "AD at 157.90s may be a sentence fragment (no verb detected). Text: 'A figure lurches out from behind the trees.'",
       "timecode": 157.9,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": true
+      "human_review_required": true,
+      "delta_pct": null
     },
     {
       "rule_id": "DCMP-DESC-07",
@@ -285,9 +426,15 @@
       "message": "No obvious subjectivity indicators found in AD (human review still recommended).",
       "timecode": null,
       "citation": "DCMP Description Key: Standards and Guidelines for Audio Description.\nTense: Describe action in the present tense, active voice.\nPoint of view: Third-person narrative; never first or second person.\nLanguage: Use objective language; avoid subjective or interpretive terms.\nSentences: Use complete sentences whenever possible.\nTiming: Descriptions must fit within the available dialogue-free time.\nWord",
+      "clause_id": "DCMP Description Key",
+      "clause_url": "https://dcmp.org/learn/descriptionkey",
+      "measured": null,
+      "limit": null,
+      "unit": null,
       "sarif_level": "note",
       "confidence": null,
-      "human_review_required": false
+      "human_review_required": false,
+      "delta_pct": null
     },
     {
       "rule_id": "NFLX-CPS-01",
@@ -295,12 +442,15 @@
       "message": "Caption at 168.60s exceeds 20.0 CPS (53.0 CPS, adult profile). Text: 'Look here comes one of them right now, come on hur'",
       "timecode": 168.6,
       "citation": "Netflix Timed Text Style Guide (TTSG) - English.\nReading speed: Maximum 20 characters per second (CPS) for adult content.\nMaximum 17 CPS for children's content.\nLine length: Maximum 42 characters per line.\nLine count: Maximum 2 lines per event.\nMinimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum",
+      "clause_id": "Netflix English TTSG",
+      "clause_url": "https://partnerhelp.netflixstudios.com/hc/en-us/articles/217350977-English-Timed-Text-Style-Guide",
+      "measured": 53.0,
+      "limit": 20.0,
+      "unit": "cps",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 53.0,
-      "limit": 20.0,
-      "unit": "cps"
+      "delta_pct": 165.0
     },
     {
       "rule_id": "NFLX-LEN-01",
@@ -308,12 +458,15 @@
       "message": "Caption at 31.50s: line 45 chars: 'I already lost a whole hour of sleep on this.'",
       "timecode": 31.5,
       "citation": "e event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.\nFrame rate: Typically 23.976, 24, or 25 fps depending on the content locale.\nCharacter encoding: UTF-8.",
+      "clause_id": "Netflix English TTSG",
+      "clause_url": "https://partnerhelp.netflixstudios.com/hc/en-us/articles/217350977-English-Timed-Text-Style-Guide",
+      "measured": 45.0,
+      "limit": 42.0,
+      "unit": "chars",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 45.0,
-      "limit": 42.0,
-      "unit": "chars"
+      "delta_pct": 7.1
     },
     {
       "rule_id": "NFLX-LEN-01",
@@ -321,12 +474,15 @@
       "message": "Caption at 168.60s: line 53 chars: 'Look here comes one of them right now, come on hurry.'",
       "timecode": 168.6,
       "citation": "Netflix Timed Text Style Guide (TTSG) - English.\nReading speed: Maximum 20 characters per second (CPS) for adult content.\nMaximum 17 CPS for children's content.\nLine length: Maximum 42 characters per line.\nLine count: Maximum 2 lines per event.\nMinimum duration: 5/6 of a second (approximately 0.833 seconds) per subtitle event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum",
+      "clause_id": "Netflix English TTSG",
+      "clause_url": "https://partnerhelp.netflixstudios.com/hc/en-us/articles/217350977-English-Timed-Text-Style-Guide",
+      "measured": 53.0,
+      "limit": 42.0,
+      "unit": "chars",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 53.0,
-      "limit": 42.0,
-      "unit": "chars"
+      "delta_pct": 26.2
     },
     {
       "rule_id": "NFLX-DUR-01",
@@ -334,21 +490,24 @@
       "message": "Caption at 36.90s: duration 0.800s below minimum 0.833s",
       "timecode": 36.9,
       "citation": "e event.\nMaximum duration: 7 seconds per subtitle event.\nMinimum gap: A minimum gap of 2 frames between consecutive subtitle events is required.\nFrame rate: Typically 23.976, 24, or 25 fps depending on the content locale.\nCharacter encoding: UTF-8.",
+      "clause_id": "Netflix English TTSG",
+      "clause_url": "https://partnerhelp.netflixstudios.com/hc/en-us/articles/217350977-English-Timed-Text-Style-Guide",
+      "measured": 0.8,
+      "limit": 0.833,
+      "unit": "s",
       "sarif_level": "warning",
       "confidence": null,
       "human_review_required": false,
-      "measured": 0.8,
-      "limit": 0.833,
-      "unit": "s"
+      "delta_pct": -4.0
     }
   ],
   "ner": {
-    "ner_score": 0.7779,
-    "band_low": 0.7365,
-    "band_high": 0.7986,
-    "n_words": 278,
-    "n_errors": 197,
-    "recognition_errors": 9,
+    "ner_score": 0.7892,
+    "band_low": 0.7473,
+    "band_high": 0.8102,
+    "n_words": 274,
+    "n_errors": 193,
+    "recognition_errors": 5,
     "edition_errors": 165,
     "asr_derived": true,
     "low_confidence_regions": [
@@ -365,14 +524,10 @@
           "of",
           "here",
           "johnny",
-          "im",
-          "getting",
-          "out",
-          "of",
-          "here"
+          "johnny"
         ],
         "hyp_words": [],
-        "confidence": 0.3627079443540424,
+        "confidence": 0.4989878283813596,
         "chunk_type": "delete"
       }
     ],
@@ -1187,7 +1342,7 @@
     }
   ],
   "error_count": 4,
-  "warning_count": 12,
-  "flag_count": 4,
+  "warning_count": 11,
+  "flag_count": 5,
   "report_id": "demo-notld-2026"
 }

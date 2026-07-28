@@ -11,11 +11,14 @@ Timing engine rule (AGENTS.md):
   - Granite Speech is used separately for reference transcripts only
 """
 from __future__ import annotations
+import logging
 import subprocess
 import tempfile
 import os
 from pathlib import Path
 from src.models import GapRegion, SpeechRegion, CaptionCue
+
+logger = logging.getLogger(__name__)
 
 # Minimum gap duration to report (seconds)
 DEFAULT_MIN_GAP = 2.5

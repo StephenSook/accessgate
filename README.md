@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://lablab.ai)
-[![234 tests](https://img.shields.io/badge/tests-234%20passing-3fb950.svg)](tests/)
+[![260 tests](https://img.shields.io/badge/tests-260%20passing-3fb950.svg)](tests/)
 
 Built for the **IBM AI Builders Challenge July 2026**, **Reimagine Creative Industries with AI** track.
 
@@ -26,7 +26,7 @@ Fastest path to check each thing that matters. No account, no keys.
 | **Try it, zero setup** | [Live web app](https://accessgate-web.vercel.app), click **LOAD DEMO** (no upload, no keys) |
 | **Claims are wired, not aspirational** | [IBM Stack](#ibm-stack-what-is-actually-wired), then grep any row in the shipped code |
 | **Honesty, live** | [`/judges`](https://accessgate-api.onrender.com/judges) transparency endpoint |
-| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (234 passing), `python -m src.engine` |
+| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (260 passing), `python -m src.engine` |
 | **Results measured, not asserted** | [Evaluation](#evaluation-measured-not-asserted) |
 
 ---
@@ -91,7 +91,7 @@ To our knowledge, AccessGate is the first tool that is all of these at once: ope
 
 ## AccessGate in One Loop
 
-> A film's caption file has a 44-character line, a 1.2-second cue, a 240-wpm burst, a sound effect without a source bracket, and a 2.1-second sync drift. Its audio-description file has a past-tense line, a jargon term, and an AD line overlapping dialogue. The NER caption score lands at 77.8%, below 98%, but ASR carries measured racial disparity (Koenecke et al., PNAS 2020: WER 0.35 for Black speakers vs 0.19 for white), so the band is flagged for human review, never auto-failed. Every flag cites the exact standard section that governs it. Click the failing AD gap at 39.1s. The vision drafter writes a present-tense, active-voice, third-person description that fits the 5.9-second window (watsonx-hosted Llama 3.2 Vision on the deploy, Granite Vision 3.2 locally). The DCMP validator passes it. Granite Guardian clears it. The row flips green.
+> A film's caption file has a 44-character line, a 1.2-second cue, a 240-wpm burst, a sound effect without a source bracket, and a 2.1-second sync drift. Its audio-description file has a past-tense line, a jargon term, and an AD line overlapping dialogue. The NER caption score lands around 78%, below 98%, but ASR carries measured racial disparity (Koenecke et al., PNAS 2020: WER 0.35 for Black speakers vs 0.19 for white), so the band is flagged for human review, never auto-failed. Every flag cites the exact standard section that governs it. Click the failing AD gap at 39.1s. The vision drafter writes a present-tense, active-voice, third-person description that fits the 5.9-second window (watsonx-hosted Llama 3.2 Vision on the deploy, Granite Vision 3.2 locally). The DCMP validator passes it. Granite Guardian clears it. The row flips green.
 
 ---
 
@@ -195,7 +195,7 @@ AccessGate runs on **five IBM Granite model families** (Vision, Guardian, Speech
 Each passes the **API-deletion test**: remove every hosted AI API and each still runs.
 
 1. **Conformance rule engine**: NER scorer (`(N-E-R)/N`, Romero-Fresco/Ofcom broadcast model), 98% threshold, confidence bands, never auto-fails on ASR alone per Koenecke et al. PNAS 2020
-2. **Dialogue-gap detection and timing engine**: Silero VAD + silence detection, gap complement above 2.5s minimum, merged across sub-300ms blips
+2. **Dialogue-gap detection and timing engine**: two-tier speech detection (Silero VAD attempted first, then a pure-stdlib RMS energy detector), gap complement above 2.5s minimum, merged across sub-300ms blips. With the dependency set this repo ships, Silero declines to load and the RMS detector is what produces the demo's 197 speech regions and 3 gaps, which is exactly why this artifact survives the API-deletion test: the working path needs only `wave`, `struct`, and `math`
 3. **Audio-description structure validator**: DCMP rules: word-count-fits-gap, no-overlap-with-dialogue, present-tense, active-voice, third-person, objectivity flags
 4. **Caption error-type classifier**: supervised logistic regression on a synthetic weak-labeled set, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.94**
 
@@ -210,7 +210,18 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 | Rule engine on **real machine captions** | **55 real defects / 6 rules** | faster-whisper on the real NOTLD audio, no injected defects (`data/demo/notld_real_autocaption.srt`) |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
-| Tests passing | **234** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
+| Tests passing | **260** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
+| NER caption accuracy, demo file | **~78%** | Reproduces to within about a point, see the note below |
+
+**Why the NER figure is quoted approximately.** The NER score is measured against a
+reference transcript produced by ASR, and ASR is not bit-deterministic across runs and
+model builds. The committed demo report (`data/demo/demo_report.json`, what the hosted
+`/demo` serves) records 77.8%; a fresh clone re-running the engine on the same audio
+measured 78.9%. Everything deterministic about that run is identical between the two:
+the same 31 rule results with the same pass, fail, and flag statuses, the same 3
+dialogue-free gaps, the same 197 speech regions. Only the ASR-derived accuracy figure
+moves, which is exactly why this project never auto-fails a caption on ASR evidence
+alone.
 
 **Verified on real, naturally-defective captions, not just an injected demo.** The 10/10 row is a designed showcase (a hand-authored degradation recipe). To prove the engine on real data, we transcribed the public-domain Night of the Living Dead audio with faster-whisper and ran the 23 rules on that raw machine-caption output. With zero injected defects, AccessGate flagged **55 real violations across 6 rules**: 40 over-long lines (DCMP-CAP-01, NFLX-LEN-01), 8 reading-speed breaches (DCMP-CAP-03, NFLX-CPS-01), and 7 sub-minimum-duration cues (DCMP-CAP-04, NFLX-DUR-01). Machine captions are the single most common real-world accessibility defect, and the run is reproducible: `python scripts/transcribe_real_captions.py`.
 
@@ -218,7 +229,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 
 ## How IBM Bob Was Used
 
-IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 234-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
+IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 260-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
 
 The most distinctive use is a self-referential loop: AccessGate's own MCP server (exposing `check_conformance`, `detect_gaps`, and `score_captions`) was registered in Bob and consumed by Bob during development, so Bob checked the tool's conformance output using the tool itself. The engine became its own test harness, inside the primary development tool.
 
@@ -301,7 +312,7 @@ accessgate/
 ├── mobile/                    # Expo / React Native (iOS + Android) client
 ├── security/                  # SARIF + OSCAL /review audit outputs
 ├── bob_sessions/              # IBM Bob usage screenshot (Bobalytics)
-├── tests/                     # 234 passing tests
+├── tests/                     # 260 passing tests
 ├── render.yaml                # Render deployment config (FastAPI backend)
 ├── AGENTS.md                  # Project policy spine (read every session)
 └── .bob/                      # Custom mode, conformance skill, MCP config
