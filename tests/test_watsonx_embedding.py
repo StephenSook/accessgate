@@ -361,3 +361,68 @@ class TestEncoderFailureIsSurvivable:
         )
         assert get_watsonx_embedder() is None
         assert calls == []
+
+
+class TestQuotaGuardOnColdStart:
+    """A hosted encoder must never re-embed the corpus at runtime.
+
+    Re-embedding 218 chunks costs ~22k tokens. The hosted filesystem is
+    ephemeral, so the mismatch branch runs on every cold start (~20/day), which
+    is ~436k tokens/day against a 300k/month plan. That is exactly how the
+    quota was drained, taking the vision, Guardian and summary calls down with
+    it, since they share the same allowance.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _isolated_index(self, monkeypatch, tmp_path):
+        shutil.copytree(rag.INDEX_DIR, tmp_path / "index")
+        monkeypatch.setattr(rag, "INDEX_DIR", tmp_path / "index")
+        monkeypatch.setattr(rag, "CHUNKS_FILE", tmp_path / "index" / "chunks.json")
+        monkeypatch.setattr(rag, "EMBEDDINGS_FILE", tmp_path / "index" / "embeddings.npy")
+        monkeypatch.setattr(rag, "INDEX_META_FILE", tmp_path / "index" / "index_meta.json")
+        monkeypatch.setattr(rag, "_chunks", None)
+        monkeypatch.setattr(rag, "_embeddings", None)
+        monkeypatch.setattr(rag, "_encoder_failed", False)
+        monkeypatch.setattr(rag, "_embedder", None)
+        yield
+        rag._chunks = None
+        rag._embeddings = None
+
+    def test_metered_encoder_is_recognised(self):
+        assert rag._is_metered(f"watsonx:{MODEL_ID}") is True
+        assert rag._is_metered(rag.TFIDF_ENCODER_ID) is False
+        assert rag._is_metered(f"sentence-transformers:{rag.EMBEDDING_MODEL}") is False
+
+    def test_hosted_reindex_is_off_by_default(self, monkeypatch):
+        monkeypatch.delenv("ACCESSGATE_ALLOW_HOSTED_REINDEX", raising=False)
+        assert rag._hosted_reindex_allowed() is False
+
+    def test_cold_start_mismatch_does_not_call_the_hosted_encoder(self, monkeypatch):
+        monkeypatch.delenv("ACCESSGATE_ALLOW_HOSTED_REINDEX", raising=False)
+
+        calls = []
+
+        class _Metered:
+            encoder_id = f"watsonx:{MODEL_ID}"
+
+            def encode(self, texts, **kw):
+                calls.append(len(list(texts)))
+                raise AssertionError("hosted encoder must not re-embed the corpus")
+
+        # Mirror the real resolver: it returns None once the encoder has been
+        # demoted. Patching _get_embedder to unconditionally hand back the
+        # metered encoder would bypass the very check under test.
+        def _resolve():
+            return None if rag._encoder_failed else _Metered()
+
+        monkeypatch.setattr(rag, "_get_embedder", _resolve)
+        # Committed index says sentence-transformers, active says watsonx: the
+        # exact mismatch a cold start on the deploy produces.
+        rag._load_index()
+
+        assert calls == [], "the corpus was re-embedded against a metered encoder"
+        assert rag._read_index_meta()["encoder"] == rag.TFIDF_ENCODER_ID
+
+    def test_opt_in_still_permits_a_deliberate_offline_build(self, monkeypatch):
+        monkeypatch.setenv("ACCESSGATE_ALLOW_HOSTED_REINDEX", "1")
+        assert rag._hosted_reindex_allowed() is True

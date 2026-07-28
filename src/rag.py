@@ -254,6 +254,26 @@ def encoder_id() -> str:
     return getattr(embedder, "encoder_id", f"sentence-transformers:{EMBEDDING_MODEL}")
 
 
+def _is_metered(enc_id: str) -> bool:
+    """True when using this encoder spends a metered external API quota.
+
+    Local encoders (sentence-transformers, the deterministic n-gram) are free to
+    re-run; a hosted one bills per call and is shared with the vision, Guardian
+    and summary paths, so exhausting it takes those down too.
+    """
+    return enc_id.startswith("watsonx:")
+
+
+def _hosted_reindex_allowed() -> bool:
+    """Opt-in escape hatch for building a publishable hosted-encoder index.
+
+    Off by default so no deployment can spend quota re-embedding the corpus on a
+    cold start. Set ACCESSGATE_ALLOW_HOSTED_REINDEX=1 when deliberately building
+    an index to commit.
+    """
+    return os.getenv("ACCESSGATE_ALLOW_HOSTED_REINDEX", "").lower() in {"1", "true", "yes"}
+
+
 def _demote_encoder(reason: object) -> None:
     """
     Permanently drop to the deterministic encoder for this process.
@@ -426,9 +446,34 @@ def _load_index() -> tuple[list[dict], np.ndarray]:
         stored = _read_index_meta().get("encoder")
         current = encoder_id()
         if stored != current:
-            logger.warning(
-                "Index encoder %r != active encoder %r, rebuilding.", stored, current
-            )
+            # THE QUOTA GUARD. Re-embedding the corpus costs one API call per
+            # batch, and the corpus is 218 chunks, so a rebuild against a
+            # metered hosted encoder spends roughly 22k tokens. The hosted
+            # instance has an ephemeral filesystem and spins down when idle, so
+            # this branch runs on EVERY cold start, of which there are about
+            # twenty a day. That is ~436k tokens/day against a plan that allows
+            # 300k a month: it drained the entire monthly allowance in under a
+            # day and took the vision, Guardian and summary calls down with it,
+            # because they share the quota.
+            #
+            # So a hosted encoder is never allowed to rebuild the corpus at
+            # runtime. Fall back to the deterministic encoder instead, which
+            # costs nothing and keeps index and query in the same vector space.
+            # To publish a Granite-embedded index, build it once offline with
+            # ACCESSGATE_ALLOW_HOSTED_REINDEX=1 and commit the result; runtime
+            # then spends only per-query embeddings, which are a few tokens each.
+            if _is_metered(current) and not _hosted_reindex_allowed():
+                logger.warning(
+                    "Index encoder %r != active encoder %r, but %r is metered. "
+                    "Using the deterministic encoder rather than spending quota "
+                    "re-embedding %s chunks on a cold start.",
+                    stored, current, current, "the corpus",
+                )
+                _demote_encoder("hosted reindex withheld to protect API quota")
+            else:
+                logger.warning(
+                    "Index encoder %r != active encoder %r, rebuilding.", stored, current
+                )
             build_index(force=True)
 
     with open(CHUNKS_FILE) as f:
