@@ -16,6 +16,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history, not the default depth-1 shallow clone. tests/test_bob_usage.py
+          # verifies the IBM Bob build trace served at /judges against the real commits
+          # it names, which needs those commits present. With a shallow clone the trace
+          # tests skip, and the claim they exist to police would go unchecked in CI.
+          fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
