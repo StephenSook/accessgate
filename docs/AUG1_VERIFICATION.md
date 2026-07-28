@@ -41,19 +41,28 @@ curl -s https://accessgate-api.onrender.com/judges \
   | python3 -c "import json,sys; print(json.load(sys.stdin)['citation_provenance'])"
 ```
 
-Expect `active: tfidf:md5-3gram-512`. **This is correct and intended**, not a
-regression. The deploy deliberately does not re-embed the 218-chunk corpus
-through a metered API on every cold start: doing so is what exhausted the
-month's allowance on 2026-07-27. The README, `/judges` and the submission copy
-all describe this accurately. Granite Embedding r2 is the local path.
+Expect BOTH `active` and `serving` to read
+`watsonx:ibm/granite-embedding-278m-multilingual`.
+
+The deploy loads a **prebuilt** Granite vector set committed to the repo, so it
+spends zero embedding calls at request time. That is the fix for what exhausted
+the quota on 2026-07-27: the corpus is embedded once offline, not on every cold
+start. `serving` is the set actually in memory answering citations; `active` is
+what this process would use for a query. They should agree.
+
+If `serving` reads `tfidf:md5-3gram-512`, the prebuilt file did not load. The
+citations are still grounded and still correct, just retrieved by the
+deterministic encoder, so it is a quality regression rather than a breakage.
 
 ## If something is wrong
 
 Nothing can be committed. The available levers are all outside the repo:
 
-- **Still 403 after the reset**: swap `WATSONX_API_KEY` / `WATSONX_PROJECT` in
-  the Render dashboard for a different watsonx instance. No code change needed;
-  both are `sync: false` env vars.
+- **403 token_quota_reached**: should not recur, the plan is now Essentials
+  (pay-as-you-go) rather than Lite, and runtime embedding calls are zero. If it
+  does, check the IBM Cloud spending notification and the account status.
+- **Credentials rejected**: swap `WATSONX_API_KEY` / `WATSONX_PROJECT` in the
+  Render dashboard. No code change needed; both are `sync: false` env vars.
 - **Cold start feels slow**: expected. Render free tier sleeps after 15 minutes
   and GitHub throttles the keepalive to roughly hourly. First request takes about
   30 s, then it is fast. Hit `/health` once before showing anyone the demo.
