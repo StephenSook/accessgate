@@ -29,8 +29,12 @@ frontend/.vite/
 # OS
 .DS_Store
 
-# Bob sessions (large session files — keep screenshots only)
+# Bob sessions. Raw transcripts stay out on purpose: they are large, and they
+# carry verbatim planning prompts rather than engineering artifacts. The
+# aggregate written by scripts/export_bob_evidence.py is counts only, and is the
+# judge-facing Bob evidence, so it is excepted below.
 bob_sessions/*.json
+!bob_sessions/bob-usage-evidence.json
 
 # Gitkeep exceptions
 !security/.gitkeep

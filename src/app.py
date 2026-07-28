@@ -345,12 +345,30 @@ def _bob_usage() -> dict:
             {"what": "Self-referential MCP config, three tools pre-authorised", "where": ".bob/mcp.json"},
             {"what": "Bobalytics usage screenshot", "where": "bob_sessions/bobalytics-usage.png"},
         ],
+        "session_usage": {
+            "note": (
+                "Read from the Bob IDE's local session store by "
+                "scripts/export_bob_evidence.py and committed as "
+                "bob_sessions/bob-usage-evidence.json. Tool-result messages are the "
+                "load-bearing number: those are Bob reading and writing files in this "
+                "repo, not conversation."
+            ),
+            "bob_tasks_in_workspace": 11,
+            "tasks_matching_accessgate": 5,
+            "messages_total": 645,
+            "messages_by_role": {"assistant": 180, "tool": 441, "user": 24},
+            "input_tokens": 30620038,
+            "output_tokens": 186225,
+            "tracked_cost_usd": 77.02,
+        },
         "not_in_repo": (
-            "Bob session transcripts. Bob keeps conversation history server-side, "
-            "not on disk, so there is no session export to commit. The build trace "
-            "above and the git history are the checkable substitute, and they are "
-            "stronger evidence than a self-exported file because a judge can "
-            "re-derive them from a clone."
+            "Bob session MESSAGE BODIES, withheld on purpose. The transcripts carry "
+            "the author's verbatim planning prompts, which are strategy notes rather "
+            "than engineering artifacts and do not belong in a public repo, so only "
+            "the aggregate above is published. An earlier version of this endpoint "
+            "said no export was possible because Bob kept history server-side; that "
+            "was wrong, the store is local at ~/.bob/db/bob.db and the earlier check "
+            "missed it."
         ),
     }
 

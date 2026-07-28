@@ -1,0 +1,24 @@
+{
+  "note": "Aggregate IBM Bob usage for this repository, read from the Bob IDE's local session database. Message bodies are deliberately excluded: they contain the author's planning prompts, which are not engineering artifacts. Counts and totals only. Regenerate with scripts/export_bob_evidence.py.",
+  "source": "~/.bob/db/bob.db (IBM Bob IDE local session store)",
+  "exported_at": "2026-07-28T20:26:30.215959+00:00",
+  "repository": "accessgate",
+  "tasks_total": 11,
+  "tasks_matching_accessgate": 5,
+  "messages_total": 645,
+  "messages_by_role": {
+    "assistant": 180,
+    "tool": 441,
+    "user": 24
+  },
+  "session_window_utc": {
+    "first": "2026-07-14T01:51:43.663000+00:00",
+    "last": "2026-07-14T02:02:45.906000+00:00"
+  },
+  "tokens": {
+    "input": 30620038,
+    "output": 186225
+  },
+  "tracked_cost_usd": 77.02,
+  "scope_note": "Bob credits ran out on 2026-07-13 and later deployment, Granite Speech wiring and honesty refinements were finished with other tooling, so Bob was the primary development tool and not the exclusive one. The engine build trace in the git history is the per-commit view of the same work."
+}

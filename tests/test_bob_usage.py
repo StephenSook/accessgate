@@ -3,10 +3,12 @@
 The build trace is the one piece of IBM Bob evidence a judge can re-derive from
 a clone rather than take on trust, which only holds if the commits it names are
 real. These tests check the trace against actual `git log` output and check that
-the honesty caveats (no session transcripts, MCP wiring is a capability not a
-logged event) have not quietly drifted back into overclaims.
+the honesty caveats (published aggregate matches the endpoint, prompt bodies
+stay withheld, MCP wiring is a capability not a logged event) have not quietly
+drifted back into overclaims.
 """
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -100,14 +102,38 @@ class TestBobArtifactsExist:
 
 
 class TestHonestyCaveatsHold:
-    def test_no_session_transcript_is_claimed(self):
-        """bob_sessions/ holds no session export; nothing may imply otherwise."""
-        exports = list((REPO_ROOT / "bob_sessions").glob("session-*.json"))
-        assert exports == [], (
-            "a session export appeared; update _bob_usage()['not_in_repo'], which "
-            "currently tells judges none exists"
-        )
-        assert "server-side" in _bob_usage()["not_in_repo"]
+    def test_session_aggregate_is_published_and_matches_the_endpoint(self):
+        """The committed aggregate and what /judges reports must not drift apart.
+
+        This test replaces one that asserted the opposite. It encoded a claim that
+        no session export was possible because Bob kept history server-side, which
+        was simply false: the store is local at ~/.bob/db/bob.db. The lesson is
+        that a test which pins a CONCLUSION protects the conclusion, not the user,
+        so this one pins the published file against the served numbers instead.
+        """
+        artifact = REPO_ROOT / "bob_sessions" / "bob-usage-evidence.json"
+        assert artifact.exists(), "bob-usage-evidence.json is missing; regenerate it"
+        published = json.loads(artifact.read_text())
+        served = _bob_usage()["session_usage"]
+        for key, served_key in [
+            ("messages_total", "messages_total"),
+            ("tracked_cost_usd", "tracked_cost_usd"),
+            ("tasks_total", "bob_tasks_in_workspace"),
+        ]:
+            assert published[key] == served[served_key], (
+                f"{key} drifted: file says {published[key]}, /judges says "
+                f"{served[served_key]}. Re-run scripts/export_bob_evidence.py and "
+                f"update _bob_usage()."
+            )
+        assert published["messages_by_role"] == served["messages_by_role"]
+
+    def test_no_prompt_bodies_leak_into_the_published_aggregate(self):
+        """Message bodies are withheld on purpose; keep them withheld."""
+        raw = (REPO_ROOT / "bob_sessions" / "bob-usage-evidence.json").read_text()
+        for banned in ("/Users/", "role\":\"user", "content\":", "<user_query>"):
+            assert banned not in raw, (
+                f"the aggregate leaked {banned!r}; it must carry counts only"
+            )
 
     def test_mcp_claim_is_capability_not_logged_event(self):
         body = TestClient(app).get("/judges").json()
