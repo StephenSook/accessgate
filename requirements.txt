@@ -14,6 +14,10 @@ scikit-learn
 numpy
 torch
 torchaudio
+# Read by the opt-in Granite Speech path only (ACCESSGATE_GRANITE_SPEECH=1,
+# src/granite_speech.py). Declared rather than left transitive so enabling that
+# flag on a fresh clone cannot fail on a missing import.
+soundfile
 ffmpeg-python
 pytest
 pytest-asyncio

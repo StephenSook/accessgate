@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://aibuilderschallenge-bobhub.bemyapp.com/)
-[![309 tests](https://img.shields.io/badge/tests-309%20passing-3fb950.svg)](tests/)
+[![314 tests](https://img.shields.io/badge/tests-314%20passing-3fb950.svg)](tests/)
 
 Built for the **IBM AI Builders Challenge July 2026**, **Reimagine Creative Industries with AI** track.
 
@@ -26,7 +26,7 @@ Fastest path to check each thing that matters. No account, no keys.
 | **Try it, zero setup** | [Live web app](https://accessgate-web.vercel.app), click **LOAD DEMO** (no upload, no keys) |
 | **Claims are wired, not aspirational** | [IBM Stack](#ibm-stack-what-is-actually-wired), then grep any row in the shipped code |
 | **Honesty, live** | [`/judges`](https://accessgate-api.onrender.com/judges) transparency endpoint |
-| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (309 passing), `python -m src.engine` |
+| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (314 passing), `python -m src.engine` |
 | **Results measured, not asserted** | [Evaluation](#evaluation-measured-not-asserted) |
 
 ---
@@ -210,7 +210,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 | Rule engine on **real machine captions** | **55 real defects / 6 rules** | faster-whisper on the real NOTLD audio, no injected defects (`data/demo/notld_real_autocaption.srt`) |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
-| Tests passing | **309** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
+| Tests passing | **314** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
 | NER caption accuracy, demo file | **~78%** | Reproduces to within about a point, see the note below |
 
 **Why the NER figure is quoted approximately.** The NER score is measured against a
@@ -229,7 +229,7 @@ alone.
 
 ## How IBM Bob Was Used
 
-IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 309-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
+IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 314-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
 
 The most distinctive setup is a self-referential one: AccessGate's own MCP server (exposing `check_conformance`, `detect_gaps`, and `score_captions`) is registered to Bob in `.bob/mcp.json` with all three tools pre-authorised, so the tool that built the engine can call the engine. The config and the server are both in this repo; the Bob-side session transcripts are not, so treat this as a wired capability rather than a logged event.
 
@@ -327,7 +327,7 @@ accessgate/
 ├── mobile/                    # Expo / React Native (iOS + Android) client
 ├── security/                  # SARIF + OSCAL /review audit outputs
 ├── bob_sessions/              # IBM Bob usage screenshot (Bobalytics)
-├── tests/                     # 309 passing tests
+├── tests/                     # 314 passing tests
 ├── render.yaml                # Render deployment config (FastAPI backend)
 ├── AGENTS.md                  # Project policy spine (read every session)
 └── .bob/                      # Custom mode, conformance skill, MCP config
