@@ -148,13 +148,25 @@ function FixModal({ gap, onClose }: { gap: GapRegion | null; onClose: () => void
   const [loading, setLoading] = useState(false)
   const [fix, setFix] = useState<FixResult | null>(null)
   const [accepted, setAccepted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  React.useEffect(() => { setFix(null); setAccepted(false) }, [gap])
+  React.useEffect(() => { setFix(null); setAccepted(false); setError(null) }, [gap])
 
   async function run() {
     if (!gap) return
     setLoading(true)
-    try { setFix(await loadDemoFix(gap.start, gap.end)) } finally { setLoading(false) }
+    setError(null)
+    // Every other call in this file has a catch; this one did not, so a cold
+    // start, timeout or 5xx just stopped the spinner and said nothing, leaving
+    // an unhandled promise rejection in the log and a user staring at a button
+    // that appeared to do nothing.
+    try {
+      setFix(await loadDemoFix(gap.start, gap.end))
+    } catch (e: any) {
+      setError(e?.message ?? 'Could not reach the conformance API. It may be waking up; try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -173,6 +185,7 @@ function FixModal({ gap, onClose }: { gap: GapRegion | null; onClose: () => void
             </Pressable>
           )}
           {loading && <ActivityIndicator color={C.blueLight} style={{ marginVertical: 24 }} />}
+          {error && !loading && <Text style={s.error}>{error}</Text>}
 
           {fix && (
             <ScrollView style={{ marginTop: 8 }}>

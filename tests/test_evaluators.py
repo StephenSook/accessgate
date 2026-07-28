@@ -747,3 +747,23 @@ class TestDcmpDesc04DoesNotClaimUnmeasuredPasses:
         gaps = [GapRegion(start=10.0, end=20.0)]
         results = eval_dcmp_desc_04(ad, gaps)
         assert all(r.status == "pass" for r in results)
+
+
+class TestDcmpReadingSpeedTiersAreHonoured:
+    """The profile argument used to be accepted and ignored."""
+
+    def test_adult_profile_allows_180_wpm(self):
+        cue = CaptionCue(index=1, start=0.0, end=1.0, text=" ".join(["word"] * 3), lines=["x"])
+        assert all(r.status == "pass" for r in eval_dcmp_cap_03([cue], profile="adult"))
+
+    def test_lower_educational_tier_is_stricter_than_adult(self):
+        # 180 wpm: fine for adult (225 cap), a violation at the 130 wpm tier.
+        cue = CaptionCue(index=1, start=0.0, end=1.0, text=" ".join(["word"] * 3), lines=["x"])
+        adult = eval_dcmp_cap_03([cue], profile="adult")
+        lower = eval_dcmp_cap_03([cue], profile="lower")
+        assert all(r.status == "pass" for r in adult)
+        assert any(r.status == "fail" for r in lower)
+
+    def test_unknown_profile_falls_back_to_the_adult_cap(self):
+        cue = CaptionCue(index=1, start=0.0, end=1.0, text=" ".join(["word"] * 3), lines=["x"])
+        assert all(r.status == "pass" for r in eval_dcmp_cap_03([cue], profile="nonsense"))

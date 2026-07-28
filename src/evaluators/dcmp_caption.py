@@ -60,15 +60,30 @@ def eval_dcmp_cap_02(cues: list[CaptionCue]) -> list[RuleResult]:
     return results
 
 
+#: DCMP reading-speed tiers. The educational tiers are real limits from the
+#: Captioning Key, but nothing in this project ships content graded to them, so
+#: only "adult" is ever selected in practice. They are mapped rather than
+#: documented-and-ignored: the previous version took a `profile` argument,
+#: promised the tiers in its docstring, and then unconditionally used 225, which
+#: is a claim the code did not honour.
+DCMP_WPM_TIERS = {
+    "lower": 130.0,
+    "middle": 140.0,
+    "upper": 160.0,
+    "adult": DCMP_MAX_WPM,
+}
+
+
 def eval_dcmp_cap_03(cues: list[CaptionCue], profile: str = "adult") -> list[RuleResult]:
     """
-    DCMP-CAP-03: Reading speed within tier limits.
-    Tiers: lower-level educational ≤130wpm, middle ≤140wpm, upper ≤160wpm.
-    Adult near-verbatim: no caption exceeds 225wpm.
-    Profile 'adult' uses the 225wpm cap.
+    DCMP-CAP-03: Reading speed within the tier limit for the content profile.
+
+    Tiers: lower-level educational 130 wpm, middle 140, upper 160, adult
+    near-verbatim 225. An unrecognised profile falls back to the adult cap
+    rather than silently passing everything.
     """
     rule = get_rule("DCMP-CAP-03")
-    wpm_cap = DCMP_MAX_WPM  # 225 for adult
+    wpm_cap = DCMP_WPM_TIERS.get(profile, DCMP_MAX_WPM)
     results = []
     for cue in cues:
         if cue.duration <= 0:

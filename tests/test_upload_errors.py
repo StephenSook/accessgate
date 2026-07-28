@@ -79,3 +79,17 @@ class TestValidCaptionStillWorks:
         r = client.post("/check-captions", files={"captions": _srt()})
         report_id = r.json()["report_id"]
         assert client.get(f"/report/{report_id}").status_code == 200
+
+
+class TestCachesAreBounded:
+    """Unbounded caches grow for the life of an instance across a judging window."""
+
+    def test_report_cache_evicts_oldest_and_keeps_recent(self):
+        from src.app import _report_cache, _remember, _CACHE_LIMIT
+        _report_cache.clear()
+        for i in range(_CACHE_LIMIT + 10):
+            _remember(_report_cache, f"r{i}", {"report_id": f"r{i}"})
+        assert len(_report_cache) == _CACHE_LIMIT
+        assert "r0" not in _report_cache          # oldest evicted
+        assert f"r{_CACHE_LIMIT + 9}" in _report_cache  # newest retained
+        _report_cache.clear()

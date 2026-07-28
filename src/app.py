@@ -20,6 +20,7 @@ import threading
 import uuid
 from pathlib import Path
 from contextlib import asynccontextmanager
+from collections import OrderedDict
 from typing import Optional
 
 from fastapi import FastAPI, File, Form, UploadFile, WebSocket, HTTPException, Body
@@ -80,8 +81,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory report cache (keyed by report_id)
-_report_cache: dict[str, dict] = {}
+# In-memory caches, bounded.
+#
+# These are plain process memory with no eviction policy in the original design,
+# so across an unattended judging window every uploaded report and every review
+# session accumulated for the life of the instance, and a review session's op log
+# only ever grows. Free-tier spin-down "solved" that by throwing everything away,
+# which is the wrong cure: it means a judge's report_id stops resolving mid
+# session and their export links 404. Bounded FIFO keeps recent work available
+# and puts a ceiling on growth.
+_CACHE_LIMIT = 50
+
+
+def _remember(cache: "OrderedDict", key: str, value) -> None:
+    """Insert into a bounded FIFO cache, evicting the oldest entries."""
+    cache[key] = value
+    cache.move_to_end(key)
+    while len(cache) > _CACHE_LIMIT:
+        cache.popitem(last=False)
+
+
+_report_cache: "OrderedDict[str, dict]" = OrderedDict()
 
 
 
@@ -340,7 +360,7 @@ def check_conformance(
         report_id = str(uuid.uuid4())
         report_dict = json.loads(report.model_dump_json())
         report_dict["report_id"] = report_id
-        _report_cache[report_id] = report_dict
+        _remember(_report_cache, report_id, report_dict)
 
         return JSONResponse(content=report_dict)
 
@@ -393,7 +413,7 @@ def check_captions(
         d["report_id"] = report_id
         # Cache it like /check does. Without this the id handed to the client
         # never resolves, so /report/{id} and the CSV/VTT export links 404.
-        _report_cache[report_id] = d
+        _remember(_report_cache, report_id, d)
         return JSONResponse(content=d)
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
@@ -475,7 +495,7 @@ def request_fix(
             shutil.copyfileobj(film.file, f)
 
         gap = GapRegion(start=gap_start, end=gap_end)
-        result = generate_fix(gap=gap, film_path=str(film_path))
+        result = generate_fix(gap=gap, film_path=str(film_path), work_dir=tmp_dir)
         result_dict = json.loads(result.model_dump_json())
 
         # watsonx.ai Lite showcase — runs in parallel with local Granite path
@@ -591,7 +611,7 @@ from src.review_session import ReviewSession, ReviewOp, compile_nl, GroundingErr
 from src.models import ConformanceReport
 
 # In-memory review sessions (keyed by session_id), like the report cache.
-_review_sessions: dict[str, ReviewSession] = {}
+_review_sessions: "OrderedDict[str, ReviewSession]" = OrderedDict()
 
 
 def _load_report_for_review(report_id: str) -> ConformanceReport:
@@ -627,7 +647,7 @@ def review_create(report_id: str = Body(..., embed=True)) -> JSONResponse:
     """Open an event-sourced review session over a report (or 'demo')."""
     report = _load_report_for_review(report_id)
     s = ReviewSession(report, report_id=report_id)
-    _review_sessions[s.state.session_id] = s
+    _remember(_review_sessions, s.state.session_id, s)
     return JSONResponse(content=_session_view(s))
 
 

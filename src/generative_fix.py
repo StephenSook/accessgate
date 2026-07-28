@@ -74,9 +74,17 @@ def _guardian_provenance(source: Optional[str], latency_ms: int, ran: bool) -> P
 # Keyframe extraction
 # ---------------------------------------------------------------------------
 
-def extract_keyframes(film_path: str, gap: GapRegion, n_frames: int = 3) -> list[str]:
+def extract_keyframes(
+    film_path: str,
+    gap: GapRegion,
+    n_frames: int = 3,
+    work_dir: "str | Path | None" = None,
+) -> list[str]:
     """
     Extract n evenly-spaced keyframe JPEGs from the gap window using ffmpeg.
+
+    Pass work_dir (the request's temp directory) so the frames are cleaned up
+    with it. Without it they land in the system temp dir and are never removed.
     Returns list of temp file paths.
     """
     paths = []
@@ -86,8 +94,17 @@ def extract_keyframes(film_path: str, gap: GapRegion, n_frames: int = 3) -> list
 
     offsets = [gap.start + (duration / (n_frames + 1)) * (i + 1) for i in range(n_frames)]
 
+    # Keyframes go in the CALLER's temp dir when one is given, so they are
+    # removed with the rest of the request's scratch space. They used to be
+    # created with delete=False in the system temp dir and never unlinked by
+    # anything, and because the file is created BEFORE the ffmpeg call they
+    # leaked even when ffmpeg was absent, which is the current state of the
+    # hosted instance. Three files per /fix call, forever, on a box with no
+    # cleanup.
     for i, offset in enumerate(offsets):
-        tmp = tempfile.NamedTemporaryFile(suffix=f"_frame{i}.jpg", delete=False)
+        tmp = tempfile.NamedTemporaryFile(
+            suffix=f"_frame{i}.jpg", delete=False, dir=str(work_dir) if work_dir else None
+        )
         tmp.close()
         cmd = [
             "ffmpeg", "-y", "-ss", str(offset),
@@ -324,6 +341,7 @@ def generate_fix(
     speech_regions: Optional[list[SpeechRegion]] = None,
     vision_model: str = VISION_MODEL,
     guardian_model: str = GUARDIAN_MODEL,
+    work_dir: "str | Path | None" = None,
 ) -> FixResult:
     """
     Full gated fix loop:
@@ -336,8 +354,8 @@ def generate_fix(
     if speech_regions is None:
         speech_regions = []
 
-    # Step 1: keyframes
-    keyframes = extract_keyframes(film_path, gap)
+    # Step 1: keyframes (into the request's temp dir when given, so they die with it)
+    keyframes = extract_keyframes(film_path, gap, work_dir=work_dir)
 
     # Step 2: draft (per-attempt latency + explicit fallback come from the drafter)
     draft, draft_source, draft_ms, is_fallback = draft_description(keyframes, gap, model=vision_model)
