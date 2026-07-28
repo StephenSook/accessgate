@@ -73,14 +73,51 @@ def eval_fcc_acc_01(
             human_review_required=True,
         )
 
-    # Entire band below 98%
+    # Entire band below 98%.
+    #
+    # THE ASR GUARD. The rule this module promises, in its own docstring and on
+    # every judge-facing surface, is "never auto-fail on ASR evidence alone".
+    # The confidence band alone does not deliver that: a reference transcript
+    # produced by speech recognition can land a whole band under 98% and, before
+    # this guard existed, that returned status="fail". That is precisely the
+    # auto-fail the promise rules out, and it is why the shipped demo report
+    # carried a red FCC-ACC-01 while the demo video says the file is "flagged
+    # for a human, not thrown out".
+    #
+    # Koenecke et al., PNAS 2020 measured word error rate 0.35 for Black
+    # speakers against 0.19 for white speakers. Failing a caption file on that
+    # evidence would push the error onto exactly the audiences this tool exists
+    # to serve. So when the reference is ASR-derived we flag for human review,
+    # however low the band goes. A human-gold reference carries no such
+    # disparity and can still fail.
+    band_note = (
+        f"Note: {len(ner_result.low_confidence_regions)} low-confidence region(s) flagged for human review."
+    )
+    if ner_result.asr_derived:
+        return RuleResult(
+            rule_id=rule.id,
+            status="flag",
+            message=(
+                f"NER score {score_pct}% (band {band_low_pct}%-{band_high_pct}%) "
+                f"is below the 98% threshold, measured against an ASR-derived reference. "
+                f"Flagged for human review, never auto-failed: ASR carries measured "
+                f"demographic disparity (Koenecke et al., PNAS 2020). "
+                f"Re-run against a human-verified reference transcript for a pass/fail verdict. "
+                f"{band_note}"
+            ),
+            citation=rule.source,
+            sarif_level=rule.sarif_level,
+            confidence=ner_result.ner_score,
+            human_review_required=True,
+        )
+
     return RuleResult(
         rule_id=rule.id,
         status="fail",
         message=(
             f"NER score {score_pct}% (band {band_low_pct}%-{band_high_pct}%) "
-            f"is below the 98% threshold. "
-            f"Note: {len(ner_result.low_confidence_regions)} low-confidence region(s) flagged for human review."
+            f"is below the 98% threshold, measured against a human-verified reference. "
+            f"{band_note}"
         ),
         citation=rule.source,
         sarif_level=rule.sarif_level,

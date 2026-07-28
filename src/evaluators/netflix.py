@@ -130,10 +130,19 @@ def eval_nflx_dur_01(
         # Check gap to next cue
         if i < len(sorted_cues) - 1:
             gap = sorted_cues[i + 1].start - cue.end
-            if 0 < gap < min_gap_s:
-                issues.append(
-                    f"gap to next event {gap:.3f}s below 2-frame minimum ({min_gap_s:.3f}s)"
-                )
+            # A NEGATIVE gap means the two events overlap, which is a worse
+            # violation than a short gap, not an exempt one. The old `0 < gap`
+            # lower bound let every overlapping pair pass silently.
+            if gap < min_gap_s:
+                if gap < 0:
+                    issues.append(
+                        f"overlaps the next event by {abs(gap):.3f}s "
+                        f"(events must be separated by at least {min_gap_s:.3f}s)"
+                    )
+                else:
+                    issues.append(
+                        f"gap to next event {gap:.3f}s below 2-frame minimum ({min_gap_s:.3f}s)"
+                    )
 
         if issues:
             results.append(RuleResult(

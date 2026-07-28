@@ -90,9 +90,26 @@ class TestFCCAcc01:
         assert result.status == "flag"
         assert result.human_review_required is True
 
-    def test_fail_violation_10_when_entire_band_below(self):
-        """Violation 10: entire band below 98% — fail, but note human review."""
+    def test_asr_derived_band_below_threshold_flags_and_never_fails(self):
+        """Violation 10, ASR reference: flag for human review, NEVER auto-fail.
+
+        This previously asserted status == "fail", which encoded the exact
+        behaviour the module docstring, the README, the /judges page and the
+        demo video all promise cannot happen. An ASR-derived reference carries
+        measured demographic disparity (Koenecke et al., PNAS 2020), so it is
+        never sufficient evidence on its own to fail a caption file.
+        """
         ner = make_ner(0.93, 0.91, 0.95)
+        assert ner.asr_derived is True
+        result = eval_fcc_acc_01(ner)
+        assert result.status == "flag"
+        assert result.human_review_required is True
+        assert "never auto-failed" in result.message
+
+    def test_human_verified_reference_can_still_fail(self):
+        """The guard is about ASR evidence, not about never failing at all."""
+        ner = make_ner(0.93, 0.91, 0.95)
+        ner = ner.model_copy(update={"asr_derived": False})
         result = eval_fcc_acc_01(ner)
         assert result.status == "fail"
         assert result.human_review_required is True
@@ -625,10 +642,16 @@ class TestDegradationRecipeAllViolationsFire:
         assert any(r.status == "fail" for r in results)
 
     def test_violation10_ner_below_98(self):
-        """Violation 10: paraphrased caption lowers NER below 98% band."""
+        """Violation 10: paraphrased caption lowers NER below the 98% band.
+
+        The demo reference is ASR-derived, so the correct verdict is a
+        human-review flag rather than a fail. The violation is still detected
+        and still surfaced; it is the auto-fail that is withheld.
+        """
         ner = make_ner(0.94, 0.91, 0.96)
         result = eval_fcc_acc_01(ner)
-        assert result.status == "fail"
+        assert result.status == "flag"
+        assert result.human_review_required is True
 
 
 # ---------------------------------------------------------------------------
@@ -675,4 +698,52 @@ class TestFCCPlacementOffFrame:
         # A bare line number (no %) must not be treated as an off-frame percentage.
         cues = [CaptionCue(index=1, start=1.0, end=3.0, text="hi", lines=["hi"], line_setting="12")]
         results = eval_fcc_plc_01(cues)
+        assert all(r.status == "pass" for r in results)
+
+
+# ---------------------------------------------------------------------------
+# Regressions for defects found in the 2026-07-27 full-repo audit.
+# Each of these passed silently before the fix, which is why they are here.
+# ---------------------------------------------------------------------------
+
+class TestNetflixOverlappingEventsAreRejected:
+    """A negative gap means the events overlap, which is worse than a short gap.
+
+    The old bound was `0 < gap < min_gap`, so every overlapping pair skipped the
+    check entirely and NFLX-DUR-01 reported a clean pass.
+    """
+
+    def test_overlapping_cues_fail(self):
+        cues = [
+            CaptionCue(index=1, start=0.0, end=2.0, text="one", lines=["one"]),
+            CaptionCue(index=2, start=1.5, end=3.0, text="two", lines=["two"]),
+        ]
+        results = eval_nflx_dur_01(cues)
+        assert any(r.status == "fail" and "overlaps" in r.message for r in results)
+
+    def test_adequately_spaced_cues_pass(self):
+        cues = [
+            CaptionCue(index=1, start=0.0, end=2.0, text="one", lines=["one"]),
+            CaptionCue(index=2, start=3.0, end=5.0, text="two", lines=["two"]),
+        ]
+        results = eval_nflx_dur_01(cues)
+        assert all(r.status == "pass" for r in results)
+
+
+class TestDcmpDesc04DoesNotClaimUnmeasuredPasses:
+    """"All AD descriptions fit" must not be asserted when nothing was measured."""
+
+    def test_skips_when_no_cue_falls_inside_a_gap(self):
+        # The cue straddles the gap boundary, so gap-fit is not evaluable.
+        ad = [CaptionCue(index=1, start=9.0, end=13.0, text="a man walks", lines=["a man walks"])]
+        gaps = [GapRegion(start=10.0, end=20.0)]
+        results = eval_dcmp_desc_04(ad, gaps)
+        assert len(results) == 1
+        assert results[0].status == "skip"
+        assert results[0].human_review_required is True
+
+    def test_still_passes_when_a_cue_is_actually_measured_and_fits(self):
+        ad = [CaptionCue(index=1, start=11.0, end=13.0, text="a man walks", lines=["a man walks"])]
+        gaps = [GapRegion(start=10.0, end=20.0)]
+        results = eval_dcmp_desc_04(ad, gaps)
         assert all(r.status == "pass" for r in results)

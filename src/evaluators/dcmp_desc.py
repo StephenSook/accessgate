@@ -171,6 +171,7 @@ def eval_dcmp_desc_04(
             sarif_level=rule.sarif_level,
         )]
 
+    evaluated = 0
     for cue in ad_cues:
         # Find the gap that FULLY contains this AD cue. A cue that only partly
         # overlaps a gap extends into speech and is caught by DCMP-DESC-05; it
@@ -184,6 +185,7 @@ def eval_dcmp_desc_04(
 
         if containing_gap is None:
             continue  # DCMP-DESC-05 handles overlap-with-speech
+        evaluated += 1
 
         max_words = containing_gap.max_words(wpm=reading_wpm)
         actual_words = cue.word_count
@@ -201,6 +203,22 @@ def eval_dcmp_desc_04(
             ))
 
     if not results:
+        # "All descriptions fit" must not be claimed when nothing was measured.
+        # If no AD cue falls entirely inside a detected gap, every cue hit the
+        # `continue` above and zero fit checks ran, so a pass here would assert
+        # a check that never happened. Skip honestly instead, the same way the
+        # accuracy and sync rules do when their inputs are missing.
+        if ad_cues and evaluated == 0:
+            return [RuleResult(
+                rule_id=rule.id, status="skip",
+                message=(
+                    f"No AD cue falls entirely within a detected dialogue-free gap "
+                    f"({len(ad_cues)} cue(s), {len(gaps)} gap(s)), so gap-fit was not "
+                    f"evaluated. Overlap with dialogue is reported by DCMP-DESC-05."
+                ),
+                citation=rule.source, sarif_level=rule.sarif_level,
+                human_review_required=True,
+            )]
         results.append(RuleResult(
             rule_id=rule.id, status="pass",
             message="All AD descriptions fit within their dialogue-free gaps.",

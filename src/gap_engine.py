@@ -47,8 +47,14 @@ def detect_speech_regions(audio_path: str | Path) -> list[SpeechRegion]:
     Run Silero VAD on a 16kHz mono WAV file and return speech regions.
     Falls back to energy-based RMS detection if Silero fails.
     """
-    import torch
     try:
+        # `import torch` belongs INSIDE this try. It used to sit above it, which
+        # made the documented RMS fallback unreachable on exactly the deployment
+        # it was written for: torch is deliberately excluded from
+        # requirements-deploy.txt, so the ImportError fired before the try and
+        # the hosted instance returned no speech regions at all instead of
+        # degrading to the pure-stdlib detector below.
+        import torch  # noqa: F401  (required by silero_vad, not used directly)
         from silero_vad import load_silero_vad, get_speech_timestamps, read_audio
         model = load_silero_vad()
         wav = read_audio(str(audio_path), sampling_rate=16000)
@@ -62,7 +68,11 @@ def detect_speech_regions(audio_path: str | Path) -> list[SpeechRegion]:
         )
         return [SpeechRegion(start=r["start"], end=r["end"]) for r in raw]
     except Exception as e:
-        # Fallback: energy-based RMS silence detection
+        # Fallback: energy-based RMS silence detection. Log it: a silent switch
+        # here is indistinguishable downstream from a genuinely quiet film.
+        logger.warning(
+            "Silero VAD unavailable (%s). Falling back to RMS energy detection.", e
+        )
         return _rms_speech_regions(str(audio_path))
 
 
@@ -117,8 +127,16 @@ def _rms_speech_regions(audio_path: str) -> list[SpeechRegion]:
                     start=start,
                     end=len(speech_frames) * frame_ms / 1000.0
                 ))
-    except Exception:
-        pass
+    except Exception as e:
+        # Do NOT swallow this. Returning a partial or empty region list here is
+        # the single most dangerous failure in the engine: compute_gaps treats
+        # "no speech regions" as "the whole film is one dialogue-free gap", so a
+        # broken wave read becomes a confident, plausible, completely wrong
+        # report saying the entire film needs audio description. Raising instead
+        # lets run_engine record that VAD was unavailable and skip the dependent
+        # rules honestly, which is the behaviour the report already models.
+        logger.error("RMS speech detection failed on %s: %s", audio_path, e)
+        raise RuntimeError(f"Speech detection failed for {audio_path}: {e}") from e
     return regions
 
 
@@ -142,7 +160,20 @@ def compute_gaps(
             return [GapRegion(start=0.0, end=total_duration)]
         return []
 
-    sorted_regions = sorted(speech_regions, key=lambda r: r.start)
+    # Merge overlapping and nested speech regions before taking the complement.
+    # Sorting alone is not enough: a nested region such as [0,10] followed by
+    # [2,3] leaves the pairwise scan comparing 3 against the NEXT region's start,
+    # inventing a gap from 3 onward while speech actually runs to 10. That gap
+    # would then be offered as a place to put an audio description, i.e. on top
+    # of dialogue, which is the exact defect DCMP-DESC-05 exists to catch.
+    sorted_regions: list[SpeechRegion] = []
+    for region in sorted(speech_regions, key=lambda r: (r.start, r.end)):
+        if sorted_regions and region.start <= sorted_regions[-1].end:
+            prev = sorted_regions[-1]
+            if region.end > prev.end:
+                sorted_regions[-1] = SpeechRegion(start=prev.start, end=region.end)
+        else:
+            sorted_regions.append(region)
 
     # Build candidate gap intervals
     candidates: list[tuple[float, float]] = []

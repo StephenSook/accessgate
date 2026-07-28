@@ -188,10 +188,20 @@ class ReviewSession:
         The undo is itself appended to the log (append-only, fully auditable):
         the audit trail shows the action AND its reversal.
         """
+        # Ops that a previous undo already inverted. Without this, undo walks
+        # back to the same most-recent op every time: the second undo re-applies
+        # the first undo's inverse instead of stepping to the operation before
+        # it, so a user can press undo repeatedly and never get past one step.
+        already_undone = {
+            op.inverse_of for op in self.state.log
+            if op.source == "undo" and op.inverse_of is not None
+        }
         for op in reversed(self.state.log):
             if op.source == "undo" or op.kind == "restore":
                 continue
             if op.restore_state is None:
+                continue
+            if op.op_id in already_undone:
                 continue
             inverse = ReviewOp(kind="restore", target=op.target, source="undo",
                                inverse_of=op.op_id, restore_state=op.restore_state)
