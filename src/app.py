@@ -208,6 +208,48 @@ def _engine_http_error(exc: Exception, what: str) -> HTTPException:
 
 
 # ---------------------------------------------------------------------------
+# API index
+# ---------------------------------------------------------------------------
+
+@app.get("/")
+def api_index() -> JSONResponse:
+    """Human-readable index of the API.
+
+    The README lists this host as "REST API", so it is a link a judge clicks.
+    FastAPI has no root route by default, so that click used to return a bare
+    {"detail":"Not Found"}, which reads as a broken deployment rather than as
+    an API with no landing page. Point them at the things worth opening.
+    """
+    return JSONResponse(content={
+        "service": "AccessGate",
+        "what": "Film accessibility conformance pre-check: caption and audio-description "
+                "sidecars scored against 23 coded rules from FCC 47 CFR 79.1(j)(2), "
+                "WCAG 2.2, the DCMP Captioning and Description Keys, and the Netflix "
+                "Timed Text Style Guide.",
+        "start_here": {
+            "web_app": "https://accessgate-web.vercel.app",
+            "transparency": "/judges",
+            "demo_report": "/demo",
+            "source": "https://github.com/StephenSook/accessgate",
+        },
+        "endpoints": {
+            "GET  /health": "liveness",
+            "GET  /demo": "the precomputed conformance report for the demo film",
+            "GET  /demo-summary": "plain-English executive summary via watsonx Granite",
+            "POST /demo-fix": "the gated generative fix on a demo gap (form: gap_start, gap_end)",
+            "GET  /judges": "what is wired, what is not, and which model served what",
+            "POST /check": "full check (multipart: film, captions, optional ad)",
+            "POST /check-captions": "caption-only check (multipart: captions)",
+            "POST /gaps": "dialogue-free gap detection (multipart: film)",
+            "GET  /report/{id}": "retrieve a cached report",
+            "POST /review/session|op|nl|undo": "event-sourced conformance review",
+            "GET  /export/{id}/findings.csv|markers.vtt": "editor-native exports",
+        },
+        "docs": "https://github.com/StephenSook/accessgate#readme",
+    })
+
+
+# ---------------------------------------------------------------------------
 # Health check
 # ---------------------------------------------------------------------------
 

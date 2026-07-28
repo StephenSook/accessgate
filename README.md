@@ -6,8 +6,8 @@
 [![Live demo](https://img.shields.io/badge/live%20demo-online-3fb950.svg)](https://accessgate-web.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
-[![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://lablab.ai)
-[![297 tests](https://img.shields.io/badge/tests-297%20passing-3fb950.svg)](tests/)
+[![IBM AI Builders Challenge July 2026](https://img.shields.io/badge/IBM%20AI%20Builders-July%202026-054ada.svg)](https://aibuilderschallenge-bobhub.bemyapp.com/)
+[![298 tests](https://img.shields.io/badge/tests-298%20passing-3fb950.svg)](tests/)
 
 Built for the **IBM AI Builders Challenge July 2026**, **Reimagine Creative Industries with AI** track.
 
@@ -26,7 +26,7 @@ Fastest path to check each thing that matters. No account, no keys.
 | **Try it, zero setup** | [Live web app](https://accessgate-web.vercel.app), click **LOAD DEMO** (no upload, no keys) |
 | **Claims are wired, not aspirational** | [IBM Stack](#ibm-stack-what-is-actually-wired), then grep any row in the shipped code |
 | **Honesty, live** | [`/judges`](https://accessgate-api.onrender.com/judges) transparency endpoint |
-| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (297 passing), `python -m src.engine` |
+| **It reproduces on your machine** | [Build and Run](#build-and-run): `git clone`, `pytest` (298 passing), `python -m src.engine` |
 | **Results measured, not asserted** | [Evaluation](#evaluation-measured-not-asserted) |
 
 ---
@@ -118,7 +118,7 @@ flowchart TB
         direction LR
         GS["Granite Speech 3.3-2b\nreference transcript"]
         NER["NER Scorer\n(N-E-R)/N + confidence band"]
-        CLS["Error-Type Classifier\nmacro-F1 0.94"]
+        CLS["Error-Type Classifier\nmacro-F1 0.952"]
         GS --> NER
         CLS --> NER
     end
@@ -210,7 +210,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 | Rule engine on **real machine captions** | **55 real defects / 6 rules** | faster-whisper on the real NOTLD audio, no injected defects (`data/demo/notld_real_autocaption.srt`) |
 | SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
-| Tests passing | **297** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
+| Tests passing | **298** | `pytest` on a fresh clone, Python 3.11 and 3.12 |
 | NER caption accuracy, demo file | **~78%** | Reproduces to within about a point, see the note below |
 
 **Why the NER figure is quoted approximately.** The NER score is measured against a
@@ -229,7 +229,7 @@ alone.
 
 ## How IBM Bob Was Used
 
-IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 297-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
+IBM Bob was the primary development tool. It authored the conformance engine (~4,900 lines across `src/`, including the 23 rule evaluators, the NER scorer, the VAD gap engine, and the SARIF/OSCAL exporters), the 298-test suite (~2,000 lines in `tests/`), and the React frontend (~2,400 lines). Deployment, the Granite Speech wiring, and the UI and honesty refinements were finished with other tooling after Bob credits ran out, so the honest claim is Bob as primary, not exclusive.
 
 The most distinctive use is a self-referential loop: AccessGate's own MCP server (exposing `check_conformance`, `detect_gaps`, and `score_captions`) was registered in Bob and consumed by Bob during development, so Bob checked the tool's conformance output using the tool itself. The engine became its own test harness, inside the primary development tool.
 
@@ -292,7 +292,7 @@ accessgate/
 │   ├── caption_parser.py      # SRT/VTT parser
 │   ├── gap_engine.py          # Silero VAD gap detector
 │   ├── ner_scorer.py          # NER-style caption scorer
-│   ├── classifier.py          # Error-type classifier (macro-F1 0.94)
+│   ├── classifier.py          # Error-type classifier (macro-F1 0.952)
 │   ├── rag.py                 # Granite Embedding RAG layer
 │   ├── generative_fix.py      # Granite Vision -> DCMP -> Guardian fix loop
 │   ├── app.py                 # FastAPI REST server + /demo endpoint
@@ -312,7 +312,7 @@ accessgate/
 ├── mobile/                    # Expo / React Native (iOS + Android) client
 ├── security/                  # SARIF + OSCAL /review audit outputs
 ├── bob_sessions/              # IBM Bob usage screenshot (Bobalytics)
-├── tests/                     # 297 passing tests
+├── tests/                     # 298 passing tests
 ├── render.yaml                # Render deployment config (FastAPI backend)
 ├── AGENTS.md                  # Project policy spine (read every session)
 └── .bob/                      # Custom mode, conformance skill, MCP config

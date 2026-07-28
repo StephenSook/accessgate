@@ -93,3 +93,18 @@ class TestCachesAreBounded:
         assert "r0" not in _report_cache          # oldest evicted
         assert f"r{_CACHE_LIMIT + 9}" in _report_cache  # newest retained
         _report_cache.clear()
+
+
+class TestApiRootIsNotA404:
+    """The README lists the API host as a link; it must not answer with a 404."""
+
+    def test_root_returns_an_index(self):
+        from fastapi.testclient import TestClient
+        from src.app import app
+        r = TestClient(app).get("/")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["service"] == "AccessGate"
+        # Point a judge at the things worth opening.
+        assert body["start_here"]["transparency"] == "/judges"
+        assert "GET  /judges" in body["endpoints"]
