@@ -1,13 +1,32 @@
 name: Render keepalive
 
 # Render free tier spins the service down after 15 min idle; the next request
-# then eats a ~50 s cold start. This ping keeps the demo warm for judges.
-# Offset minute list on purpose: */N and :00 schedules get deprioritized by
-# GitHub Actions and can fire an hour late.
+# then eats a cold start (measured: 31.6 s to /health on 2026-07-27).
+#
+# READ THIS BEFORE TRUSTING THIS WORKFLOW. It is best-effort and it does NOT
+# reliably keep the instance warm. GitHub deprioritises scheduled workflows
+# heavily: over an 18-run sample the intended 10-minute cadence actually ran at
+# a median gap of 71 minutes, a maximum of 221, and 17 of 17 gaps exceeded the
+# 15-minute spin-down threshold. Every one of those runs reported success,
+# because a run succeeding says nothing about whether it ran ON TIME. Judge this
+# workflow by the age of its newest run against the intended cadence, never by
+# the colour of its last result.
+#
+# If the demo genuinely must stay warm for a judging window, use an external
+# uptime pinger or a paid instance. This file reduces the odds of a cold start,
+# it does not eliminate them.
+#
+# Offset minute list on purpose: */N and :00 schedules get deprioritised further.
 on:
   schedule:
-    - cron: "4,14,24,34,44,54 * * * *"
+    - cron: "3,13,23,33,43,53 * * * *"
+    - cron: "8,18,28,38,48,58 * * * *"
   workflow_dispatch:
+
+concurrency:
+  # Two schedules can land close together; no value in overlapping pings.
+  group: render-keepalive
+  cancel-in-progress: false
 
 jobs:
   ping:
@@ -25,10 +44,17 @@ jobs:
           url="https://accessgate-api.onrender.com/health"
           code=""
           for attempt in 1 2 3; do
+            start=$(date +%s)
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 180 "$url") || true
-            echo "attempt $attempt: HTTP ${code:-none}"
+            elapsed=$(( $(date +%s) - start ))
+            echo "attempt $attempt: HTTP ${code:-none} in ${elapsed}s"
             if [ "$code" = "200" ]; then
-              echo "Backend healthy on attempt $attempt."
+              # Surface a slow wake even on success: a 30 s+ answer means the
+              # instance had spun down, i.e. this workflow is not keeping up.
+              if [ "$elapsed" -ge 20 ]; then
+                echo "::warning::Backend answered in ${elapsed}s, so it had spun down. The keepalive schedule is not holding it warm."
+              fi
+              echo "Backend healthy on attempt $attempt (${elapsed}s)."
               exit 0
             fi
             [ "$attempt" -lt 3 ] && sleep 30
