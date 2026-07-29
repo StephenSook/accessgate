@@ -28,7 +28,7 @@ Base Granite Speech 3.3-2b does not emit timestamps. Use faster-whisper with wor
 - `rules/`: the rule registry (rules_registry.yaml) and parsed standards
 - `standards/`: Docling-parsed source documents and the Granite Embedding numpy cosine index
 - `security/`: SARIF and OSCAL POA&M outputs from /review audits
-- `bob_sessions/`: exported Bob task histories and Bobalytics screenshots
+- `bob_sessions/`: exported Bob usage aggregates and the Bob admin subscription screenshot
 - `data/`: demo assets and NOTICE-tracked media; hand-labeled training data
 - `frontend/`: Vite + Carbon single-page app
 
@@ -52,7 +52,7 @@ Each must survive an API-deletion test: with every hosted AI API removed, the en
 
 ## IBM Bob usage to document as evidence
 
-Custom mode in .bob/custom_modes.yaml, Skill in .bob/skills/conformance/SKILL.md, two /review audits (SARIF plus OSCAL) in security/, the Bobalytics usage screenshot in bob_sessions/, the engine build trace in the git history (2026-07-13 19:53 to 20:40 ET, see bob_sessions/README.md), and the self-referential MCP wiring (the product's own MCP server exposing check_conformance, detect_gaps, score_captions, registered to Bob in .bob/mcp.json with all three pre-authorised). Bob's session store is LOCAL at ~/.bob/db/bob.db; scripts/export_bob_evidence.py reads it read-only and writes the aggregate to bob_sessions/bob-usage-evidence.json (645 messages, 441 of them tool results, $77.02 tracked). Message BODIES stay out of the repo on purpose, they are the author's planning prompts, not engineering artifacts.
+Custom mode in .bob/custom_modes.yaml, Skill in .bob/skills/conformance/SKILL.md, two /review audits (SARIF plus OSCAL) in security/, the Bob admin subscription screenshot in bob_sessions/, the engine build trace in the git history (2026-07-13 19:53 to 20:40 ET, see bob_sessions/README.md), and the self-referential MCP wiring (the product's own MCP server exposing check_conformance, detect_gaps, score_captions, registered to Bob in .bob/mcp.json with all three pre-authorised). Bob's session store is LOCAL at ~/.bob/db/bob.db; scripts/export_bob_evidence.py reads it read-only and writes the aggregate to bob_sessions/bob-usage-evidence.json (645 messages, 441 of them tool results, $77.02 tracked). Message BODIES stay out of the repo on purpose, they are the author's planning prompts, not engineering artifacts.
 
 ## SARIF timecode rule
 

@@ -378,7 +378,7 @@ def _bob_usage() -> dict:
             {"what": "/review audit 1, SARIF, tool.driver.name is 'IBM Bob'", "where": "security/review-audit-1.sarif"},
             {"what": "/review audit 2, OSCAL POA&M", "where": "security/review-audit-2.oscal.json"},
             {"what": "Self-referential MCP config, three tools pre-authorised", "where": ".bob/mcp.json"},
-            {"what": "Bobalytics usage screenshot", "where": "bob_sessions/bobalytics-usage.png"},
+            {"what": "Bob admin subscription screenshot", "where": "bob_sessions/bob-subscription-usage.png"},
         ],
         "session_usage": {
             "note": (
@@ -454,7 +454,7 @@ def judges_page() -> JSONResponse:
                 {"name": "IBM Bob DCMP/FCC/Netflix rule-authoring skill", "evidence": ".bob/skills/conformance/SKILL.md"},
                 {"name": "IBM Bob /review SARIF audit", "evidence": "security/review-audit-1.sarif"},
                 {"name": "IBM Bob /review OSCAL audit", "evidence": "security/review-audit-2.oscal.json"},
-                {"name": "Self-referential MCP wiring (AccessGate's own engine registered to Bob)", "evidence": ".bob/mcp.json + src/mcp_server/server.py", "note": "All three tools (check_conformance, detect_gaps, score_captions) are pre-authorised in alwaysAllow, so the tool that built the engine can call the engine. Both the config and the server are in this repo. The Bob-side session transcripts are NOT: Bob stores conversation history server-side, and bob_sessions/ holds only the Bobalytics usage screenshot. Treat this as a wired capability, not a logged event."}
+                {"name": "Self-referential MCP wiring (AccessGate's own engine registered to Bob)", "evidence": ".bob/mcp.json + src/mcp_server/server.py", "note": "All three tools (check_conformance, detect_gaps, score_captions) are pre-authorised in alwaysAllow, so the tool that built the engine can call the engine. Both the config and the server are in this repo. What is NOT here is a transcript of Bob invoking them: the message bodies are withheld on purpose (they are the author's planning prompts), and a search of the session data found every mention of those tool names to be Bob READING a spec file that documents them, never a call. Treat this as a wired capability, not a logged event."}
             ]
         },
         "bob_usage": _bob_usage(),

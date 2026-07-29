@@ -41,7 +41,7 @@ The same trace is served as structured JSON at `/judges` under `bob_usage`.
 | /review audit 1 (SARIF, `tool.driver.name` is `IBM Bob`) | `security/review-audit-1.sarif` | committed |
 | /review audit 2 (OSCAL POA&M) | `security/review-audit-2.oscal.json` | committed |
 | Self-referential MCP config | `.bob/mcp.json` | committed |
-| Bobalytics usage screenshot | `bob_sessions/bobalytics-usage.png` | committed |
+| Bob admin subscription screenshot | `bob_sessions/bob-subscription-usage.png` | committed |
 | Engine build trace | git history, 2026-07-13 19:53 to 20:40 ET | committed |
 | Session usage aggregate | `bob_sessions/bob-usage-evidence.json` | committed |
 | Bob session transcripts (message bodies) | withheld on purpose, see below | not in repo |
