@@ -1,0 +1,156 @@
+"""
+Judge-facing model claims must be a subset of the models the code actually calls.
+
+WHY THIS TEST EXISTS. Across 115 graded rival submissions in this challenge, the
+single most common serious defect is a vendor claim the code does not support, and
+it recurs because nothing mechanical prevents it. Real examples, all verified:
+
+  - a live settings page reading "AI Model: IBM Granite (WatsonX)" while the same
+    app's own health endpoint returned {"providers": ["gemini","groq","openrouter"]},
+    a contradiction reachable in two clicks
+  - a boot log printing "All Granite models loaded" while loading only Llama
+  - a README claiming Granite as the primary model while the code routed a region
+    to meta-llama
+  - a demo video naming "Granite 3.3" against a shipped granite-4-h-small
+
+This repository has not shipped that defect, but three times in one day it shipped
+the ADJACENT one: prose that drifted from the artifact (hero numbers that
+contradicted the report rendered beside them, a screenshot labelled after a
+product it did not come from, a test count credited to the wrong tool). Each was
+caught by a human audit, which does not scale and does not survive a tired night
+before a deadline.
+
+So the rule becomes a test. If a model id appears on a judge-facing surface, the
+code must actually contain it.
+
+DELIBERATELY ONE-DIRECTIONAL. Claimed must be a subset of invoked; the reverse is
+fine. Wiring a model and not advertising it is modesty, not drift.
+"""
+
+import re
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# A model identifier as this project writes them: a vendor-prefixed slug
+# (ibm/granite-3-8b-instruct, meta-llama/llama-3-2-11b-vision-instruct,
+# ibm-granite/granite-embedding-english-r2) or an Ollama tag (granite3.2-vision:2b).
+MODEL_ID = re.compile(
+    r"(?:ibm|ibm-granite|meta-llama)/[a-z0-9.:-]+"
+    r"|granite[0-9.]*[a-z-]*:[0-9a-z.]+"
+)
+
+# Where the engine actually holds a model id.
+CODE_DIRS = ["src"]
+
+# What a judge reads. src/app.py is included because it serves /judges, whose
+# tier list names model ids directly.
+JUDGE_FACING = [
+    "README.md",
+    "AGENTS.md",
+    "bob_sessions/README.md",
+    "src/app.py",
+]
+JUDGE_FACING_DIRS = ["frontend/src"]
+
+
+def _ids_in(paths: list[Path]) -> set[str]:
+    found: set[str] = set()
+    for p in paths:
+        try:
+            found |= set(MODEL_ID.findall(p.read_text(errors="replace")))
+        except (OSError, UnicodeDecodeError):
+            continue
+    return found
+
+
+def _code_paths() -> list[Path]:
+    out: list[Path] = []
+    for d in CODE_DIRS:
+        out += sorted((REPO_ROOT / d).rglob("*.py"))
+    return out
+
+
+def _judge_paths() -> list[Path]:
+    out = [REPO_ROOT / f for f in JUDGE_FACING if (REPO_ROOT / f).exists()]
+    for d in JUDGE_FACING_DIRS:
+        root = REPO_ROOT / d
+        if root.exists():
+            out += sorted(root.rglob("*.tsx")) + sorted(root.rglob("*.ts"))
+    return out
+
+
+def test_the_truth_set_is_not_empty():
+    """
+    Guard against a vacuous pass.
+
+    If the regex stopped matching, every later assertion would trivially hold and
+    this test would silently protect nothing. A proof that cannot fail is worse
+    than no proof, because it wears the credibility of one.
+    """
+    invoked = _ids_in(_code_paths())
+    assert len(invoked) >= 5, (
+        f"expected the engine to hold several model ids, found {invoked}. "
+        "Either the regex broke or the models moved; fix this before trusting "
+        "the assertions below."
+    )
+    assert any("granite" in m for m in invoked), invoked
+
+
+def test_every_claimed_model_id_exists_in_the_code():
+    """The load-bearing assertion."""
+    invoked = _ids_in(_code_paths())
+    claimed = _ids_in(_judge_paths())
+
+    # Prefix truncations of a real id are not separate claims: a document naming
+    # ibm-granite/granite-speech is describing granite-speech-3.3-2b.
+    unsupported = {
+        c for c in claimed
+        if c not in invoked and not any(m.startswith(c) for m in invoked)
+    }
+
+    assert unsupported == set(), (
+        "judge-facing surfaces name models the code does not call: "
+        f"{sorted(unsupported)}\n"
+        "Either wire the model or correct the claim. This is the defect that "
+        "graded rivals down hardest in this challenge."
+    )
+
+
+def test_no_vendor_we_do_not_call_is_named_as_our_runtime():
+    """
+    A softer net for vendor names with no model id attached.
+
+    The rival failure mode was a UI string, "Orchestration: LangChain", naming a
+    dependency the project never installed. Names alone are claims too.
+    """
+    forbidden = ["openai/", "gpt-4", "gpt-5", "anthropic/", "claude-3", "gemini-",
+                 "mistralai/", "groq/", "langchain"]
+    offenders: list[str] = []
+    for p in _judge_paths():
+        text = p.read_text(errors="replace").lower()
+        for name in forbidden:
+            if name in text:
+                offenders.append(f"{p.relative_to(REPO_ROOT)} names '{name}'")
+    assert offenders == [], (
+        "judge-facing surfaces name a runtime vendor this project does not use: "
+        f"{offenders}"
+    )
+
+
+def test_the_one_non_granite_runtime_model_is_labelled_as_such():
+    """
+    The hosted vision drafter is Llama, not Granite, and that must stay explicit.
+
+    Calling it Granite would be precisely the claim-drift three rivals shipped.
+    The honest label is what makes the rest of the Granite claims credible.
+    """
+    llama = "meta-llama/llama-3-2-11b-vision-instruct"
+    vision = (REPO_ROOT / "src" / "watsonx_vision.py").read_text()
+    assert llama in vision, "the hosted vision model id moved; update this test"
+
+    readme = (REPO_ROOT / "README.md").read_text()
+    assert "Llama 3.2" in readme, (
+        "README no longer identifies the hosted vision drafter as Llama. It must "
+        "never be described as Granite: Granite Vision is the LOCAL path only."
+    )
