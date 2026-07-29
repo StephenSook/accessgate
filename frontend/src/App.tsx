@@ -251,9 +251,9 @@ export default function App() {
           <section className="ag-hero" aria-label="What AccessGate does">
             <div className="ag-hero__eyebrow">Reimagine Creative Industries with AI · one loop</div>
             <p className="ag-hero__loop">
-              A film's caption file has a 44-character line, a sub-2-second cue, and a
-              {' '}240-wpm burst. Its audio-description file has a past-tense line and one that
-              {' '}overlaps dialogue. AccessGate scores all of it against <b>WCAG 2.2</b>,
+              A film's caption file has a 45-character line, a 0.8-second cue, and a
+              {' '}660-wpm burst. Its audio-description file has a line too long for its gap
+              {' '}and one that overlaps dialogue. AccessGate scores all of it against <b>WCAG 2.2</b>,
               {' '}<b>FCC 47 CFR 79.1</b>, <b>DCMP</b>, and <b>Netflix</b> standards, cites the exact
               {' '}rule text behind every flag, and never auto-fails a caption on ASR evidence alone.
               {' '}Click a failing gap and the gated fix runs: watsonx-hosted vision drafts a description
