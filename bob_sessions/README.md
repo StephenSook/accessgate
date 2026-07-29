@@ -89,27 +89,35 @@ Bob recording its own edits rather than anyone describing them afterwards.
 
 **A revision of this file published earlier today said that table "recorded zero
 rows across the entire build." That was wrong, and the error is instructive.** The
-live table does read zero rows, but only because the same wipe emptied it. Carving
-the freed pages recovers **11 attribution records** for this repository, each
-carrying the file, `StephenSook/accessgate`, branch `main`, and the tool Bob used:
+live table does read zero rows, but only because the same wipe emptied it. The
+database was never vacuumed, so carving the freed pages recovers Bob's own records,
+each carrying `StephenSook/accessgate`, branch `main`, the file, and the tool Bob
+used. `scripts/recover_bob_attribution.py` regenerates the aggregate, and
+`bob_sessions/bob-attribution-recovered.json` is its committed output:
 
-| Tool recorded | Rows | Example target |
+| Tool Bob recorded | Records | Files reached |
 |---|---|---|
-| `spawn_subagent` | 8 | `frontend/src/App.tsx`, `src/app.py` |
+| `spawn_subagent` | 5 | `App.tsx`, `src/app.py`, `WaveformDisplay.tsx`, `VideoPlayer.tsx`, `client.ts` |
 | `apply_diff` | 2 | `frontend/src/App.tsx`, `src/app.py` |
 | `search_and_replace` | 1 | `frontend/src/components/WaveformDisplay.tsx` |
 
-The mistake was reading an emptied table and drawing a conclusion about **Bob's
-behaviour** instead of about **the wipe**. An absent row is evidence of absence
-only when you know the store was intact, and here it was not. The same discipline
-this repo applies to model output applies to its own forensics: check what the
-silence is made of before reporting it.
+Eight distinct file-and-tool records across five source files. Every number in that
+table is read from the committed JSON rather than retyped, which is the whole point:
+an earlier paragraph here said "11", counting raw carved matches before duplicates
+were collapsed, and two different numbers for one fact is exactly the drift this
+repo spent the day removing from its own hero copy.
+
+The mistake underneath is worth more than the fix. Reading an emptied table, I drew
+a conclusion about **Bob's behaviour** instead of about **the wipe**. An absent row
+is evidence of absence only when the store is known intact, and here it was not. The
+same discipline this repo applies to model output applies to its own forensics:
+check what the silence is made of before reporting it.
 
 Bob's own runtime log corroborates this independently of the database. The IDE
-writes per-project logs to `~/.bob/logs/`, and those survived the wipe. Across the
-build they contain **48 `attribution: create` events and 117 `attribution: index`
-events**, so the subsystem was running continuously rather than firing once. The
-11 carved rows are therefore a floor on what was recorded, not a total.
+writes per-project logs to `~/.bob/logs/`, and those survived the wipe. They carry
+**48 `attribution: create` events**, so the subsystem ran continuously rather than
+firing once, and the eight carved records are a floor on what was written, not a
+total.
 
 Those logs are not committed here, for the same reason the transcripts are not:
 they carry 565 absolute filesystem paths containing the author's username, and

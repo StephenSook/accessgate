@@ -35,6 +35,9 @@ frontend/.vite/
 # judge-facing Bob evidence, so it is excepted below.
 bob_sessions/*.json
 !bob_sessions/bob-usage-evidence.json
+# Same reasoning: counts and repository-relative paths only, written by
+# scripts/recover_bob_attribution.py, no contribution text and no absolute paths.
+!bob_sessions/bob-attribution-recovered.json
 
 # Gitkeep exceptions
 !security/.gitkeep

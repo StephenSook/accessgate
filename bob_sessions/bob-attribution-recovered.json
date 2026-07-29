@@ -1,0 +1,33 @@
+{
+  "note": "IBM Bob's own line-level attribution records for this repository, recovered from freed pages of the Bob IDE's local session database after a crash-restart emptied it on 2026-07-29. Bob writes these rows itself when it edits a file, so they are the tool logging its own authorship rather than a description of it. Counts and repository-relative paths only: the contribution_text column (the code Bob wrote) is deliberately excluded, because that code is already in this repository. Regenerate with scripts/recover_bob_attribution.py.",
+  "source": "freed pages of ~/.bob/db/bob.db, plus event counts from ~/.bob/logs/",
+  "recovered_at": "2026-07-29T21:11:04.334943+00:00",
+  "repositories": [
+    "StephenSook/accessgate"
+  ],
+  "branches": [
+    "main"
+  ],
+  "attribution_rows_recovered": 8,
+  "rows_by_tool": {
+    "spawn_subagent": 5,
+    "apply_diff": 2,
+    "search_and_replace": 1
+  },
+  "rows_by_path": {
+    "frontend/src/App.tsx": 2,
+    "src/app.py": 2,
+    "frontend/src/components/WaveformDisplay.tsx": 2,
+    "frontend/src/components/VideoPlayer.tsx": 1,
+    "frontend/src/api/client.ts": 1
+  },
+  "runtime_log_events": {
+    "attribution_create": 48,
+    "attribution_index": 126,
+    "log_files": 4,
+    "first_ts": "2026-07-13T22:59:13.637Z",
+    "last_ts": "2026-07-29T21:07:58.395Z",
+    "task_ids": 4
+  },
+  "completeness": "A FLOOR, NOT A TOTAL. Carving recovers only what survived in freed pages, and Bob's runtime logs record more attribution events than there are rows recoverable here. Treat this as corroboration of the git build trace, which is the primary evidence and re-derives from a clone with no trust required."
+}
