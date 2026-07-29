@@ -35,7 +35,7 @@ Base Granite Speech 3.3-2b does not emit timestamps. Use faster-whisper with wor
 ## Build and test commands
 
 - Install: `pip install -r requirements.txt`
-- Models: `ollama pull granite3.2-vision:2b granite3-guardian:2b granite3.2:8b`
+- Models: `ollama pull granite3.2-vision:2b granite3-guardian:2b` (the only two the code loads; see src/generative_fix.py)
 - Run engine: `python -m src.engine <film> <captions> <ad>`
 - Run tests: `pytest`
 - Lint SARIF export: `npx @microsoft/sarif-multitool validate <file>.sarif`

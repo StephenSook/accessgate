@@ -126,6 +126,31 @@ def test_judge_facing_docs_do_not_reference_gitignored_paths():
     )
 
 
+def test_setup_docs_only_tell_a_judge_to_pull_models_the_code_loads():
+    """Do not send someone to download gigabytes the product never touches.
+
+    The setup instructions listed `ollama pull granite3.2:8b` while
+    src/generative_fix.py loads only the vision and guardian models. A judge
+    following the README spent a multi-gigabyte download on a model no shipped
+    code opens. A rival lost points for the same shape of defect: docs that
+    instruct something the code does not do.
+    """
+    code = "\n".join(
+        p.read_text() for p in (REPO_ROOT / "src").rglob("*.py")
+        if "__pycache__" not in p.parts
+    )
+    pull = re.compile(r"ollama pull ([a-z0-9.:\- ]+)")
+    stale = []
+    for doc in ("README.md", "AGENTS.md"):
+        text = (REPO_ROOT / doc).read_text()
+        for line in pull.findall(text):
+            for model in line.split():
+                # A model id carries a tag; bare words are prose, not ids.
+                if ":" in model and model not in code:
+                    stale.append(f"{doc} says pull {model!r}, which no src/ file loads")
+    assert stale == [], "\n".join(stale)
+
+
 @needs_git
 def test_license_exists_if_the_readme_advertises_one():
     readme = (REPO_ROOT / "README.md").read_text()
