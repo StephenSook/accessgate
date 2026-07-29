@@ -30,7 +30,16 @@ interface JudgesData {
   // API response and never reached the page titled "HONESTY MOAT".
   scope_boundaries?: { not_checked: string; why: string }[]
   generative_provenance?: string
-  citation_provenance?: { active?: string | null; index_built_with?: string | null; note?: string }
+  citation_provenance?: {
+    active?: string | null
+    // The vector set actually in memory answering citations right now. This is
+    // the honest field: `active` is what this process WOULD use for a query,
+    // `serving` is what DID answer. They agree in a healthy state, and a
+    // mismatch is the exact condition worth showing a judge rather than hiding.
+    serving?: string | null
+    index_built_with?: string | null
+    note?: string
+  }
   demo_transparency?: string
   // The build trace is the one piece of Bob evidence a judge can re-derive from
   // a clone instead of trusting a document we wrote about ourselves, so it gets
@@ -175,7 +184,20 @@ export function JudgesPage() {
           <span style={styles.blockquoteIcon}>❝</span>
           <span>
             <b>Citation encoder on this instance. </b>
-            Active: <code>{data.citation_provenance.active}</code>
+            {/* `serving` leads, because it is the set that actually answered.
+                When the two disagree the mismatch is shown, not smoothed over. */}
+            {data.citation_provenance.serving ? (
+              <>
+                Serving your citations: <code>{data.citation_provenance.serving}</code>
+                {data.citation_provenance.active &&
+                  data.citation_provenance.active !== data.citation_provenance.serving && (
+                    <> · this process would query with <code>{data.citation_provenance.active}</code>,
+                      which does not match what is loaded</>
+                  )}
+              </>
+            ) : (
+              <>Active: <code>{data.citation_provenance.active}</code></>
+            )}
             {data.citation_provenance.index_built_with && (
               <> · index built with <code>{data.citation_provenance.index_built_with}</code></>
             )}
