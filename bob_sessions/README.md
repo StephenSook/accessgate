@@ -66,12 +66,29 @@ because those are Bob reading and writing files in this repo, not conversation.
 **Message bodies are excluded on purpose.** The transcripts contain the author's
 verbatim planning prompts, which are strategy notes rather than engineering
 artifacts, and a public repo is the wrong home for them. The aggregate proves
-scale and shape without publishing the conversation. Regenerate it yourself from
-a machine with the Bob IDE installed; the script is committed.
+scale and shape without publishing the conversation.
 
-An earlier version of this file claimed no export was possible because Bob kept
-history server-side. That was wrong. The store is local, in `~/.bob/db/bob.db`,
-and the earlier check missed it.
+**These particular numbers can no longer be re-derived, and that is worth stating
+plainly rather than leaving an invitation this repo cannot honour.** The export
+above was taken on 2026-07-28. On 2026-07-29 the Bob IDE restarted after a machine
+crash and the local session store came back empty: `tasks`, `messages` and
+`attribution_logs` all read zero rows, and the file itself shows 1,574 of 1,597
+pages on the SQLite freelist, so the rows were deleted rather than moved. The
+committed JSON is now the only surviving record of that session history. An
+earlier revision of this file told you to regenerate it yourself; that is still
+true of the *script*, which runs against whatever history a given machine has, but
+it is no longer true of *these* figures. The build trace in the section above is
+the part that does re-derive from a clone, with no trust required, and it is the
+stronger evidence anyway.
+
+Two earlier corrections, kept because the corrections are part of the record. An
+earlier version of this file claimed no export was possible because Bob kept
+history server-side; that was wrong, the store is local at `~/.bob/db/bob.db` and
+the earlier check missed it. And Bob ships a line-level attribution feature
+(`attribution_logs`, keyed by file, repo, branch and tool) which would have been
+the single best proof of authorship available here: it recorded **zero rows** for
+this project across the whole build, so it is named here as an unused capability
+rather than quietly omitted.
 
 ## Scope note on the self-referential MCP loop
 

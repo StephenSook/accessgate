@@ -255,9 +255,44 @@ def api_index() -> JSONResponse:
 
 @app.get("/health")
 def health() -> dict:
-    """Health check endpoint — used by CI keepalive and frontend."""
+    """
+    Liveness, plus a straight answer about which subsystems are actually working.
+
+    A judge arriving during the judging window should not have to run the gated
+    fix and read a provenance field out of the response to find out whether the
+    generative layer is live on this deployment. One GET answers it.
+
+    This endpoint makes NO outbound calls, deliberately. It is pinged by the CI
+    keepalive and again on every cold start, and on 2026-07-27 a metered call on
+    a startup path drained a month of watsonx quota in under a day because the
+    real multiplier is the restart rate, not the traffic rate. So `subsystems`
+    reports what real traffic has already observed, and `configured` reports
+    only what the process can see about itself for free. Neither costs a token.
+
+    `configured` is not a health claim. Credentials being present says nothing
+    about whether the far end answers; that is what `subsystems` is for, and an
+    unexercised subsystem reports `not_observed` rather than a cheerful default.
+    """
+    from src.subsystem_status import snapshot
+
     demo_mode = os.getenv("ACCESSGATE_DEMO_MODE", "false").lower() == "true"
-    return {"status": "ok", "service": "AccessGate", "demo_mode": demo_mode}
+    return {
+        "status": "ok",
+        "service": "AccessGate",
+        "demo_mode": demo_mode,
+        "subsystems": snapshot(),
+        "configured": {
+            # Presence of credentials only. Says nothing about the far end.
+            "watsonx_credentials": bool(
+                os.getenv("WATSONX_API_KEY") and os.getenv("WATSONX_PROJECT")
+            ),
+        },
+        "citations": _citation_provenance(),
+        "note": "`subsystems` reports the last REAL call this instance made, never a probe: "
+                "this endpoint spends no tokens. `not_observed` means nothing has exercised "
+                "that path on this instance yet, which is the honest state after a cold start "
+                "and is not a failure. Exercise the gated fix, then re-read this.",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -660,14 +695,33 @@ def demo_summary() -> JSONResponse:
         raise HTTPException(status_code=404, detail="Demo report not found.")
     with open(demo_path) as f:
         report = json.load(f)
-    return JSONResponse(content=summarize_report(report))
+    return JSONResponse(content=_summarize_and_record(summarize_report(report)))
 
 
 @app.post("/summary")
 def summary(report: dict = Body(...)) -> JSONResponse:
     """Granite-generated plain-English summary of a posted conformance report."""
     from src.report_summary import summarize_report
-    return JSONResponse(content=summarize_report(report))
+    return JSONResponse(content=_summarize_and_record(summarize_report(report)))
+
+
+def _summarize_and_record(result: dict) -> dict:
+    """
+    Pass a summary result through untouched, recording what it revealed.
+
+    The observation is taken from the result the caller is already getting, so
+    this cannot disagree with what the judge sees, and it costs no extra call.
+    """
+    from src.subsystem_status import record
+
+    err = result.get("error")
+    record(
+        "report_summary",
+        ok=not err and bool(result.get("summary")),
+        model_id=result.get("model_id"),
+        detail=str(err) if err else None,
+    )
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -700,7 +754,43 @@ def demo_fix(gap_start: float = Form(...), gap_end: float = Form(...)) -> JSONRe
     result, source = generate_demo_fix(gap, keyframes)
     payload = json.loads(result.model_dump_json())
     payload["draft_source"] = source
+    _record_fix_observations(result)
     return JSONResponse(content=payload)
+
+
+def _record_fix_observations(result: "FixResult") -> None:
+    """
+    Record what the gated fix just proved about the drafter and the Guardian.
+
+    Read straight off the Provenance the fix already returns, so /health can
+    never claim something the response itself contradicts. A fallback draft is
+    recorded as `failed`, because a canned string standing in for a live model
+    is exactly the condition a judge is trying to detect, and calling it ok is
+    the fabricated-provenance bug this batch caught in a rival's live demo.
+    """
+    from src.subsystem_status import record
+
+    draft = result.draft_provenance
+    if draft is not None:
+        record(
+            "vision_drafter",
+            ok=not draft.fallback,
+            model_id=draft.model_id,
+            latency_ms=draft.latency_ms,
+            detail=draft.label,
+        )
+
+    guard = result.guardian_provenance
+    if guard is not None:
+        # guardian_ran is the load-bearing flag: a screen that could not run
+        # must never read as a screen that passed.
+        record(
+            "guardian",
+            ok=bool(result.guardian_ran) and not guard.fallback,
+            model_id=guard.model_id,
+            latency_ms=guard.latency_ms,
+            detail=guard.label if result.guardian_ran else "did not run",
+        )
 
 
 # ---------------------------------------------------------------------------
