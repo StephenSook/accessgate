@@ -4,7 +4,31 @@ The watsonx token quota resets at the start of the month, which is also day one
 of judging. **No commits are possible after Jul 31**, so this checklist is for
 *confirming* the demo came back, not for fixing it. Everything here is a read.
 
-Run these three commands. All three should pass without touching the repo.
+## 0. The one-command version
+
+`/health` now reports the live state of every metered subsystem, so one read
+answers what used to take three:
+
+```sh
+curl -s https://accessgate-api.onrender.com/health | python3 -m json.tool
+```
+
+Read `subsystems`. Each entry is `ok`, `failed`, or `not_observed`.
+
+**`not_observed` is the expected state on a cold instance and is not a failure.**
+The endpoint deliberately makes no outbound call, so it can only report calls that
+real traffic has already made; a freshly woken server has not made any. Exercise
+the gated fix (step 2 below), then read `/health` again and the entries flip to
+`ok` with the model id and latency attached. A `failed` entry carries the error.
+
+Verified end to end on the deploy on 2026-07-29: all three read `not_observed` on
+a cold instance, then `ok` after one `/demo-fix` and one `/demo-summary`, with
+`vision_drafter` 2155 ms on watsonx-hosted Llama 3.2 Vision, `guardian` 823 ms on
+Granite Guardian 3 8b, and `report_summary` on `ibm/granite-3-8b-instruct`.
+
+The three commands below remain valid and are the deeper check. Use them if
+`/health` shows anything other than `ok`, or when you want to see actual output
+rather than a status.
 
 ## 1. Is watsonx answering again?
 
