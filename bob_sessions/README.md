@@ -81,14 +81,50 @@ it is no longer true of *these* figures. The build trace in the section above is
 the part that does re-derive from a clone, with no trust required, and it is the
 stronger evidence anyway.
 
-Two earlier corrections, kept because the corrections are part of the record. An
+### Bob's own line-level attribution, and a correction made within the hour
+
+Bob ships `attribution_logs`, a table keyed by file URI, repo, branch and tool
+name. It is the best proof of authorship available on this project, because it is
+Bob recording its own edits rather than anyone describing them afterwards.
+
+**A revision of this file published earlier today said that table "recorded zero
+rows across the entire build." That was wrong, and the error is instructive.** The
+live table does read zero rows, but only because the same wipe emptied it. Carving
+the freed pages recovers **11 attribution records** for this repository, each
+carrying the file, `StephenSook/accessgate`, branch `main`, and the tool Bob used:
+
+| Tool recorded | Rows | Example target |
+|---|---|---|
+| `spawn_subagent` | 8 | `frontend/src/App.tsx`, `src/app.py` |
+| `apply_diff` | 2 | `frontend/src/App.tsx`, `src/app.py` |
+| `search_and_replace` | 1 | `frontend/src/components/WaveformDisplay.tsx` |
+
+The mistake was reading an emptied table and drawing a conclusion about **Bob's
+behaviour** instead of about **the wipe**. An absent row is evidence of absence
+only when you know the store was intact, and here it was not. The same discipline
+this repo applies to model output applies to its own forensics: check what the
+silence is made of before reporting it.
+
+Bob's own runtime log corroborates this independently of the database. The IDE
+writes per-project logs to `~/.bob/logs/`, and those survived the wipe. Across the
+build they contain **48 `attribution: create` events and 117 `attribution: index`
+events**, so the subsystem was running continuously rather than firing once. The
+11 carved rows are therefore a floor on what was recorded, not a total.
+
+Those logs are not committed here, for the same reason the transcripts are not:
+they carry 565 absolute filesystem paths containing the author's username, and
+this repo's own clonability test forbids absolute paths in Bob evidence. The
+counts above are the publishable part.
+
+Honest limit on all of it: 48 attribution events is still sparse against 441
+tool-result messages, so this subsystem samples operations rather than logging
+every edit. It is corroborating evidence, not a complete ledger, and the git build
+trace above remains the primary proof.
+
+One earlier correction is kept because the correction is part of the record: an
 earlier version of this file claimed no export was possible because Bob kept
-history server-side; that was wrong, the store is local at `~/.bob/db/bob.db` and
-the earlier check missed it. And Bob ships a line-level attribution feature
-(`attribution_logs`, keyed by file, repo, branch and tool) which would have been
-the single best proof of authorship available here: it recorded **zero rows** for
-this project across the whole build, so it is named here as an unused capability
-rather than quietly omitted.
+history server-side. That was wrong; the store is local at `~/.bob/db/bob.db` and
+the earlier check missed it.
 
 ## Scope note on the self-referential MCP loop
 
