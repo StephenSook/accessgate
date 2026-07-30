@@ -22,6 +22,7 @@ hard-coded placeholder draft that still exercises the validation/screening path.
 from __future__ import annotations
 import json
 import logging
+import os
 import re
 import subprocess
 import tempfile
@@ -41,6 +42,14 @@ logger = logging.getLogger(__name__)
 # Default models (confirmed pulled)
 VISION_MODEL = "granite3.2-vision:2b"
 GUARDIAN_MODEL = "granite3-guardian:2b"
+
+#: Where the local Ollama server lives. `.env.example` has documented this
+#: override since the beginning while both call sites hard-coded localhost, so
+#: anyone running Ollama on another host set it and was silently ignored. The
+#: default is byte-identical to the previous hard-coded value, and these paths
+#: never execute on the hosted deploy (there is no Ollama there), so honouring
+#: the variable changes nothing that was already working.
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
 
 # AD reading speed for gap-fit sizing
 AD_WPM = 150.0
@@ -179,7 +188,7 @@ def draft_description(
         import urllib.request
         data = json.dumps(payload).encode()
         req = urllib.request.Request(
-            "http://localhost:11434/api/generate",
+            f"{OLLAMA_BASE_URL}/api/generate",
             data=data,
             headers={"Content-Type": "application/json"},
         )
@@ -300,7 +309,7 @@ def screen_guardian(draft: str, model: str = GUARDIAN_MODEL) -> tuple[bool, bool
         import urllib.request
         data = json.dumps(payload).encode()
         req = urllib.request.Request(
-            "http://localhost:11434/api/generate",
+            f"{OLLAMA_BASE_URL}/api/generate",
             data=data,
             headers={"Content-Type": "application/json"},
         )
