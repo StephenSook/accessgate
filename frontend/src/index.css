@@ -471,6 +471,18 @@ body {
   color: var(--ag-blue-light);
   margin-bottom: 8px;
 }
+/* Says where the report on screen came from. A stored run and a run that just
+   executed are visually identical, so the page states which it is rather than
+   letting the reader assume. Muted on purpose: this is a fact, not a warning. */
+.ag-provenance-note {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ag-text-muted);
+  border-left: 2px solid var(--ag-blue-light);
+  padding: 8px 0 8px 12px;
+  margin: 0 0 20px 0;
+}
 .ag-summary-card__text {
   margin: 0;
   font-size: 14px;

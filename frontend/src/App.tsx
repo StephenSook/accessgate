@@ -303,6 +303,25 @@ export default function App() {
               )
             })()}
 
+            {/* Where this report came from.
+                The disclosure existed only on /judges, which is a different
+                page from the one a judge lands on after clicking LOAD DEMO. A
+                stored run and a run that just executed look identical on screen,
+                and every rival graded down this cycle failed on exactly that:
+                provenance present in the payload, absent from the surface. This
+                report is real engine output on real public-domain material, not
+                fabricated, so the honest move is to say which it is rather than
+                let the page imply the engine just ran. Uploads take the other
+                branch and are analysed live. */}
+            {report.report_id === 'demo-notld-2026' && (
+              <p className="ag-provenance-note">
+                Stored run · the real 23-rule engine on the public-domain Night of the Living
+                Dead captions, computed ahead of time so this page loads instantly. Nothing here
+                is synthetic. Upload your own caption file, or click a failing gap, and the engine
+                runs live on this request.
+              </p>
+            )}
+
             {/* Granite plain-English summary */}
             {summary && summary.summary && (
               <section aria-label="Report summary" className="ag-summary-card">
