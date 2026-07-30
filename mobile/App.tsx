@@ -139,6 +139,15 @@ function RuleRow({ r }: { r: RuleResult }) {
         <Text style={[s.ruleStatus, { color: statusColor(r.status) }]}>{r.status.toUpperCase()}</Text>
       </View>
       <Text style={s.ruleMsg}>{r.message}</Text>
+      {/* The web client has always rendered this and mobile never did, even
+          though the field was typed in api.ts. A flagged finding is the whole
+          point of calling this a PRE-CHECK rather than a certifier: it is a
+          human-judgment call the engine deliberately refuses to auto-fail. A
+          surface that shows the finding but hides that distinction understates
+          the claim the project is built on, so both clients now state it. */}
+      {r.human_review_required && (
+        <Text style={s.ruleReview}>⚠ Human review required</Text>
+      )}
       {open && <Text style={s.ruleCite}>"{r.citation}"</Text>}
     </Pressable>
   )
@@ -267,6 +276,7 @@ const s = StyleSheet.create({
   ruleStatus: { fontFamily: MONO, fontSize: 10 },
   ruleMsg: { fontSize: 13, color: C.text, marginTop: 6, lineHeight: 18 },
   ruleCite: { fontSize: 12, color: C.muted, marginTop: 8, fontStyle: 'italic', lineHeight: 17 },
+  ruleReview: { fontFamily: MONO, fontSize: 11, color: C.amber, marginTop: 8 },
   modalWrap: { flex: 1, backgroundColor: '#000000aa', justifyContent: 'flex-end' },
   modal: { backgroundColor: C.surface, borderTopWidth: 2, borderTopColor: C.corner, padding: 20, maxHeight: '85%' },
   close: { color: C.muted, fontSize: 26 },
