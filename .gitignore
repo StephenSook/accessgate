@@ -77,3 +77,7 @@ submission/*.pdf
 # Internal build/strategy plan — scaffolding, not product docs (kept local only)
 plan/
 submission/*.md
+
+# Rival screenshots captured during competitor recon. Recon is local-only and
+# must never ship in this repo.
+*-firstload.png
