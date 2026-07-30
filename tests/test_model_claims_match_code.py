@@ -45,11 +45,25 @@ CODE_DIRS = ["src"]
 
 # What a judge reads. src/app.py is included because it serves /judges, whose
 # tier list names model ids directly.
+#: What a judge reads. src/app.py is included for two reasons, and the second was
+#: nearly missed: it serves /judges, whose tier list names model ids directly, AND
+#: it holds the FastAPI `title`/`description` that render on the live /docs page.
+#:
+#: RUNTIME METADATA IS A CLAIM SURFACE. A rival graded B- this cycle kept an
+#: honest correction in its README while its FastAPI description still advertised
+#: "budget estimates via IBM Granite", and that string renders on the very /docs
+#: page its README tells judges to open. Nobody thinks of an OpenAPI description
+#: as marketing copy until a judge reads it. Package manifests are listed here for
+#: the same reason: `description` fields are published, and ours are currently
+#: absent, so this pins them empty-or-honest rather than leaving the surface
+#: uncovered.
 JUDGE_FACING = [
     "README.md",
     "AGENTS.md",
     "bob_sessions/README.md",
     "src/app.py",
+    "frontend/package.json",
+    "mobile/package.json",
 ]
 JUDGE_FACING_DIRS = ["frontend/src"]
 
