@@ -715,11 +715,17 @@ def _summarize_and_record(result: dict) -> dict:
     from src.subsystem_status import record
 
     err = result.get("error")
+    # Truncation is not a subsystem failure: Granite ran and answered. It is a
+    # quality caveat about the answer, so it rides in `detail` rather than
+    # flipping the state to failed, which would itself be an inaccurate claim.
+    detail = str(err) if err else None
+    if not err and result.get("truncated"):
+        detail = "output reached the token cap; trimmed to the last complete sentence"
     record(
         "report_summary",
         ok=not err and bool(result.get("summary")),
         model_id=result.get("model_id"),
-        detail=str(err) if err else None,
+        detail=detail,
     )
     return result
 

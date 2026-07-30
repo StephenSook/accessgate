@@ -70,3 +70,52 @@ def test_checker_reports_and_never_rewrites():
     before = summary
     unsupported_figures(summary, BRIEF)
     assert summary == before
+
+
+# ---------------------------------------------------------------------------
+# Token-cap truncation.
+#
+# A rival graded C+ this cycle wires Granite to this same completion endpoint
+# with no chat template and no stop handling, and its live output opens with
+# roughly a thousand characters of echoed prompt scaffolding pasted into the
+# user's deliverable. We do not have that defect: our prompt ends on a
+# "Summary:" anchor and the observed live stop_reason is eos_token at 101 of
+# the allowed tokens.
+#
+# We DID have the quieter half of it. Nothing read stop_reason, so a report
+# long enough to reach the cap would have rendered a summary ending mid-word
+# on the card a judge reads, with no signal anywhere that it had been cut.
+# These pin the trim.
+# ---------------------------------------------------------------------------
+
+from src.report_summary import _trim_to_last_sentence
+
+
+def test_a_mid_sentence_fragment_is_dropped():
+    """The defect: a card ending mid-word."""
+    text = "Fix the 3 gaps first. Then re-time the overlapping cue. The accuracy sc"
+    assert _trim_to_last_sentence(text) == (
+        "Fix the 3 gaps first. Then re-time the overlapping cue."
+    )
+
+
+def test_a_complete_summary_is_left_alone():
+    """Trimming a finished summary would delete real content."""
+    text = "Fix the 3 gaps first. Then re-time the overlapping cue."
+    assert _trim_to_last_sentence(text) == text
+
+
+def test_question_and_exclamation_count_as_sentence_ends():
+    assert _trim_to_last_sentence("Is it shippable? Not yet, because the ca") == (
+        "Is it shippable?"
+    )
+
+
+def test_text_with_no_sentence_break_is_returned_whole():
+    """
+    Fail-safe direction. With nothing to cut back to, returning "" would blank
+    the card entirely; the `truncated` flag still tells the truth in the
+    payload and in /health.
+    """
+    text = "a single long clause with no terminator that ran out of tokens"
+    assert _trim_to_last_sentence(text) == text

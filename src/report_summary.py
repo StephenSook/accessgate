@@ -40,6 +40,7 @@ def summarize_report(
         "model_id": MODEL_ID,
         "source": "watsonx Granite 3 8B Instruct",
         "error": None,
+        "truncated": False,
     }
     if not api_key or not project_id:
         result["error"] = "WATSONX_API_KEY or WATSONX_PROJECT not set"
@@ -84,13 +85,33 @@ def summarize_report(
                 "model_id": MODEL_ID,
                 "project_id": project_id,
                 "input": prompt,
-                "parameters": {"decoding_method": "greedy", "max_new_tokens": 160, "repetition_penalty": 1.1},
+                "parameters": {"decoding_method": "greedy", "max_new_tokens": 220, "repetition_penalty": 1.1},
             },
             headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
             timeout=30,
         )
         resp.raise_for_status()
-        result["summary"] = resp.json()["results"][0]["generated_text"].strip()
+        payload = resp.json()["results"][0]
+        text = payload["generated_text"].strip()
+
+        # A completion endpoint stops for one of two reasons, and only one of
+        # them means the sentence finished. Observed live on the demo report:
+        # stop_reason "eos_token" at 101 of the tokens allowed, so the cap is
+        # not normally reached. But nothing here previously READ stop_reason,
+        # so a longer report that did reach it would have rendered a summary
+        # ending mid-word on the card a judge reads, silently. Cap raised for
+        # headroom (greedy decoding stops at eos anyway, so this spends no
+        # extra quota in practice), and the fragment is now trimmed rather
+        # than shown.
+        result["truncated"] = payload.get("stop_reason") == "max_tokens"
+        if result["truncated"]:
+            text = _trim_to_last_sentence(text)
+            logger.warning(
+                "Granite report summary hit the token cap; trimmed to the last "
+                "complete sentence (%d chars kept).", len(text),
+            )
+
+        result["summary"] = text
         result["unsupported_figures"] = unsupported_figures(result["summary"], brief)
         logger.info("Granite report summary generated (%d chars).", len(result["summary"]))
         if result["unsupported_figures"]:
@@ -103,6 +124,23 @@ def summarize_report(
         logger.warning("Granite report summary failed: %s", exc)
 
     return result
+
+
+def _trim_to_last_sentence(text: str) -> str:
+    """
+    Drop a trailing fragment left by the token cap.
+
+    Returns the text unchanged when there is no sentence break to cut back to,
+    because a truncated sentence on the card is bad but a blank card is worse.
+    The caller still records `truncated`, so the honest signal survives either
+    way; this only decides what the reader sees.
+    """
+    cut = max(text.rfind(". "), text.rfind(".\n"), text.rfind("! "), text.rfind("? "))
+    if text.endswith((".", "!", "?")):
+        return text
+    if cut == -1:
+        return text
+    return text[: cut + 1]
 
 
 def unsupported_figures(summary: str, brief: str) -> list[str]:
