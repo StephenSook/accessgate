@@ -78,6 +78,16 @@ submission/*.pdf
 plan/
 submission/*.md
 
-# Rival screenshots captured during competitor recon. Recon is local-only and
-# must never ship in this repo.
+# Rival screenshots and scratch captures from competitor recon. Recon is
+# local-only and must never ship in this repo.
+#
+# Widened after two more agent captures landed untracked in a later batch: the
+# original single-filename pattern was a patch, not a rule. Anchored at the
+# repo root because that is where stray captures land, while real assets live
+# under docs/ and frontend/public/. The one tracked root image is re-included;
+# .gitignore never affects an already-tracked file, so this only documents it.
 *-firstload.png
+/*.png
+/*.jpg
+/*.jpeg
+!/bemyapp-header.png
