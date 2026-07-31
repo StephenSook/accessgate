@@ -9,12 +9,16 @@ reads IS the set of values that ship to every visitor. Allowlist it, and a futur
 `import.meta.env.VITE_WATSONX_API_KEY` fails here rather than in production. This
 is the invariant that matters and it is checkable without a build.
 
-BUNDLE LAYER (enforced when a build exists). Reads the actual compiled artifact
-and asserts no credential shape and no unwired vendor name survived. It skips
-cleanly when `dist/` is absent, since pytest and the frontend build run as
-separate CI jobs; locally, after `npm run build`, it runs for real. Its value is
+BUNDLE LAYER (always enforced in CI). Reads the actual compiled artifact and
+asserts no credential shape and no unwired vendor name survived. Its value is
 catching what source inspection cannot: a key pulled in through a dependency, or
 a model string baked into a vendored chunk.
+
+This layer used to skip whenever `dist/` was absent, and the CI job running
+pytest never built the frontend, so it skipped on every CI run while the job
+reported green. The paragraph here previously said that was fine. It was not:
+the scan had never executed in CI at all. The workflow now builds the frontend
+first, and `_require_bundle` fails instead of skipping when CI is set.
 
 Adapted from a rival graded B+ this cycle, whose `test_webapp.py` asserted the
 served JS contained none of API_KEY / sk-ant / gsk_ / claude- / gemini-. Three
@@ -26,6 +30,7 @@ Companion to tests/test_model_claims_match_code.py, which governs SOURCE claims.
 This one governs what a visitor actually receives.
 """
 
+import os
 import re
 from pathlib import Path
 
@@ -107,17 +112,45 @@ def _bundle_files() -> list[Path]:
     return sorted(DIST.rglob("*.js")) + sorted(DIST.rglob("*.html"))
 
 
+def _require_bundle(files: list[Path]) -> None:
+    """
+    Skip locally when nothing is built. Never skip in CI.
+
+    This test used to skip unconditionally when frontend/dist was absent, and
+    the CI job that ran pytest never built the frontend, so the scan standing
+    between a watsonx key and the public bundle had never actually executed
+    there. The job reported green the whole time. Its own docstring described
+    the gap as acceptable, which is how a documented hole survives.
+
+    A rival's CI hid a broken ingest path for four weeks the same way, and their
+    fix is the one adopted here: assert the check really ran rather than trust
+    that it did. The workflow now builds the frontend before pytest, and this
+    turns a silent skip in CI into a loud failure, so the two cannot drift apart
+    again without the build going red.
+    """
+    if files:
+        return
+    if os.getenv("CI"):
+        raise AssertionError(
+            "frontend/dist is absent in CI, so the built-bundle secret scan "
+            "did not run. It must never be skipped here: build the frontend "
+            "before pytest in .github/workflows/test.yml. A test that silently "
+            "does not run is worse than no test, because it wears the "
+            "credibility of one."
+        )
+    pytest.skip("frontend/dist absent; run `npm run build` in frontend/ to enable")
+
+
 def test_built_bundle_holds_no_credential():
     """
     The compiled artifact a visitor downloads.
 
-    Skipped when no build is present: pytest and the frontend build are separate
-    CI jobs. Locally after `npm run build`, and in any environment that builds
-    before testing, this runs for real.
+    Skipped only when nothing is built locally. In CI this cannot skip: the
+    workflow builds the frontend before pytest, and _require_bundle turns an
+    absent build into a failure there.
     """
     files = _bundle_files()
-    if not files:
-        pytest.skip("frontend/dist absent; run `npm run build` in frontend/ to enable")
+    _require_bundle(files)
 
     offenders: list[str] = []
     for p in files:
@@ -136,8 +169,7 @@ def test_built_bundle_names_no_unwired_vendor():
     governs what the repo says, this one governs what the product says.
     """
     files = _bundle_files()
-    if not files:
-        pytest.skip("frontend/dist absent; run `npm run build` in frontend/ to enable")
+    _require_bundle(files)
 
     offenders: list[str] = []
     for p in files:

@@ -40,6 +40,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # tests/test_client_bundle_is_clean.py scans the BUILT bundle for leaked
+      # secrets, and skips itself when frontend/dist is absent. This job never
+      # built the frontend, so that scan silently skipped on every CI run while
+      # the job reported green: the one test standing between a watsonx key and
+      # the public bundle had never actually executed here. Building it in this
+      # job is what makes that scan real, and the test now fails rather than
+      # skips when CI is set, so the hole cannot silently reopen.
+      - name: Set up Node.js (for the built-bundle secret scan)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend so the bundle scan has something to scan
+        working-directory: frontend
+        run: npm ci && npm run build
+
       - name: Run pytest (no model/audio tests)
         run: |
           pytest tests/ \
