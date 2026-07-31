@@ -327,6 +327,20 @@ export default function App() {
               <section aria-label="Report summary" className="ag-summary-card">
                 <div className="ag-summary-card__label">Executive summary · {summary.source}</div>
                 <p className="ag-summary-card__text">{summary.summary}</p>
+                {/* Coverage, stated rather than implied. Only the first N findings
+                    are quoted into the model's brief; the aggregate counts cover
+                    every one. A rival ships the same cap silently and calls the
+                    result full-draft analysis. The cap is reasonable; saying
+                    nothing about it is what turns it into a false claim. */}
+                {typeof summary.findings_total === 'number' &&
+                  typeof summary.findings_quoted === 'number' &&
+                  summary.findings_total > summary.findings_quoted && (
+                    <p className="ag-summary-card__coverage">
+                      Written from the first {summary.findings_quoted} of{' '}
+                      {summary.findings_total} actionable findings. The counts it cites
+                      cover all {summary.findings_total}. The full list is in the table below.
+                    </p>
+                  )}
               </section>
             )}
 

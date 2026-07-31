@@ -22,6 +22,11 @@ logger = logging.getLogger(__name__)
 MODEL_ID = "ibm/granite-3-8b-instruct"
 _GENERATE_PATH = "/ml/v1/text/generation?version=2023-05-29"
 
+#: How many actionable findings are quoted verbatim into the brief. The rest are
+#: represented by the aggregate counts, which cover every finding. Whenever this
+#: bites, the shortfall is stated in the brief and in the response.
+FINDINGS_IN_BRIEF = 6
+
 
 def summarize_report(
     report: dict,
@@ -42,15 +47,38 @@ def summarize_report(
         "error": None,
         "truncated": False,
     }
+    # Coverage is counted BEFORE the credentials check, deliberately. A test
+    # caught this: with the counting below the early return, a judge running
+    # without a watsonx key got no coverage fields at all, so the disclosure
+    # disappeared exactly when the summary was least able to speak for itself.
+    results = report.get("results", [])
+    fails = [r for r in results if r.get("status") == "fail"]
+    flags = [r for r in results if r.get("status") == "flag"]
+    actionable = fails + flags
+    quoted = actionable[:FINDINGS_IN_BRIEF]
+    result["findings_quoted"] = len(quoted)
+    result["findings_total"] = len(actionable)
+
     if not api_key or not project_id:
         result["error"] = "WATSONX_API_KEY or WATSONX_PROJECT not set"
         return result
 
     # Build a compact, factual brief for the model from the real findings.
-    results = report.get("results", [])
-    fails = [r for r in results if r.get("status") == "fail"]
-    flags = [r for r in results if r.get("status") == "flag"]
-    top = "; ".join(r.get("message", "")[:100] for r in (fails + flags)[:6])
+    #
+    # COVERAGE IS DISCLOSED, NOT ASSUMED. Only the first FINDINGS_IN_BRIEF
+    # findings are quoted, to keep the prompt small. On the demo report that is
+    # 6 of 20, so 14 never reach the model. A rival graded C+ this cycle ships
+    # the same cap without saying so: their "scans the entire draft" feature
+    # analyses the first ~3,000 characters and renders the result as full-draft
+    # analysis, which an A/B against a planted contradiction falsifies in one
+    # request. The cap is fine. Silence about the cap is the defect, so the
+    # count travels into the brief, into the payload, and onto the card.
+    top = "; ".join(r.get("message", "")[:100] for r in quoted)
+    if len(actionable) > len(quoted):
+        top += (
+            f" [these are the first {len(quoted)} of {len(actionable)} actionable "
+            f"findings; the counts above cover all of them]"
+        )
     ner = report.get("ner") or {}
     ner_score = ner.get("ner_score")
     if ner_score is None:

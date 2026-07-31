@@ -134,6 +134,13 @@ export interface ReportSummary {
   model_id: string
   source: string
   error: string | null
+  /** True when the model hit its token cap and the tail was trimmed. */
+  truncated?: boolean
+  /** How many actionable findings were quoted into the model's brief. */
+  findings_quoted?: number
+  /** How many actionable findings exist. Greater than quoted means the
+   *  summary was written from a subset, which the card states explicitly. */
+  findings_total?: number
 }
 
 // Granite plain-English summary of the demo report (loaded via LOAD DEMO).

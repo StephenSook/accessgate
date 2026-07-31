@@ -489,3 +489,14 @@ body {
   line-height: 1.6;
   color: var(--ag-text);
 }
+
+/* Coverage line under the summary. Muted on purpose, same as the demo
+   provenance note: this is a scope statement, not a warning. It should read as
+   precision, not as an apology for the cap. */
+.ag-summary-card__coverage {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ag-text-muted);
+}
