@@ -168,3 +168,88 @@ def test_the_one_non_granite_runtime_model_is_labelled_as_such():
         "README no longer identifies the hosted vision drafter as Llama. It must "
         "never be described as Granite: Granite Vision is the LOCAL path only."
     )
+
+
+# ---------------------------------------------------------------------------
+# The inverse direction: no UNCLAIMED provider may enter the engine.
+#
+# Everything above asserts that claims are a subset of what we call. That leaves
+# the mirror gap wide open: a provider added to src/ and never advertised passes
+# every test in this file, because nothing on a judge-facing surface names it.
+#
+# The idea is stolen from the best-engineered rival in this field, which wires a
+# 70-line script into CI that greps runtime source for forbidden provider names
+# and FAILS THE BUILD. Their own docs put it plainly: "A direct network adapter
+# must not be inferred or added without a verified IBM contract." Their git
+# history shows the only watsonx/granite strings ever committed are the two
+# blocklist lines themselves.
+#
+# It matters because the field's dominant defect is the reverse of ours. Rivals
+# graded F and D+ this cycle run Gemini, Groq or a private proxy under an IBM
+# banner. The claim-drift tests protect us from advertising a model we do not
+# run; this protects the runtime claim itself, by making "the engine calls IBM
+# and nothing else" a build gate rather than a promise.
+#
+# DELIBERATELY MATCHES USE, NOT MENTION. The patterns are imports, SDK clients
+# and API hostnames, never bare vendor words, because this file and the modules
+# it guards discuss rival implementations in prose and a checker that trips on
+# its own commentary gets muted.
+# ---------------------------------------------------------------------------
+
+#: Actual invocation surfaces for a non-IBM model provider.
+FOREIGN_PROVIDER_USE = re.compile(
+    r"\b(?:import|from)\s+(?:openai|anthropic|groq|cohere|mistralai|replicate|together)\b"
+    r"|\bfrom\s+google\.generativeai\b|\bimport\s+google\.generativeai\b"
+    r"|\bfrom\s+langchain(?:_\w+)?\b|\bimport\s+langchain\b"
+    r"|api\.openai\.com|api\.anthropic\.com|api\.groq\.com|api\.mistral\.ai"
+    r"|generativelanguage\.googleapis\.com|openrouter\.ai|api\.cohere\.\w+"
+    r"|api\.replicate\.com|pollinations\.ai|api\.together\.xyz",
+    re.I,
+)
+
+
+def test_the_foreign_provider_pattern_still_matches_something():
+    """
+    Guard the guard.
+
+    If this regex ever stopped matching, the assertion below would pass over
+    every file forever while protecting nothing. Prove it can still fire.
+    """
+    for sample in (
+        "import openai",
+        "from anthropic import Anthropic",
+        "resp = requests.post('https://api.groq.com/openai/v1/chat/completions')",
+        "from langchain_ibm import WatsonxLLM",
+    ):
+        assert FOREIGN_PROVIDER_USE.search(sample), f"pattern missed {sample!r}"
+
+
+def test_the_pattern_does_not_flag_our_own_legitimate_code():
+    """
+    Our hosted vision drafter is Meta's Llama, served BY watsonx, and it is
+    honestly labelled as such everywhere. Flagging it would be wrong, and a
+    checker that cries wolf on correct code is a checker someone deletes.
+    """
+    for sample in (
+        'MODEL_ID = "meta-llama/llama-3-2-11b-vision-instruct"',
+        '_CHAT_PATH = "/ml/v1/text/chat?version=2024-09-16"',
+        "# A rival runs Gemini and Groq behind an IBM banner; we do not.",
+    ):
+        assert not FOREIGN_PROVIDER_USE.search(sample), f"false positive on {sample!r}"
+
+
+def test_the_engine_calls_no_provider_but_ibm():
+    """The load-bearing assertion, and a build gate on the runtime claim."""
+    offenders: list[str] = []
+    for path in _code_paths():
+        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), 1):
+            match = FOREIGN_PROVIDER_USE.search(line)
+            if match:
+                rel = path.relative_to(REPO_ROOT)
+                offenders.append(f"{rel}:{lineno} uses {match.group(0)!r}")
+    assert offenders == [], (
+        "the engine reaches a non-IBM model provider:\n  " + "\n  ".join(offenders)
+        + "\n\nEvery model this project runs is IBM's, served by watsonx or "
+        "local Ollama. If that is deliberately changing, the README, /judges and "
+        "the submission must change in the same commit."
+    )
