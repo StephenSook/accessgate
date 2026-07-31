@@ -166,3 +166,61 @@ def test_the_production_api_base_names_no_foreign_domain():
         "It must fall back to a relative path so a missing VITE_API_URL cannot "
         "silently send traffic to someone else's host."
     )
+
+
+# ---------------------------------------------------------------------------
+# No model is asked whether a citation is correct.
+#
+# /judges now states this plainly, so it needs to be enforced rather than
+# asserted. Two rivals this cycle show why it is worth the line:
+#
+#   - one ships a "FactCheckAgent" that asks the SAME model family "is this
+#     accurate?", with no retrieval, no source and no citation, and calls the
+#     result fact-checking. It also fails open, assuming accuracy on error.
+#   - another assembles citation metadata from model recall plus defaults, in a
+#     medical anti-misinformation product.
+#
+# Self-verification is not verification. Our citation path may EMBED (a vector
+# lookup over the standards corpus is retrieval, and the embedding model has no
+# opinion about correctness) but it must never generate or chat, because the
+# moment it does, the quoted clause stops being the standard's own words.
+# ---------------------------------------------------------------------------
+
+_GENERATIVE_ENDPOINT = re.compile(r"/ml/v1/text/(?:chat|generation)|text/chat|text/generation")
+
+
+def test_the_citation_path_embeds_but_never_generates():
+    rag = (REPO_ROOT / "src" / "rag.py").read_text()
+    hits = [
+        f"line {i}: {line.strip()[:90]}"
+        for i, line in enumerate(rag.splitlines(), 1)
+        if _GENERATIVE_ENDPOINT.search(line)
+    ]
+    assert hits == [], (
+        "the citation path reaches a generative endpoint:\n  " + "\n  ".join(hits)
+        + "\n\n/judges states that no model is ever asked whether a citation is "
+        "correct, and that the quoted text comes from the standard's own "
+        "document. A chat or generation call here would make that false."
+    )
+
+
+def test_the_generative_endpoint_pattern_can_still_fire():
+    """Guard the guard: a pattern that matches nothing proves nothing."""
+    assert _GENERATIVE_ENDPOINT.search('_CHAT_PATH = "/ml/v1/text/chat?version=2024-09-16"')
+    assert _GENERATIVE_ENDPOINT.search('"/ml/v1/text/generation?version=2023-05-29"')
+    assert not _GENERATIVE_ENDPOINT.search('"/ml/v1/text/embeddings?version=2023-10-25"')
+
+
+def test_judges_states_the_distinction():
+    """
+    The claim and its enforcement travel together.
+
+    If someone removes the sentence from /judges, this fails and prompts the
+    question of whether the guarantee still holds; if someone breaks the
+    guarantee, the test above fails. Neither should move alone.
+    """
+    app = (REPO_ROOT / "src" / "app.py").read_text()
+    assert "No model is ever asked whether a citation is correct" in app, (
+        "/judges no longer states the retrieval-not-opinion distinction. If it "
+        "was removed deliberately, remove the guarantee test beside it too."
+    )
