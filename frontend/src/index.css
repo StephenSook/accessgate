@@ -493,6 +493,21 @@ body {
 /* Coverage line under the summary. Muted on purpose, same as the demo
    provenance note: this is a scope statement, not a warning. It should read as
    precision, not as an apology for the cap. */
+/* A real discrepancy, so this one is allowed to look like a warning. It fires
+   only when the model stated a number the engine never supplied, which should
+   be never. Deliberately louder than the coverage line beside it: one is a
+   scope statement, this is a correction. */
+.ag-summary-card__flag {
+  margin: 8px 0 0;
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ag-text);
+  border-left: 2px solid var(--ag-red);
+  background: rgba(218, 30, 40, 0.06);
+}
+
 .ag-summary-card__coverage {
   margin: 8px 0 0;
   font-family: var(--font-mono);

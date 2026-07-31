@@ -141,6 +141,10 @@ export interface ReportSummary {
   /** How many actionable findings exist. Greater than quoted means the
    *  summary was written from a subset, which the card states explicitly. */
   findings_total?: number
+  /** Numbers the summary stated that the engine's brief never supplied.
+   *  Normally empty. Rendered on the card when it is not, because a drift
+   *  detector whose output only reaches the log protects nobody. */
+  unsupported_figures?: string[]
 }
 
 // Granite plain-English summary of the demo report (loaded via LOAD DEMO).

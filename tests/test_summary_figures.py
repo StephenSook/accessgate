@@ -178,3 +178,52 @@ def test_pass_rows_are_not_counted_as_actionable():
     """Counting passing rules would overstate what the model failed to see."""
     out = summarize_report(_report(1), api_key="", project_id="")
     assert out["findings_total"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Every disclosure the summary computes must be readable on the card.
+#
+# A rival graded B- returns a `_fallback` flag from its API and reads it in NO
+# component, so when its model is unavailable a judge sees a styled "TALK 0%"
+# genre badge visually identical to a real classification. The honest signal was
+# computed, returned, and shown to nobody.
+#
+# We had two of those. `unsupported_figures` is our drift detector, the one
+# place a model is asked to restate engine-computed numbers, and it reached only
+# the log and the payload. `truncated` was added so a token-capped summary was
+# "observable rather than silent", and was observable only in /health.
+#
+# This pins the wiring: if the payload carries a disclosure, the card must
+# reference it. A disclosure nobody can read is not a disclosure.
+# ---------------------------------------------------------------------------
+
+from pathlib import Path as _Path
+
+_APP_TSX = _Path(__file__).resolve().parent.parent / "frontend" / "src" / "App.tsx"
+
+#: Fields summarize_report returns that carry a disclosure to the reader.
+#: Adding one here without rendering it fails, which is the point.
+_READER_FACING_FIELDS = ("unsupported_figures", "truncated", "findings_total")
+
+
+def test_every_disclosure_field_is_referenced_by_the_summary_card():
+    app = _APP_TSX.read_text()
+    missing = [f for f in _READER_FACING_FIELDS if f not in app]
+    assert missing == [], (
+        f"summarize_report returns {missing} and App.tsx renders it nowhere. "
+        "That is the rival defect verbatim: a disclosure computed, returned, "
+        "and shown to nobody. Render it or stop computing it."
+    )
+
+
+def test_the_summary_result_actually_carries_those_fields():
+    """
+    The other half of the pair.
+
+    Asserting the UI mentions a field proves nothing if the payload stopped
+    including it: the card would silently never fire and this test would still
+    pass. So check the producer too.
+    """
+    out = summarize_report(_report(20), api_key="", project_id="")
+    for field in ("truncated", "findings_quoted", "findings_total"):
+        assert field in out, f"summarize_report no longer returns {field!r}"

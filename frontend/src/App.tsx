@@ -341,6 +341,28 @@ export default function App() {
                       cover all {summary.findings_total}. The full list is in the table below.
                     </p>
                   )}
+                {/* The drift detector, on the page rather than only in the log.
+                    unsupported_figures names any number the summary states that
+                    the brief never supplied. Computing it and showing it only in
+                    the payload is the same defect a rival ships: their fallback
+                    flag is returned by the API and read by no component, so a
+                    judge sees a styled "TALK 0%" badge that looks like a real
+                    classification. A disclosure nobody can read is not a
+                    disclosure. Normally empty, which is the point. */}
+                {Array.isArray(summary.unsupported_figures) &&
+                  summary.unsupported_figures.length > 0 && (
+                    <p className="ag-summary-card__flag">
+                      Figures stated above that the engine did not supply:{' '}
+                      {summary.unsupported_figures.join(', ')}. Trust the table below,
+                      not these numbers.
+                    </p>
+                  )}
+                {summary.truncated && (
+                  <p className="ag-summary-card__coverage">
+                    The model reached its length limit here, so this was trimmed back
+                    to its last complete sentence.
+                  </p>
+                )}
               </section>
             )}
 
