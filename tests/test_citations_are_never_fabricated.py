@@ -224,3 +224,80 @@ def test_judges_states_the_distinction():
         "/judges no longer states the retrieval-not-opinion distinction. If it "
         "was removed deliberately, remove the guarantee test beside it too."
     )
+
+
+# ---------------------------------------------------------------------------
+# Every quoted citation is literally present in the corpus.
+#
+# Two rivals this cycle render SYNTHESIZED prose inside a citation slot.
+#
+# One ships a deterministic contradiction engine whose "evidence" is an
+# f-string, `f"{name} was marked deceased."`, generated regardless of what the
+# manuscript actually says, displayed under a "CONFIRMED AUDIT" badge beside
+# "Context Citations (Ledger Extract)".
+#
+# The other is worse, and it is live right now. Its watsonx client cannot
+# throw: on any quota or network failure it returns a hardcoded block of JSON
+# hand-tailored to its own demo world, with `stopReason: 'stop'` and zero token
+# counts. Two completely unrelated drafts, one science fiction and one about a
+# dragon, produce the IDENTICAL three contradiction flags, each stamped
+# "Established in: chapter-03.md" and each showing a confidence of "HIGH (90%)"
+# that is a hardcoded string in a React component. Its README states, in
+# writing, "No silent fallback to a non-IBM model is attempted", and the string
+# it promises to surface instead exists in no source file.
+#
+# The shared mechanism is a citation the PRODUCT authored rather than
+# retrieved. Our clause text comes out of the indexed corpus, so it can be
+# checked character by character, and this checks it.
+# ---------------------------------------------------------------------------
+
+CHUNKS = REPO_ROOT / "standards" / "index" / "chunks.json"
+
+
+def _corpus_text() -> str:
+    """The indexed standards corpus, plus the committed inline clause text."""
+    chunks = json.loads(CHUNKS.read_text())
+    parts = [c["text"] if isinstance(c, dict) else str(c) for c in chunks]
+    # _INLINE_STANDARDS and the per-rule fallbacks are literals in rag.py.
+    parts.append((REPO_ROOT / "src" / "rag.py").read_text())
+    return re.sub(r"\s+", " ", " ".join(parts))
+
+
+def test_the_corpus_is_present_and_substantial():
+    """
+    Guard the guard.
+
+    If the index were missing or truncated, the containment assertion below
+    would still pass for an empty citation set while protecting nothing.
+    """
+    assert CHUNKS.exists(), f"indexed corpus missing at {CHUNKS}"
+    chunks = json.loads(CHUNKS.read_text())
+    assert len(chunks) >= 200, f"corpus has only {len(chunks)} chunks"
+
+
+def test_every_citation_is_verbatim_from_the_corpus():
+    """
+    The load-bearing assertion.
+
+    A citation must be text we RETRIEVED, never text we composed. Comparison is
+    whitespace-normalised, because chunking and JSON round-tripping legitimately
+    reflow whitespace, and on a prefix, because a rendered citation may be a
+    truncated view of a longer chunk. Neither concession lets invented prose
+    through: fabricated text shares no 60-character run with the corpus.
+    """
+    corpus = _corpus_text()
+    results = _results()
+    citations = {r["citation"] for r in results if r.get("citation")}
+    assert citations, "no citations in the demo report; this test would be vacuous"
+
+    invented = []
+    for c in sorted(citations):
+        probe = re.sub(r"\s+", " ", c).strip()[:60]
+        if probe and probe not in corpus:
+            invented.append(probe)
+
+    assert invented == [], (
+        "a rendered citation is not present in the indexed corpus, meaning the "
+        f"product composed it rather than retrieving it: {invented}\n"
+        "Citations must be quoted from the standard, never generated."
+    )

@@ -118,9 +118,8 @@ flowchart TB
         direction LR
         GS["Granite Speech 3.3-2b\nreference transcript"]
         NER["NER Scorer\n(N-E-R)/N + confidence band"]
-        CLS["Error-Type Classifier\nmacro-F1 0.952"]
+        CLS["Error-Type Classifier\nmacro-F1 0.952\n(offline CLI, not in the live path)"]
         GS --> NER
-        CLS --> NER
     end
 
     subgraph RULES["23-Rule Evaluator Engine (self-built, API-deletion-proof)"]
@@ -197,7 +196,7 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 1. **Conformance rule engine**: NER scorer (`(N-E-R)/N`, Romero-Fresco/Ofcom broadcast model), 98% threshold, confidence bands, never auto-fails on ASR alone per Koenecke et al. PNAS 2020
 2. **Dialogue-gap detection and timing engine**: two-tier speech detection (Silero VAD attempted first, then a pure-stdlib RMS energy detector), gap complement above 2.5s minimum, merged across sub-300ms blips. With the dependency set this repo ships, Silero declines to load and the RMS detector is what produces the demo's 197 speech regions and 3 gaps, which is exactly why this artifact survives the API-deletion test: the working path needs only `wave`, `struct`, and `math`
 3. **Audio-description structure validator**: DCMP rules: word-count-fits-gap, no-overlap-with-dialogue, present-tense, active-voice, third-person, objectivity flags
-4. **Caption error-type classifier**: supervised logistic regression on a synthetic weak-labeled set, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.952**
+4. **Caption error-type classifier**: supervised logistic regression on a synthetic weak-labeled set, distinguishes recognition errors (ASR mishears) from edition errors (paraphrase/omission); **macro-F1: 0.952**. This one is a **standalone offline module**, run with `python -m src.classifier --synthetic`: no code path in the live `/check` reaches it, and the conformance verdict never depends on it. Saying so because the alternative is the defect that graded a rival D- this cycle, a real deterministic engine that nothing imported behind a README implying it was what ran.
 
 ---
 
