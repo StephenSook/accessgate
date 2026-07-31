@@ -16,8 +16,15 @@ torch
 torchaudio
 # Read by the opt-in Granite Speech path only (ACCESSGATE_GRANITE_SPEECH=1,
 # src/granite_speech.py). Declared rather than left transitive so enabling that
-# flag on a fresh clone cannot fail on a missing import.
+# flag on a fresh clone cannot fail on a missing import. `transformers` loads
+# the processor and model on that same path and was missed when soundfile was
+# added by hand, which is the reason that audit is now a test.
 soundfile
+transformers
+# Every watsonx call in src/ goes through requests directly. It was reaching a
+# fresh clone only transitively, through whichever heavier package happened to
+# pull it, which is the same undeclared-but-imported shape as soundfile above.
+requests
 ffmpeg-python
 pytest
 pytest-asyncio
