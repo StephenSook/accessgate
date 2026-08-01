@@ -31,3 +31,6 @@ pytest-asyncio
 pydantic>=2.0
 PyYAML
 httpx
+# Read by scripts/validate_sarif.py, which README step 8 tells a judge to run.
+# Reached transitively via docling today; declared so that stays true.
+jsonschema>=4.0

@@ -241,7 +241,7 @@ export default function App() {
           )}
           <p className="ag-mode-note">
             <b>Hosted demo</b> runs the 23-rule conformance engine live on your uploaded caption file.
-            {' '}ASR accuracy scoring (Granite Speech / faster-whisper), Silero VAD gap detection, and the
+            {' '}ASR accuracy scoring (Granite Speech / faster-whisper), two-tier gap detection, and the
             {' '}Granite Vision generative fix run in the <b>full local pipeline</b>. See the demo report for all of it.
           </p>
         </section>

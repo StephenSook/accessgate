@@ -205,10 +205,11 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 
 ```bash
 git clone https://github.com/StephenSook/accessgate && cd accessgate
+pip install pytest          # the only dependency: the test runner itself
 python3 -m pytest tests/test_citations_are_never_fabricated.py -q
 ```
 
-No `pip install`, no virtualenv, no network, no API key. That test imports only
+No project dependencies, no virtualenv, no network, no API key. That test imports only
 `json`, `re` and `pathlib` from the standard library, and reads the Docling-parsed
 standards corpus committed at `standards/index/chunks.json` (222 chunks, 105 KB).
 It asserts every clause this engine cites is a **verbatim** substring of that
@@ -226,9 +227,9 @@ Which of these gates has been *proven* to fail when broken, rather than merely o
 | Metric | Value | Source |
 |---|---|---|
 | Classifier macro-F1 | **0.952** | synthetic held-out set, 3-class, n=140, reproduce with `python -m src.classifier --synthetic` |
-| Rule engine: violations detected | **10 / 10** | `data/demo/notld_broken.srt` + `notld_broken_ad.vtt` degradation recipe |
-| Rule engine on **real machine captions** | **55 real defects / 6 rules** | faster-whisper on the real NOTLD audio, no injected defects (`data/demo/notld_real_autocaption.srt`) |
-| SARIF schema valid | **pass** | `@microsoft/sarif-multitool validate` in CI |
+| Rule engine: violations detected | **6 / 10** on the files; 10 / 10 on the unit fixtures | `data/demo/notld_broken.srt` + `notld_broken_ad.vtt` degradation recipe |
+| Rule engine on **real machine captions** | **94 real defects / 8 rules** | faster-whisper on the real NOTLD audio, no injected defects (`data/demo/notld_real_autocaption.srt`) |
+| SARIF schema valid | **pass** | `python scripts/validate_sarif.py` in CI (against the vendored SARIF 2.1.0 schema; sarif-multitool is unusable on ubuntu-24.04 runners) |
 | axe-core A11Y score | **100%** | App audits its own UI on every load |
 | Tests passing | **390** | `pytest` on a fresh clone; CI gates Python 3.11 (the code also compiles on 3.12, which CI does not gate) |
 | NER caption accuracy, demo file | **~78%** | Reproduces to within about a point, see the note below |
@@ -236,14 +237,14 @@ Which of these gates has been *proven* to fail when broken, rather than merely o
 **Why the NER figure is quoted approximately.** The NER score is measured against a
 reference transcript produced by ASR, and ASR is not bit-deterministic across runs and
 model builds. The committed demo report (`data/demo/demo_report.json`, what the hosted
-`/demo` serves) records 77.8%; a fresh clone re-running the engine on the same audio
+`/demo` serves) records 78.92%; a fresh clone re-running the engine on the same audio
 measured 78.9%. Everything deterministic about that run is identical between the two:
 the same 31 rule results with the same pass, fail, and flag statuses, the same 3
 dialogue-free gaps, the same 197 speech regions. Only the ASR-derived accuracy figure
 moves, which is exactly why this project never auto-fails a caption on ASR evidence
 alone.
 
-**Verified on real, naturally-defective captions, not just an injected demo.** The 10/10 row is a designed showcase (a hand-authored degradation recipe). To prove the engine on real data, we transcribed the public-domain Night of the Living Dead audio with faster-whisper and ran the 23 rules on that raw machine-caption output. With zero injected defects, AccessGate flagged **55 real violations across 6 rules**: 40 over-long lines (DCMP-CAP-01, NFLX-LEN-01), 8 reading-speed breaches (DCMP-CAP-03, NFLX-CPS-01), and 7 sub-minimum-duration cues (DCMP-CAP-04, NFLX-DUR-01). Machine captions are the single most common real-world accessibility defect, and the run is reproducible: `python scripts/transcribe_real_captions.py`.
+**Verified on real, naturally-defective captions, not just an injected demo.** The 10/10 row is a designed showcase (a hand-authored degradation recipe). To prove the engine on real data, we transcribed the public-domain Night of the Living Dead audio with faster-whisper and ran the 23 rules on that raw machine-caption output. With zero injected defects, AccessGate flagged **94 real violations across 8 rules**: 40 over-long lines (DCMP-CAP-01, NFLX-LEN-01), 8 reading-speed breaches (DCMP-CAP-03, NFLX-CPS-01), and 7 sub-minimum-duration cues (DCMP-CAP-04, NFLX-DUR-01). Machine captions are the single most common real-world accessibility defect, and the run is reproducible: `python scripts/transcribe_real_captions.py`.
 
 ---
 
