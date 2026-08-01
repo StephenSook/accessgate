@@ -201,6 +201,9 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 ---
 
 ## Evaluation (measured, not asserted)
+Which of these gates has been *proven* to fail when broken, rather than merely observed passing, is recorded in [docs/PROVEN_GATES.md](docs/PROVEN_GATES.md): a log of mutations actually applied to a working tree, the assertion that caught each one, and an explicit statement of what it does not claim.
+
+
 
 | Metric | Value | Source |
 |---|---|---|

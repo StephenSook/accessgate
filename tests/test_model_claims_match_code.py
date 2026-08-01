@@ -348,3 +348,32 @@ def test_an_exempted_module_is_disclosed_as_offline_in_the_readme():
         "the NER scorer. No shipped code path creates that edge: nothing under "
         "src/ imports src/classifier.py."
     )
+
+
+def test_every_gate_named_in_the_proven_log_still_exists():
+    """
+    docs/PROVEN_GATES.md claims specific assertions were observed failing.
+
+    That is a claim like any other, so it gets the same treatment. If a test
+    named there is renamed or deleted, the document silently becomes a record of
+    protections that no longer exist, which is the exact defect this suite grades
+    rivals for: prose outliving the mechanism.
+    """
+    doc_path = REPO_ROOT / "docs" / "PROVEN_GATES.md"
+    assert doc_path.exists(), "docs/PROVEN_GATES.md is missing"
+
+    cited = set(re.findall(r"`(test_[a-z0-9_]+|_require_bundle)`", doc_path.read_text()))
+    assert len(cited) >= 15, (
+        f"only {len(cited)} gate names parsed out of PROVEN_GATES.md; the "
+        "extraction looks broken, so this assertion would protect nothing"
+    )
+
+    suite = "\n".join(
+        p.read_text() for p in (REPO_ROOT / "tests").glob("*.py")
+    )
+    missing = sorted(n for n in cited if f"def {n}(" not in suite)
+    assert missing == [], (
+        f"PROVEN_GATES.md names assertions that no longer exist: {missing}. "
+        "Either restore them or correct the document; a proven-gate log that "
+        "cites a deleted test is worse than no log."
+    )
