@@ -201,6 +201,25 @@ Each passes the **API-deletion test**: remove every hosted AI API and each still
 ---
 
 ## Evaluation (measured, not asserted)
+
+**Verify the central claim yourself, in one command, with no setup:**
+
+```bash
+git clone https://github.com/StephenSook/accessgate && cd accessgate
+python3 -m pytest tests/test_citations_are_never_fabricated.py -q
+```
+
+No `pip install`, no virtualenv, no network, no API key. That test imports only
+`json`, `re` and `pathlib` from the standard library, and reads the Docling-parsed
+standards corpus committed at `standards/index/chunks.json` (222 chunks, 105 KB).
+It asserts every clause this engine cites is a **verbatim** substring of that
+corpus, so a citation cannot be composed, paraphrased, or model-authored. It runs
+in well under a second, and it runs in CI on every push.
+
+That is the claim worth checking hardest, because it is the one most often
+asserted and least often enforced: two rivals this cycle render synthesized prose
+in a citation slot, one beneath a "CONFIRMED AUDIT" badge.
+
 Which of these gates has been *proven* to fail when broken, rather than merely observed passing, is recorded in [docs/PROVEN_GATES.md](docs/PROVEN_GATES.md): a log of mutations actually applied to a working tree, the assertion that caught each one, and an explicit statement of what it does not claim.
 
 
