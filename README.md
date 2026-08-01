@@ -37,7 +37,7 @@ Fastest path to check each thing that matters. No account, no keys.
 |---|---|
 | Demo video (2:56) | https://youtu.be/8PHTCRGrWxM |
 | Web app | https://accessgate-web.vercel.app |
-| Mobile app (Android) | Source in [`mobile/`](mobile/); the hosted build artifact expired, so build locally per [mobile/README.md](mobile/README.md) |
+| Mobile app (Android) | Native Expo/React Native client, [`mobile/`](mobile/) — same engine, same backend. Build per [mobile/README.md](mobile/README.md) |
 | Mobile app (iOS) | [TestFlight](https://testflight.apple.com/join/vAGsWSVz) (public link, install on any iPhone; source in [`mobile/`](mobile/)) |
 | REST API | https://accessgate-api.onrender.com |
 | Health check | https://accessgate-api.onrender.com/health |
@@ -49,6 +49,7 @@ Fastest path to check each thing that matters. No account, no keys.
 Open the web app and click **LOAD DEMO** to see the full conformance timeline, rule results table, NER score, and gap markers, no file upload needed. The demo runs on a Night of the Living Dead segment (United States public domain) whose caption and audio-description sidecars carry realistic conformance defects. Uploading your own caption file on the live site runs the same 23-rule engine on the hosted backend.
 
 <table><tr>
+<td align="center"><img src="docs/android-app-qr.png" width="140" alt="QR code to the AccessGate Android app source"><br><b>Android app</b><br><sub>scan or <a href="https://github.com/StephenSook/accessgate/tree/main/mobile">mobile/ source</a></sub></td>
 <td align="center"><img src="docs/ios-testflight-qr.png" width="140" alt="QR code to join the AccessGate iOS TestFlight"><br><b>iOS TestFlight</b><br><sub>scan or <a href="https://testflight.apple.com/join/vAGsWSVz">join link</a></sub></td>
 </tr></table>
 
