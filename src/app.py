@@ -530,7 +530,10 @@ def check_conformance(
         report_dict["report_id"] = report_id
         _remember(_report_cache, report_id, report_dict)
 
-        return JSONResponse(content=report_dict)
+        # Same enrichment the /demo and /report paths apply. Previously the live
+        # response was the only one served raw, so a judge comparing a live check
+        # against the demo saw two different shapes for the same engine.
+        return JSONResponse(content=enrich_report_dict(report_dict))
 
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)

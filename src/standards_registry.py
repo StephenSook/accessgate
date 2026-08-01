@@ -8,7 +8,11 @@ URL here was verified to return HTTP 200 (2026-07-26). Keeping the map keyed by
 rule-id family means a new rule inherits its citation automatically.
 """
 from __future__ import annotations
+
+from pathlib import Path
 from typing import Optional
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Family -> canonical source URL (all verified live 2026-07-26).
 _STANDARD_URLS = {
@@ -47,6 +51,7 @@ def _family(rule_id: str) -> Optional[str]:
     return None
 
 
+
 def clause_ref(rule_id: str) -> Optional[dict]:
     """Return {clause_id, clause_url} for a rule id, or None if unknown."""
     fam = _family(rule_id)
@@ -68,6 +73,46 @@ def delta_pct(measured, limit):
     return round((measured - limit) / limit * 100, 1)
 
 
+def ruleset_stamp() -> dict:
+    """Identify the ruleset that produced a report, computed from its content.
+
+    WHY THIS EXISTS. A report a reader saves today is only meaningful if they can
+    tell which rules produced it. Without a stamp, changing a threshold silently
+    makes every previously exported report unreproducible, and nothing anywhere
+    says so.
+
+    The best-engineered rival in this field ships `formulaVersion` inside its
+    response payload, which is exactly why its published scores could be
+    independently recomputed and matched to the digit. This is the same idea for
+    a rule engine.
+
+    DERIVED, NOT DECLARED. The digest is a hash of the registry file itself, so
+    it cannot drift from the rules the way a hand-maintained version string can.
+    Edit a threshold and the digest changes without anyone remembering to bump it.
+
+    Deliberately NOT a reproducibility claim. It says "these rules produced this
+    report", which is checkable by hashing the file. It does not claim the whole
+    run reproduces bit-for-bit, because the generative layer is not deterministic
+    and asserting otherwise would be the kind of unverifiable claim this project
+    grades rivals down for.
+    """
+    import hashlib
+
+    registry = _REPO_ROOT / "rules" / "rules_registry.yaml"
+    try:
+        raw = registry.read_bytes()
+    except OSError:
+        return {"digest": None, "note": "rules registry not readable"}
+
+    return {
+        "digest": "sha256:" + hashlib.sha256(raw).hexdigest()[:16],
+        "source": "rules/rules_registry.yaml",
+        "note": "Identifies the ruleset that produced this report. Recompute with: "
+                "shasum -a 256 rules/rules_registry.yaml. This is a ruleset "
+                "identity, not a claim that the whole run reproduces bit-for-bit.",
+    }
+
+
 def enrich_report_dict(report: dict) -> dict:
     """Add clause_id/clause_url (and delta_pct) to each result in a serialized
     report dict.
@@ -77,6 +122,10 @@ def enrich_report_dict(report: dict) -> dict:
     not the computed delta. Mutates and returns the dict; never overwrites a
     value already present.
     """
+    # Which ruleset produced this. Set here rather than at each call site so
+    # /demo, /report/{id} and a live /check cannot disagree about it.
+    report.setdefault("ruleset", ruleset_stamp())
+
     for r in report.get("results", []):
         ref = clause_ref(r.get("rule_id", ""))
         if ref:
