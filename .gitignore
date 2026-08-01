@@ -91,3 +91,9 @@ submission/*.md
 /*.jpg
 /*.jpeg
 !/bemyapp-header.png
+
+# Competitor recon notes. Grading is confidential, local-only work: it must
+# never ship in a public repo. Untracked is not enough, because one `git add -A`
+# is all it takes, and that has already happened once here with a screenshot.
+/Grade Projects
+/Grade Projects*
